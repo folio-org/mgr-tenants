@@ -1,0 +1,50 @@
+{
+  "tenants": [
+    {
+      "id": "031b27ce-0021-47bd-b734-7740f2c780f2",
+      "name": "tenant3",
+      "description": "test tenant3",
+      "type": "virtual",
+      "attributes": [ ],
+      "metadata": {
+        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdBy": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    {
+      "id": "42e36904-d009-4884-8338-3df14a18dfef",
+      "name": "tenant5",
+      "description": "test tenant5",
+      "type": "default",
+      "attributes": [ { "id": "0f281df4-d528-4013-b076-a2771066ab68", "key": "key1", "value": "value1" } ],
+      "metadata": {
+        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdBy": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    {
+      "id": "4b83457f-5309-4648-a89a-62917ac3c63d",
+      "name": "tenant1",
+      "description": "test tenant1",
+      "type": "default",
+      "attributes": [ ],
+      "metadata": {
+        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdBy": "00000000-0000-0000-0000-000000000000",
+        "modifiedDate": "2022-01-01T00:00:00.000+00:00",
+        "modifiedBy": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    {
+      "id": "a9832aee-46fe-40f7-bdb4-77445fa52105",
+      "name": "tenant2",
+      "description": "test tenant2",
+      "type": "default",
+      "attributes": [ ],
+      "metadata": {
+        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdBy": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  ], "totalRecords": 4
+}

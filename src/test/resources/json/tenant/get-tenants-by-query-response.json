@@ -1,0 +1,40 @@
+{
+  "tenants": [
+    {
+      "id": "4b83457f-5309-4648-a89a-62917ac3c63d",
+      "name": "tenant1",
+      "description": "test tenant1",
+      "type": "default",
+      "attributes": [ ],
+      "metadata": {
+        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdBy": "00000000-0000-0000-0000-000000000000",
+        "modifiedDate": "2022-01-01T00:00:00.000+00:00",
+        "modifiedBy": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    {
+      "id": "a9832aee-46fe-40f7-bdb4-77445fa52105",
+      "name": "tenant2",
+      "description": "test tenant2",
+      "type": "default",
+      "attributes": [ ],
+      "metadata": {
+        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdBy": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    {
+      "id": "031b27ce-0021-47bd-b734-7740f2c780f2",
+      "name": "tenant3",
+      "description": "test tenant3",
+      "type": "virtual",
+      "attributes": [ ],
+      "metadata": {
+        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdBy": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  ],
+  "totalRecords": 3
+}

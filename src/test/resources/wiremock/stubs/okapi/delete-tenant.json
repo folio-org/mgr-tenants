@@ -1,0 +1,12 @@
+{
+  "request": {
+    "method": "DELETE",
+    "urlPattern": "/_/proxy/tenants/.+",
+    "headers": {
+      "x-okapi-token": { "equalTo": "dGVzdC1hdXRoLnRva2Vu" }
+    }
+  },
+  "response": {
+    "status": 204
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "tenantType.json",
+  "title": "Tenant Type Schema",
+  "description": "Tenant type",
+  "default": "default",
+  "type": "string",
+  "enum": [ "default", "virtual" ],
+  "x-enum-varnames": [ "DEFAULT", "VIRTUAL" ]
+}

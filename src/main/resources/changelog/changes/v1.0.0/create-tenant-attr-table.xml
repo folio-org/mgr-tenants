@@ -1,0 +1,58 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="create-tenant-attributes-table" author="dmtkachenko">
+    <createTable tableName="tenant_attribute">
+      <column name="id" type="UUID">
+        <constraints primaryKey="true" primaryKeyName="pk_tenant_attr"/>
+      </column>
+      <column name="key" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="value" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="tenant_id" type="UUID">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_by" type="UUID"/>
+      <column name="created_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="updated_by" type="UUID"/>
+      <column name="updated_date" type="TIMESTAMP"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="create-unq-tenant-attr-name-per-tenant" author="dmtkachenko">
+    <addUniqueConstraint
+            columnNames="tenant_id, key"
+            tableName="tenant_attribute"
+            constraintName="unq_tenant_attr_tenant_key"
+            deferrable="false"
+            initiallyDeferred="false"/>
+  </changeSet>
+
+  <changeSet id="create-fk-tenant-attr-tenant-id" author="dmtkachenko">
+    <addForeignKeyConstraint
+        baseColumnNames="tenant_id"
+        baseTableName="tenant_attribute"
+        constraintName="fk_tenant_attr_tenant"
+        deferrable="false"
+        initiallyDeferred="false"
+        onDelete="CASCADE"
+        onUpdate="RESTRICT"
+        referencedColumnNames="id"
+        referencedTableName="tenant"/>
+  </changeSet>
+
+  <changeSet id="create-fk-index-tenant-attr-tenant-id" author="dmtkachenko">
+    <createIndex indexName="idx_tenant_attr_tenant_id" tableName="tenant_attribute">
+      <column name="tenant_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>

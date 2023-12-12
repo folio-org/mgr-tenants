@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "PUT",
+    "url": "/_/proxy/tenants/tenant1",
+    "headers": {
+      "content-type": { "equalTo": "application/json" },
+      "x-okapi-token": { "equalTo": "dGVzdC1hdXRoLnRva2Vu" }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "id": "tenant1",
+          "name": "tenant1",
+          "description": "modified"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "tenant1",
+      "name": "tenant1",
+      "description": "modified"
+    }
+  }
+}

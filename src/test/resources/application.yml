@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: mod-tenant-manager
+  main:
+    banner-mode: off
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: false
+      accept-single-value-as-array: true
+  datasource:
+    username: test
+    password: test
+  liquibase:
+    change-log: classpath:changelog/changelog-master.xml
+  jpa:
+    open-in-view: false
+
+server:
+  port: 8081
+  max-http-request-header-size: 200KB
+  compression:
+    enabled: true
+    mime-types: text/html,text/plain,text/css,application/javascript,application/json
+
+application:
+  environment: ${ENV:folio}
+  security:
+    enabled: false
+  keycloak:
+    enabled: false
+    url: ${KC_URL}
+    admin:
+      client_id: ${KC_ADMIN_CLIENT_ID:folio-backend-admin-client}
+      client_secret: ${KC_ADMIN_CLIENT_SECRET:supersecret}
+      username: ${KC_ADMIN_USERNAME:admin}
+      password: ${KC_ADMIN_PASSWORD:admin}
+      grant_type: ${KC_ADMIN_GRANT_TYPE:client_credentials}
+    client:
+      client_id: ${KC_CLIENT_ID:mgr-tenants}
+    realm-setup:
+      m2m-client:
+        client_id: ${KC_SERVICE_CLIENT_ID:sidecar-module-access-client}
+      login-client:
+        client_id: ${KC_LOGIN_CLIENT_SUFFIX:-login-application}
+      client-secret-length: 32
+      impersonation-client: impersonation-client
+      password-reset-client:
+        client_id: password-reset-client
+        token_lifespan: 60
+  okapi:
+    enabled: true
+    url: ${OKAPI_URL:${okapi.url:}}
+    mod-authtoken-url: ${MOD_AUTHTOKEN_URL}
+  secret-store:
+    type: Ephemeral
+    ephemeral:
+      content:
+        folio_master_folio-backend-admin-client: supersecret
+        folio_master_mgr-tenants: supersecret
+        folio_tenant1_sidecar-module-access-client: supersecret
+        folio_tenant4_sidecar-module-access-client: supersecret
+        folio_tenant1_tenant1-login-application: supersecret
+        folio_tenant4_tenant4-login-application: supersecret
+
+management:
+  endpoints.web:
+    base-path: /admin
+    exposure.include: info,health,liquibase,threaddump,heapdump

@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/_/proxy/tenants/tenant4",
+    "headers": {
+      "content-type": {
+        "equalTo": "application/json"
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "tenant4",
+      "name": "tenant4",
+      "description": "test tenant4"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "realm": "tenant1",
+  "enabled": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": true
+}

@@ -1,0 +1,43 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+  <changeSet id="create-tenant-type-enum" author="dmtkachenko">
+    <sql>
+      CREATE TYPE tenant_type AS ENUM ('DEFAULT', 'VIRTUAL');
+    </sql>
+  </changeSet>
+
+  <changeSet id="create-tenant-table" author="dmtkachenko">
+    <createTable tableName="tenant">
+      <column name="id" type="UUID">
+        <constraints primaryKey="true" primaryKeyName="pk_tenant"/>
+      </column>
+      <column name="name" type="VARCHAR(32)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="description" type="VARCHAR(255)"/>
+      <column name="type" type="tenant_type" defaultValue="DEFAULT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_by" type="UUID"/>
+      <column name="created_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="updated_by" type="UUID"/>
+      <column name="updated_date" type="TIMESTAMP"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="create-unq-tenant-name" author="dmtkachenko">
+    <addUniqueConstraint
+            columnNames="name"
+            tableName="tenant"
+            constraintName="unq_tenant_name"
+            deferrable="false"
+            initiallyDeferred="false"/>
+  </changeSet>
+
+</databaseChangeLog>

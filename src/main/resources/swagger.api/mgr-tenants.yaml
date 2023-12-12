@@ -1,0 +1,303 @@
+openapi: 3.0.0
+
+info:
+  title: Mgr-Tenants API
+  version: v1
+  description: Tenant Manager API
+
+servers:
+  - url: http://localhost:8081
+    description: Locally deployed server
+
+paths:
+  /tenants:
+    post:
+      operationId: createTenant
+      description: Create a new tenant
+      tags:
+        - tenants
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tenant'
+      responses:
+        '201':
+          description: 'Tenant has been created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenant'
+        '400':
+          $ref: '#/components/responses/badRequest'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+    get:
+      operationId: getTenantsByQuery
+      description: Get tenants by query
+      tags:
+        - tenants
+      parameters:
+        - $ref: '#/components/parameters/cql-query'
+        - $ref: '#/components/parameters/query-offset'
+        - $ref: '#/components/parameters/query-limit'
+      responses:
+        '200':
+          description: List of tenants
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenants'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+  /tenants/{id}:
+    get:
+      operationId: getTenantById
+      description: Get tenant by id
+      tags:
+        - tenants
+      parameters:
+        - $ref: '#/components/parameters/path-entity-id'
+      responses:
+        '200':
+          description: Tenant data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenant'
+        '404':
+          $ref: '#/components/responses/entityNotFound'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+    put:
+      operationId: updateTenantById
+      description: Update a tenant
+      tags:
+        - tenants
+      parameters:
+        - $ref: '#/components/parameters/path-entity-id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tenant'
+      responses:
+        '200':
+          description: Tenant data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenant'
+        '404':
+          $ref: '#/components/responses/entityNotFound'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+    delete:
+      operationId: deleteTenantById
+      description: Remove a tenant by id
+      tags:
+        - tenants
+      parameters:
+        - $ref: '#/components/parameters/path-entity-id'
+      responses:
+        '204':
+          description: No content
+        '404':
+          $ref: '#/components/responses/entityNotFound'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+  /tenants/{tenantId}/tenant-attributes:
+    get:
+      operationId: getTenantAttributes
+      description: Retrieve list of available tenant attributes by tenant id
+      tags:
+        - tenant-attributes
+      parameters:
+        - $ref: '#/components/parameters/path-tenant-id'
+        - $ref: '#/components/parameters/cql-query'
+        - $ref: '#/components/parameters/query-offset'
+        - $ref: '#/components/parameters/query-limit'
+      responses:
+        '200':
+          description: A tenant descriptor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenantAttributes'
+        '404':
+          $ref: '#/components/responses/entityNotFound'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+    post:
+      operationId: createTenantAttributes
+      description: |
+        Create or replace tenant-attributes associated with the specified tenant. Idempotent operation
+      tags:
+        - tenant-attributes
+      parameters:
+        - $ref: '#/components/parameters/path-tenant-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tenantAttributes'
+      responses:
+        '201':
+          description: 'Tenant attributes has been created or replaced'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenantAttributes'
+        '400':
+          $ref: '#/components/responses/badRequest'
+        '404':
+          $ref: '#/components/responses/entityNotFound'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+  /tenants/{tenantId}/tenant-attributes/{id}:
+    get:
+      operationId: getTenantAttribute
+      description: Retrieve tenant attribute by id
+      tags:
+        - tenant-attributes
+      parameters:
+        - $ref: '#/components/parameters/path-tenant-id'
+        - $ref: '#/components/parameters/path-entity-id'
+      responses:
+        '200':
+          description: A tenant attribute
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenantAttribute'
+        '404':
+          $ref: '#/components/responses/entityNotFound'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+    put:
+      operationId: updateTenantAttribute
+      description: Update tenant attribute
+      tags:
+        - tenant-attributes
+      parameters:
+        - $ref: '#/components/parameters/path-tenant-id'
+        - $ref: '#/components/parameters/path-entity-id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/tenantAttribute'
+      responses:
+        '200':
+          description: Updated tenant attribute
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenantAttribute'
+        '400':
+          $ref: '#/components/responses/badRequest'
+        '404':
+          $ref: '#/components/responses/entityNotFound'
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+    delete:
+      operationId: deleteTenantAttribute
+      description: Delete tenant attribute
+      tags:
+        - tenant-attributes
+      parameters:
+        - $ref: '#/components/parameters/path-tenant-id'
+        - $ref: '#/components/parameters/path-entity-id'
+      responses:
+        '204':
+          description: No content
+        '500':
+          $ref: '#/components/responses/internalServerError'
+
+components:
+  schemas:
+    errorResponse:
+      $ref: schemas/common/errors.json
+    tenant:
+      $ref: schemas/tenant.json
+    tenants:
+      $ref: schemas/tenants.json
+    tenantAttribute:
+      $ref: schemas/tenantAttribute.json
+    tenantAttributes:
+      $ref: schemas/tenantAttributes.json
+
+  responses:
+    badRequest:
+      description: Error response if request body contains validation error (in json format)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+    entityNotFound:
+      description: Error response if entity is not found by id (in json format)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+    internalServerError:
+      description: Error response for unhandled or critical server exceptions, e.g. NullPointerException.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+
+  parameters:
+    path-entity-id:
+      in: path
+      required: true
+      name: id
+      description: Entity id
+      schema:
+        type: string
+        format: uuid
+    path-tenant-id:
+      in: path
+      required: true
+      name: tenantId
+      description: Tenant id
+      schema:
+        type: string
+        format: uuid
+    query-limit:
+      in: query
+      required: false
+      name: limit
+      description: Limit the number of elements returned in the response.
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 500
+        default: 10
+    query-offset:
+      in: query
+      required: false
+      name: offset
+      description: Skip over a number of elements by specifying an offset value for the query.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    cql-query:
+      name: query
+      in: query
+      description: A CQL query string with search conditions.
+      schema:
+        type: string

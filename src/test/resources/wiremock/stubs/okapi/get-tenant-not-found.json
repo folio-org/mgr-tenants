@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/_/proxy/tenants/tenant4",
+    "headers": {
+      "content-type": {
+        "equalTo": "application/json"
+      },
+      "x-okapi-token": {
+        "equalTo": "dGVzdC1hdXRoLnRva2Vu"
+      }
+    }
+  },
+  "response": {
+    "status": 404
+  }
+}

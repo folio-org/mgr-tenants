@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/tenants",
+    "headers": {
+      "X-Okapi-Permissions-Required": {
+        "equalTo": "mgr-tenants.tenants.item.post"
+      },
+      "X-Okapi-Token": {
+        "equalTo": "dGVzdC1hdXRoLnRva2Vu"
+      },
+      "X-Okapi-Tenant": {
+        "equalTo": "supertenant"
+      },
+      "X-Okapi-Url": {
+        "matches": ".*"
+      }
+    }
+  },
+  "response": {
+    "status": 202
+  }
+}

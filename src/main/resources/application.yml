@@ -1,0 +1,87 @@
+spring:
+  application:
+    name: mgr-tenants
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: false
+      accept-single-value-as-array: true
+  datasource:
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_DATABASE:tenant_manager}
+  liquibase:
+    change-log: classpath:changelog/changelog-master.xml
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  cache:
+    cache-names: token
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=${CACHE_EXPIRATION_TTL:60s}
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+
+server:
+  port: 8081
+  max-http-request-header-size: ${MAX_HTTP_REQUEST_HEADER_SIZE:200KB}
+  compression:
+    enabled: true
+    mime-types: text/html,text/plain,text/css,application/javascript,application/json
+
+application:
+  environment: ${ENV:folio}
+  security:
+    enabled: ${SECURITY_ENABLED:false}
+  keycloak:
+    enabled: ${KC_INTEGRATION_ENABLED:false}
+    url: ${KC_URL:http://keycloak:8080}
+    admin:
+      url: ${KC_URL:http://keycloak:8080}
+      client_id: ${KC_ADMIN_CLIENT_ID:folio-backend-admin-client}
+      username: ${KC_ADMIN_USERNAME:}
+      password: ${KC_ADMIN_PASSWORD:}
+      grant_type: ${KC_ADMIN_GRANT_TYPE:client_credentials}
+    import:
+      enabled: ${KC_IMPORT_ENABLED:false}
+    client:
+      client_id: ${KC_CLIENT_ID:mgr-tenants}
+    realm-setup:
+      login-client:
+        client_id: ${KC_LOGIN_CLIENT_SUFFIX:-login-application}
+      m2m-client:
+        client_id: ${KC_SERVICE_CLIENT_ID:sidecar-module-access-client}
+      client-secret-length: ${KC_CLIENT_SECRET_LENGTH:32}
+      impersonation-client: ${KC_IMPERSONATION_CLIENT:impersonation-client}
+      password-reset-client:
+        client_id: ${KC_PASSWORD_RESET_CLIENT_ID:password-reset-client}
+        token_lifespan: ${KC_PASSWORD_RESET_TOKEN_TTL:86400}
+  okapi:
+    enabled: ${OKAPI_INTEGRATION_ENABLED:false}
+    url: ${OKAPI_URL:${okapi.url:}}
+    mod-authtoken-url: ${MOD_AUTHTOKEN_URL}
+  secret-store:
+    type: ${SECRET_STORE_TYPE:}
+    aws-ssm:
+      region: ${SECRET_STORE_AWS_SSM_REGION:}
+      use-iam: ${SECRET_STORE_AWS_SSM_USE_IAM:true}
+      ecs-credentials-endpoint: ${SECRET_STORE_AWS_SSM_ECS_CREDENTIALS_ENDPOINT:}
+      ecs-credentials-path: ${SECRET_STORE_AWS_SSM_ECS_CREDENTIALS_PATH:}
+    vault:
+      token: ${SECRET_STORE_VAULT_TOKEN:}
+      address: ${SECRET_STORE_VAULT_ADDRESS:}
+      enable-ssl: ${SECRET_STORE_VAULT_ENABLE_SSL:false}
+      pem-file-path: ${SECRET_STORE_VAULT_PEM_FILE_PATH:}
+      keystore-password: ${SECRET_STORE_VAULT_KEYSTORE_PASSWORD:}
+      keystore-file-path: ${SECRET_STORE_VAULT_KEYSTORE_FILE_PATH:}
+      truststore-file-path: ${SECRET_STORE_VAULT_TRUSTSTORE_FILE_PATH:}
+
+management:
+  endpoints.web:
+    base-path: /admin
+    exposure:
+      include: info,health,liquibase,threaddump,heapdump,httptrace,loggers

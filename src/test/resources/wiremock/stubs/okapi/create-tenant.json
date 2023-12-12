@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/_/proxy/tenants",
+    "headers": {
+      "content-type": { "equalTo": "application/json" },
+      "x-okapi-token": { "equalTo": "dGVzdC1hdXRoLnRva2Vu" }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "id": "tenant4",
+          "name": "tenant4",
+          "description": "test tenant4"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "tenant4",
+      "name": "tenant4",
+      "description": "test tenant4"
+    }
+  }
+}

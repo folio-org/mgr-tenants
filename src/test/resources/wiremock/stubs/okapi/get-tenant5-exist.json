@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/_/proxy/tenants/tenant5",
+    "headers": {
+      "content-type": {
+        "equalTo": "application/json"
+      },
+      "x-okapi-token": {
+        "equalTo": "dGVzdC1hdXRoLnRva2Vu"
+      }
+    }
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "tenant5",
+      "name": "tenant5",
+      "description": "test tenant5"
+    }
+  }
+}

@@ -1,0 +1,230 @@
+{
+  "id": "mgr-tenants-1.0.0",
+  "name": "Manager Tenants",
+  "provides": [
+    {
+      "id": "tenants",
+      "version": "1.0",
+      "handlers": [
+        {
+          "type": "internal",
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/tenants",
+          "permissionsRequired": [
+            "mgr-tenants.tenants.item.post"
+          ]
+        },
+        {
+          "type": "internal",
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/tenants",
+          "permissionsRequired": [
+            "mgr-tenants.tenants.collection.get"
+          ]
+        },
+        {
+          "type": "internal",
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/tenants/{id}",
+          "permissionsRequired": [
+            "mgr-tenants.tenants.item.get"
+          ]
+        },
+        {
+          "type": "internal",
+          "methods": [
+            "DELETE"
+          ],
+          "pathPattern": "/tenants/{id}",
+          "permissionsRequired": [
+            "mgr-tenants.tenants.item.delete"
+          ]
+        },
+        {
+          "type": "internal",
+          "methods": [
+            "PUT"
+          ],
+          "pathPattern": "/tenants/{id}",
+          "permissionsRequired": [
+            "mgr-tenants.tenants.item.put"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tenant-attributes",
+      "version": "1.0",
+      "handlers": [
+        {
+          "type": "internal",
+          "methods": [
+            "POST"
+          ],
+          "pathPattern": "/tenants/{tenantId}/tenant-attributes",
+          "permissionsRequired": [
+            "mgr-tenants.tenant-attributes.collection.post"
+          ]
+        },
+        {
+          "type": "internal",
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/tenants/{tenantId}/tenant-attributes",
+          "permissionsRequired": [
+            "mgr-tenants.tenant-attributes.collection.get"
+          ]
+        },
+        {
+          "type": "internal",
+          "methods": [
+            "PUT"
+          ],
+          "pathPattern": "/tenants/{tenantId}/tenant-attributes/{id}",
+          "permissionsRequired": [
+            "mgr-tenants.tenant-attributes.item.put"
+          ]
+        },
+        {
+          "type": "internal",
+          "methods": [
+            "DELETE"
+          ],
+          "pathPattern": "/tenants/{tenantId}/tenant-attributes/{id}",
+          "permissionsRequired": [
+            "mgr-tenants.tenant-attributes.item.delete"
+          ]
+        },
+        {
+          "type": "internal",
+          "methods": [
+            "GET"
+          ],
+          "pathPattern": "/tenants/{tenantId}/tenant-attributes/{id}",
+          "permissionsRequired": [
+            "mgr-tenants.tenant-attributes.item.get"
+          ]
+        }
+      ]
+    }
+  ],
+  "requires": [],
+  "permissionSets": [
+    {
+      "description": "Create a new tenant",
+      "displayName": "Manager Tenants - create a new tenant",
+      "permissionName": "mgr-tenants.tenants.item.post",
+      "subPermissions": [
+        "okapi.proxy.tenants.get",
+        "okapi.proxy.tenants.post"
+      ]
+    },
+    {
+      "description": "Remove a tenant",
+      "displayName": "Manager Tenants - delete a tenant",
+      "permissionName": "mgr-tenants.tenants.item.delete",
+      "subPermissions": [
+        "okapi.proxy.tenants.get",
+        "okapi.proxy.tenants.delete"
+      ]
+    },
+    {
+      "description": "Update a tenant",
+      "displayName": "Manager Tenants - update a tenant",
+      "permissionName": "mgr-tenants.tenants.item.put",
+      "subPermissions": [
+        "okapi.proxy.tenants.put"
+      ]
+    },
+    {
+      "description": "Retrieve tenants",
+      "displayName": "Manager Tenants - get tenants",
+      "permissionName": "mgr-tenants.tenants.collection.get"
+    },
+    {
+      "description": "Retrieve a tenant",
+      "displayName": "Manager Tenants - get a tenant by id",
+      "permissionName": "mgr-tenants.tenants.item.get"
+    },
+    {
+      "description": "Create or replace tenant-attributes associated with the specified tenant",
+      "displayName": "Manager Tenants - create tenant attributes",
+      "permissionName": "mgr-tenants.tenant-attributes.collection.post"
+    },
+    {
+      "description": "Delete tenant attribute",
+      "displayName": "Manager Tenants - delete tenant attribute",
+      "permissionName": "mgr-tenants.tenant-attributes.item.delete"
+    },
+    {
+      "description": "Retrieve tenant attributes",
+      "displayName": "Manager Tenants - get tenant attributes",
+      "permissionName": "mgr-tenants.tenant-attributes.collection.get"
+    },
+    {
+      "description": "Retrieve tenant attribute",
+      "displayName": "Manager Tenants - get tenant attribute",
+      "permissionName": "mgr-tenants.tenant-attributes.item.get"
+    },
+    {
+      "description": "Update tenant attribute",
+      "displayName": "Manager Tenants - update tenant attribute",
+      "permissionName": "mgr-tenants.tenant-attributes.item.put"
+    },
+    {
+      "description": "Manage tenants",
+      "displayName": "Manager Tenants - Manage tenants",
+      "permissionName": "mgr-tenants.tenants.all",
+      "visible": true,
+      "subPermissions": [
+        "mgr-tenants.tenants.item.post",
+        "mgr-tenants.tenants.item.get",
+        "mgr-tenants.tenants.collection.get",
+        "mgr-tenants.tenants.item.put",
+        "mgr-tenants.tenants.item.delete"
+      ]
+    },
+    {
+      "description": "Manage tenant attributes",
+      "displayName": "Manager Tenants - Manage tenant attributes",
+      "permissionName": "mgr-tenants.tenant-attributes.all",
+      "visible": true,
+      "subPermissions": [
+        "mgr-tenants.tenant-attributes.collection.post",
+        "mgr-tenants.tenant-attributes.item.get",
+        "mgr-tenants.tenant-attributes.collection.get",
+        "mgr-tenants.tenant-attributes.item.put",
+        "mgr-tenants.tenant-attributes.item.delete"
+      ]
+    },
+    {
+      "description": "Manager Tenants - Permissions with no side effects",
+      "displayName": "Manager Tenants - Read only permissions",
+      "permissionName": "mgr-tenants.readonly",
+      "visible": true,
+      "subPermissions": [
+        "mgr-tenants.tenants.item.get",
+        "mgr-tenants.tenants.collection.get",
+        "mgr-tenants.tenant-attributes.item.get",
+        "mgr-tenants.tenant-attributes.collection.get"
+      ]
+    },
+    {
+      "description": "Manager Tenants - Anything goes",
+      "displayName": "Manager Tenants - All permissions",
+      "permissionName": "mgr-tenants.all",
+      "visible": true,
+      "subPermissions": [
+        "mgr-tenants.tenants.all",
+        "mgr-tenants.tenant-attributes.all"
+      ]
+    }
+  ]
+}
