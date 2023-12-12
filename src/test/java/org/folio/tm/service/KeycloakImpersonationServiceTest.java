@@ -39,19 +39,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class KeycloakImpersonationServiceTest {
 
-  @Mock
-  private ClientSecretService clientSecretService;
-  @Mock
-  private KeycloakPolicyService policyService;
-  @Mock
-  private KeycloakClientService clientService;
-  @Mock
-  private KeycloakPermissionService permissionService;
-  @Mock
-  private KeycloakRealmSetupProperties properties;
+  @Mock private ClientSecretService clientSecretService;
+  @Mock private KeycloakPolicyService policyService;
+  @Mock private KeycloakClientService clientService;
+  @Mock private KeycloakPermissionService permissionService;
+  @Mock private KeycloakRealmSetupProperties properties;
 
-  @InjectMocks
-  private KeycloakImpersonationService impersonationService;
+  @InjectMocks private KeycloakImpersonationService impersonationService;
 
   @BeforeEach
   public void setup() {
