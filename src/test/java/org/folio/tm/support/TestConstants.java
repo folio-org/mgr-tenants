@@ -197,6 +197,7 @@ public class TestConstants {
 
   public static Client clientDescriptor(String clientId, String clientSecret, String desc) {
     return Client.builder()
+      .name(clientId)
       .clientId(clientId)
       .description(desc)
       .secret(clientSecret)

@@ -3,12 +3,11 @@ package org.folio.tm.integration.keycloak;
 import static org.folio.tm.integration.keycloak.KeycloakUtils.SCOPES;
 import static org.folio.tm.integration.keycloak.model.Client.CLIENT_SECRET_AUTH_TYPE;
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.STRING_TYPE_LABEL;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_PROPERTY_MAPPER_TYPE;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.buildClient;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.folioUserTokenMappers;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.protocolMapper;
 
 import jakarta.persistence.EntityNotFoundException;
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -42,9 +41,6 @@ public class KeycloakRealmManagementService {
   private static final String PASSWORD_RESET_ROLE_DESC = "A role with access to password reset endpoints";
   private static final String PASSWORD_RESET_ACTION_ID_CLAIM = "passwordResetActionId";
   private static final String LOGIN_CLIENT_DESC = "Client for login operations";
-  private static final String USERNAME_PROPERTY = "username";
-  private static final String USER_ID_PROPERTY = "user_id";
-  private static final String URIS = "/*";
 
   private final KeycloakRealmService realmService;
   private final KeycloakClientService clientService;
@@ -122,8 +118,10 @@ public class KeycloakRealmManagementService {
       realm);
 
     var passwordResetMapper = findProtocolMapper(PASSWORD_RESET_ACTION_MAPPER);
+    var clientSecret = clientSecretService.getOrCreateClientSecret(realm, clientId);
 
-    var client = buildClient(realm, clientId, PASSWORD_RESET_CLIENT_DESC, List.of(passwordResetMapper), false, true);
+    var client =
+      buildClient(clientId, clientSecret, PASSWORD_RESET_CLIENT_DESC, List.of(passwordResetMapper), false, true);
     var attributes = client.getAttributes();
     attributes.setAccessTokenLifeSpan(clientProperties.getTokenLifespan());
     attributes.setUseRefreshTokens(false);
@@ -136,52 +134,11 @@ public class KeycloakRealmManagementService {
     log.info("Creating Keycloak login client in realm: clientId = {}, realm = {}", loginClient,
       realm);
 
-    var usernameMapper = protocolMapper(USER_PROPERTY_MAPPER_TYPE, USERNAME_PROPERTY, USERNAME_PROPERTY, "sub");
-    var userIdMapper = protocolMapper(USER_ATTRIBUTE_MAPPER_TYPE, "user_id mapper", USER_ID_PROPERTY, USER_ID_PROPERTY);
-
     var clientId = realm + loginClient.getClientId();
-    var client = buildClient(realm, clientId, LOGIN_CLIENT_DESC, List.of(usernameMapper, userIdMapper), true, true);
+    var mappers = folioUserTokenMappers();
+    var clientSecret = clientSecretService.getOrCreateClientSecret(realm, clientId);
+    var client = buildClient(clientId, clientSecret, LOGIN_CLIENT_DESC, mappers, true, true);
     return clientService.createClient(client, realm);
-  }
-
-  private Client buildClient(String realm, String clientId, String desc, List<ProtocolMapper> mappers,
-    boolean authEnabled, boolean serviceAccountEnabled) {
-    var attributes = getClientAttributes();
-
-    return Client.builder()
-      .clientId(clientId)
-      .name(clientId)
-      .description(desc)
-      .secret(clientSecretService.getOrCreateClientSecret(realm, clientId))
-      .enabled(true)
-      .authorizationServicesEnabled(authEnabled)
-      .directAccessGrantsEnabled(true)
-      .serviceAccountsEnabled(serviceAccountEnabled)
-      .frontChannelLogout(true)
-      .redirectUris(List.of(URIS))
-      .webOrigins(List.of(URIS))
-      .attributes(attributes)
-      .protocolMappers(mappers)
-      .build();
-  }
-
-  private static Client.Attribute getClientAttributes() {
-    return Client.Attribute.builder()
-      .oauth2DeviceAuthGrantEnabled(false)
-      .oidcCibaGrantEnabled(false)
-      .clientSecretCreationTime(Instant.now().getEpochSecond())
-      .backChannelLogoutSessionRequired(true)
-      .backChannelLogoutRevokeOfflineTokens(false)
-      .build();
-  }
-
-  private ProtocolMapper protocolMapper(String mapperType, String mapperName, String userAttr, String claimName) {
-    return ProtocolMapper.builder()
-      .mapper(mapperType)
-      .protocol(OPENID_CONNECT_PROTOCOL)
-      .name(mapperName)
-      .config(ProtocolMapper.Config.of(true, true, true, userAttr, claimName, STRING_TYPE_LABEL))
-      .build();
   }
 
   private Client createModuleClientInRealm(String realm) {
@@ -191,7 +148,9 @@ public class KeycloakRealmManagementService {
     log.info("Creating Keycloak module-to-module client in realm: clientId = {}, realm = {}", clientId,
       realm);
 
-    var client = buildClient(realm, clientId, M2M_CLIENT_DESC, null, true, true);
+    var clientSecret = clientSecretService.getOrCreateClientSecret(realm, clientId);
+
+    var client = buildClient(clientId, clientSecret, M2M_CLIENT_DESC, null, true, true);
     client.setClientAuthenticatorType(CLIENT_SECRET_AUTH_TYPE);
     return clientService.createClient(client, realm);
   }
