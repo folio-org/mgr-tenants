@@ -4,6 +4,9 @@ import static java.lang.String.valueOf;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.tm.domain.dto.TenantType.VIRTUAL;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_PROPERTY_MAPPER_TYPE;
+import static org.folio.tm.support.TestConstants.protocolMapper;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -18,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.folio.test.extensions.EnableKeycloak;
@@ -29,6 +33,7 @@ import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.domain.dto.TenantType;
 import org.folio.tm.integration.keycloak.KeycloakClient;
+import org.folio.tm.integration.keycloak.KeycloakClientService;
 import org.folio.tm.integration.keycloak.KeycloakRealmService;
 import org.folio.tm.integration.okapi.OkapiService;
 import org.folio.tm.repository.TenantRepository;
@@ -69,6 +74,9 @@ class TenantKeycloakIT extends BaseIntegrationTest {
   @Autowired
   private KeycloakRealmService keycloakRealmService;
 
+  @Autowired
+  private KeycloakClientService keycloakClientService;
+
   @Autowired(required = false)
   private OkapiService okapiService;
 
@@ -101,6 +109,15 @@ class TenantKeycloakIT extends BaseIntegrationTest {
 
     assertTrue(keycloakRealmService.isRealmExist(tenant.getName()));
     assertNull(okapiService);
+
+    var client = keycloakClientService.findClientByClientId(TENANT4.getName(), "impersonation-client");
+    var mappers = client.getProtocolMappers();
+    var expectedMappers = List.of(
+      protocolMapper(USER_PROPERTY_MAPPER_TYPE, "username", "username", "sub"),
+      protocolMapper(USER_ATTRIBUTE_MAPPER_TYPE, "user_id mapper", "user_id", "user_id")
+    );
+
+    assertThat(mappers).containsAll(expectedMappers);
   }
 
   private Map<String, String> requestBody() {
