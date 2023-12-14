@@ -301,3 +301,4 @@ components:
       description: A CQL query string with search conditions.
       schema:
         type: string
+
