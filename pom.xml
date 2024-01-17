@@ -47,7 +47,7 @@
     <testcontainer.version>1.19.3</testcontainer.version>
 
     <!-- Plugins versions -->
-    <maven-checkstyle.version>10.12.3</maven-checkstyle.version>
+    <maven-checkstyle.version>10.12.7</maven-checkstyle.version>
     <maven-checkstyle-plugin.version>3.3.0</maven-checkstyle-plugin.version>
     <openapi-generator.version>6.4.0</openapi-generator.version>
 
