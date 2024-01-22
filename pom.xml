@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.2.1</version>
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <name>mgr-tenants</name>
   <groupId>org.folio</groupId>
   <artifactId>mgr-tenants</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.1.0-SNAPSHOT</version>
   <description>Manager responsible for the tenants</description>
   <packaging>jar</packaging>
 
@@ -36,10 +35,10 @@
     <spring-cloud-bom.version>2023.0.0</spring-cloud-bom.version>
     <openapi-tools.jackson-databind-nullable.version>0.2.6</openapi-tools.jackson-databind-nullable.version>
     <folio-spring-cql.version>7.2.2</folio-spring-cql.version>
-    <folio-security.version>1.1.0-SNAPSHOT</folio-security.version>
-    <folio-backend-testing.version>1.1.0-SNAPSHOT</folio-backend-testing.version>
-    <applications-poc-tools.version>1.0.0-SNAPSHOT</applications-poc-tools.version>
-    <folio-java-checkstyle.version>1.0.0-SNAPSHOT</folio-java-checkstyle.version>
+    <folio-security.version>1.0.0</folio-security.version>
+    <folio-backend-testing.version>1.0.0</folio-backend-testing.version>
+    <applications-poc-tools.version>1.0.0</applications-poc-tools.version>
+    <folio-java-checkstyle.version>1.0.1</folio-java-checkstyle.version>
 
     <mgr-tenants.yaml-file>${project.basedir}/src/main/resources/swagger.api/mgr-tenants.yaml</mgr-tenants.yaml-file>
 
@@ -49,6 +48,7 @@
     <!-- Plugins versions -->
     <maven-checkstyle.version>10.12.7</maven-checkstyle.version>
     <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
+    <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
     <openapi-generator.version>7.2.0</openapi-generator.version>
 
     <sonar.exclusions>
@@ -392,6 +392,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
+        <version>${maven-release-plugin.version}</version>
         <configuration>
           <preparationGoals>clean verify</preparationGoals>
           <tagNameFormat>v@{project.version}</tagNameFormat>
@@ -489,6 +490,14 @@
     </repository>
   </repositories>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>folio-nexus</id>
+      <name>FOLIO Maven repository</name>
+      <url>https://repository.folio.org/repository/maven-folio</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <distributionManagement>
     <repository>
       <id>folio-nexus</id>
@@ -505,4 +514,11 @@
       <layout>default</layout>
     </snapshotRepository>
   </distributionManagement>
+
+  <scm>
+    <url>https://github.com/folio-org/mgr-tenants</url>
+    <connection>scm:git:git://github.com:folio-org/mgr-tenants.git</connection>
+    <developerConnection>scm:git:git@github.com:folio-org/mgr-tenants.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
 </project>
