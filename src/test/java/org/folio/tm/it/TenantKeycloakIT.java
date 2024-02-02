@@ -120,12 +120,34 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     assertThat(mappers).containsAll(expectedMappers);
   }
 
-  private Map<String, String> requestBody() {
-    var loginRequest = new HashMap<String, String>();
-    loginRequest.put("client_id", clientId);
-    loginRequest.put("client_secret", clientSecret);
-    loginRequest.put("grant_type", grantType);
-    return loginRequest;
+  @Test
+  void createTenant_positive_nameContainingUnderscore() throws Exception {
+    var tenantName = "test_tenant";
+    var tenant = new Tenant().name(tenantName).description("Test tenant with underscore in name");
+    var token = keycloakClient.login(requestBody());
+    mockMvc.perform(post("/tenants")
+        .contentType(APPLICATION_JSON)
+        .header(TOKEN, token.getAccessToken())
+        .content(TestUtils.asJsonString(tenant)))
+      .andExpect(status().isCreated())
+      .andExpect(jsonPath("$.id", is(notNullValue())))
+      .andExpect(jsonPath("$.name", is(tenantName)))
+      .andExpect(jsonPath("$.description", is(tenant.getDescription())))
+      .andExpect(jsonPath("$.type", is(tenant.getType().getValue())))
+      .andExpect(jsonPath("$.metadata", is(notNullValue())));
+
+    assertTrue(keycloakRealmService.isRealmExist(tenantName));
+    assertNull(okapiService);
+
+    var client = keycloakClientService.findClientByClientId(tenantName, "impersonation-client");
+    var mappers = client.getProtocolMappers();
+
+    var expectedMappers = List.of(
+      protocolMapper(USER_PROPERTY_MAPPER_TYPE, "username", "username", "sub"),
+      protocolMapper(USER_ATTRIBUTE_MAPPER_TYPE, "user_id mapper", "user_id", "user_id")
+    );
+
+    assertThat(mappers).containsAll(expectedMappers);
   }
 
   @Test
@@ -191,5 +213,13 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     result.setAttributes(TenantKeycloakIT.TENANT1.getAttributes());
 
     return result;
+  }
+
+  private Map<String, String> requestBody() {
+    var loginRequest = new HashMap<String, String>();
+    loginRequest.put("client_id", clientId);
+    loginRequest.put("client_secret", clientSecret);
+    loginRequest.put("grant_type", grantType);
+    return loginRequest;
   }
 }
