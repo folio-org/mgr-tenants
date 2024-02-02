@@ -21,6 +21,7 @@
       "type": "string"
     },
     "type": {
+      "description": "Tenant type",
       "$ref": "tenantType.json"
     },
     "attributes": {
