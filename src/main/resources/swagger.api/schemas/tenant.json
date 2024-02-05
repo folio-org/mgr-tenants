@@ -14,13 +14,14 @@
     "name": {
       "description": "Tenant name",
       "type": "string",
-      "pattern": "[a-z][a-z0-9]{0,30}"
+      "pattern": "[a-z][a-z0-9_]{0,29}[a-z0-9]"
     },
     "description": {
       "description": "Tenant description",
       "type": "string"
     },
     "type": {
+      "description": "Tenant type",
       "$ref": "tenantType.json"
     },
     "attributes": {
