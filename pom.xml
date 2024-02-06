@@ -38,6 +38,8 @@
     <folio-security.version>1.0.0</folio-security.version>
     <folio-backend-testing.version>1.0.0</folio-backend-testing.version>
     <applications-poc-tools.version>1.0.0</applications-poc-tools.version>
+    <folio-backend-common.version>1.1.0-SNAPSHOT</folio-backend-common.version>
+    <folio-integration-kong.version>1.1.0-SNAPSHOT</folio-integration-kong.version>
     <folio-java-checkstyle.version>1.0.1</folio-java-checkstyle.version>
 
     <mgr-tenants.yaml-file>${project.basedir}/src/main/resources/swagger.api/mgr-tenants.yaml</mgr-tenants.yaml-file>
@@ -164,6 +166,18 @@
       <artifactId>mapstruct</artifactId>
       <version>${mapstruct.version}</version>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-backend-common</artifactId>
+      <version>${folio-backend-common.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>folio-integration-kong</artifactId>
+      <version>${folio-integration-kong.version}</version>
     </dependency>
 
     <!-- OAS generation -->
