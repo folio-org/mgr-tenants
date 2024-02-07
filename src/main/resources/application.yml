@@ -60,6 +60,11 @@ application:
       password-reset-client:
         client_id: ${KC_PASSWORD_RESET_CLIENT_ID:password-reset-client}
         token_lifespan: ${KC_PASSWORD_RESET_TOKEN_TTL:86400}
+  kong:
+    enabled: ${KONG_INTEGRATION_ENABLED:true}
+    url: ${KONG_ADMIN_URL:${kong.url:}}
+    module-self-url: ${MODULE_URL:http://mgr-tenants:8081}
+    register-module: ${REGISTER_MODULE_IN_KONG:true}
   okapi:
     enabled: ${OKAPI_INTEGRATION_ENABLED:false}
     url: ${OKAPI_URL:${okapi.url:}}
