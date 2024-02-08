@@ -35,11 +35,11 @@
     <spring-cloud-bom.version>2023.0.0</spring-cloud-bom.version>
     <openapi-tools.jackson-databind-nullable.version>0.2.6</openapi-tools.jackson-databind-nullable.version>
     <folio-spring-cql.version>8.0.0</folio-spring-cql.version>
-    <folio-security.version>1.0.0</folio-security.version>
-    <folio-backend-testing.version>1.0.0</folio-backend-testing.version>
-    <applications-poc-tools.version>1.0.0</applications-poc-tools.version>
-    <folio-backend-common.version>1.1.0-SNAPSHOT</folio-backend-common.version>
-    <folio-integration-kong.version>1.1.0-SNAPSHOT</folio-integration-kong.version>
+    <folio-security.version>1.2.0-SNAPSHOT</folio-security.version>
+    <folio-backend-testing.version>1.2.0-SNAPSHOT</folio-backend-testing.version>
+    <applications-poc-tools.version>1.2.0-SNAPSHOT</applications-poc-tools.version>
+    <folio-backend-common.version>1.2.0-SNAPSHOT</folio-backend-common.version>
+    <folio-integration-kong.version>1.2.0-SNAPSHOT</folio-integration-kong.version>
     <folio-java-checkstyle.version>1.0.1</folio-java-checkstyle.version>
 
     <mgr-tenants.yaml-file>${project.basedir}/src/main/resources/swagger.api/mgr-tenants.yaml</mgr-tenants.yaml-file>
