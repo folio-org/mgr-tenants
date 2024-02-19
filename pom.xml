@@ -37,7 +37,7 @@
     <folio-spring-cql.version>8.0.0</folio-spring-cql.version>
     <folio-security.version>1.3.0-SNAPSHOT</folio-security.version>
     <applications-poc-tools.version>1.2.0-SNAPSHOT</applications-poc-tools.version>
-    <folio-backend-common.version>1.2.0-SNAPSHOT</folio-backend-common.version>
+    <folio-backend-common.version>1.2.0</folio-backend-common.version>
     <folio-integration-kong.version>1.2.0-SNAPSHOT</folio-integration-kong.version>
     <folio-java-checkstyle.version>1.0.1</folio-java-checkstyle.version>
 
