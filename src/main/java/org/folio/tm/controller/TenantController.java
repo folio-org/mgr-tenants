@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class TenantController implements TenantsApi {
+public class TenantController extends BaseController implements TenantsApi {
 
   private final TenantService tenantService;
 

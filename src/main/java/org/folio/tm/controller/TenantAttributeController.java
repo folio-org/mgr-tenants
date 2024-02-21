@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class TenantAttributeController implements TenantAttributesApi {
+public class TenantAttributeController extends BaseController implements TenantAttributesApi {
 
   private final TenantAttributeService service;
 
