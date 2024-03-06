@@ -62,6 +62,10 @@ application:
       password-reset-client:
         client_id: ${KC_PASSWORD_RESET_CLIENT_ID:password-reset-client}
         token_lifespan: ${KC_PASSWORD_RESET_TOKEN_TTL:86400}
+    tls:
+      enabled: ${KC_CLIENT_TLS_ENABLED:false}
+      trust-store-path: ${KC_CLIENT_TLS_TRUSTSTORE_PATH}
+      trust-store-password: ${KC_CLIENT_TLS_TRUSTSTORE_PASSWORD}
   kong:
     enabled: ${KONG_INTEGRATION_ENABLED:true}
     url: ${KONG_ADMIN_URL:${kong.url:}}

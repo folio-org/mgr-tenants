@@ -48,7 +48,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @IntegrationTest
-@EnableKeycloak
+@EnableKeycloak(tlsEnabled = true)
 @EnableKeycloakSecurity
 @EnableKeycloakDataImport
 @KeycloakRealms(realms = "/json/keycloak/tenant1.json")

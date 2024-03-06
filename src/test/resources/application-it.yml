@@ -20,6 +20,10 @@ application:
     admin:
       client-id: folio-backend-admin-client
       client_secret: supersecret
+    tls:
+      enabled: true
+      trust-store-path: classpath:certificates/test.truststore.jks
+      trust-store-password: secretpassword
   secret-store:
     type: EPHEMERAL
     ephemeral:
