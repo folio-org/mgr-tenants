@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.folio.test.extensions.EnableKeycloak;
 import org.folio.test.extensions.EnableKeycloakDataImport;
 import org.folio.test.extensions.EnableKeycloakSecurity;
+import org.folio.test.extensions.EnableKeycloakTlsMode;
 import org.folio.test.extensions.KeycloakRealms;
 import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
@@ -48,7 +48,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @IntegrationTest
-@EnableKeycloak(tlsEnabled = true)
+@EnableKeycloakTlsMode
 @EnableKeycloakSecurity
 @EnableKeycloakDataImport
 @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
