@@ -1,11 +1,12 @@
 package org.folio.tm.integration.keycloak.configuration;
 
-import static org.folio.security.integration.keycloak.utils.ClientBuildUtils.buildTargetFeignClient;
+import static org.folio.common.utils.FeignClientTlsUtils.buildTargetFeignClient;
 
 import feign.Contract;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import lombok.extern.log4j.Log4j2;
+import okhttp3.OkHttpClient;
 import org.folio.security.integration.keycloak.configuration.properties.KeycloakProperties;
 import org.folio.tm.integration.keycloak.ClientSecretService;
 import org.folio.tm.integration.keycloak.KeycloakAuthScopeService;
@@ -36,9 +37,10 @@ import org.springframework.context.annotation.Import;
 public class KeycloakConfiguration {
 
   @Bean
-  public KeycloakClient keycloakClient(KeycloakProperties configuration,
-    Contract contract, Encoder encoder, Decoder decoder) {
-    return buildTargetFeignClient(contract, encoder, decoder, configuration, KeycloakClient.class);
+  public KeycloakClient keycloakClient(OkHttpClient okHttpClient, KeycloakProperties properties, Contract contract,
+    Encoder encoder, Decoder decoder) {
+    return buildTargetFeignClient(okHttpClient, contract, encoder, decoder, properties.getTls(), properties.getUrl(),
+      KeycloakClient.class);
   }
 
   @Bean
