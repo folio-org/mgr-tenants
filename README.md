@@ -12,11 +12,12 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 * [Environment Variables](#environment-variables)
 * [Keycloak Integration](#keycloak-integration)
 
-
 ## Introduction
+
 For now, `mgr-tenants` proxies requests to OKAPI's tenant API
 When any operation will happen on tenant, it will take place on realm in keycloak,
-also it will send a request to keycloak to retrieve a token and persist in cache for 60s for doing all the stuff related to realm
+also it will send a request to keycloak to retrieve a token and persist in cache for 60s for doing all the stuff related
+to realm
 
 ## Environment Variables
 
@@ -42,6 +43,18 @@ also it will send a request to keycloak to retrieve a token and persist in cache
 | SECRET_STORE_TYPE            | -                    |   true   | Secure storage type. Supported values: `Ephemeral`, `Aws_ssm`, `Vault`                                                                                                                                    |
 | MAX_HTTP_REQUEST_HEADER_SIZE | 200KB                |   true   | Maximum size of the HTTP request header.                                                                                                                                                                  |
 | ROUTER_PATH_PREFIX           |                      |  false   | Defines routes prefix to be added to the generated endpoints by OpenAPI generator (`/foo/entites` -> `{{prefix}}/foo/entities`). Required if load balancing group has format like `{{host}}/{{moduleId}}` |
+
+### SSL Configuration environment variables
+
+| Name                          | Default value | Required | Description                                                            |
+|:------------------------------|:--------------|:--------:|:-----------------------------------------------------------------------|
+| SERVER_PORT                   | 8081          |  false   | Server HTTP port. Should be specified manually in case of SSL enabled. |
+| SERVER_SSL_ENABLED            | false         |  false   | Manage server's mode. If `true` then SSL will be enabled.              |
+| SERVER_SSL_KEY_STORE          |               |  false   | Path to the keystore.  Mandatory if `SERVER_SSL_ENABLED` is `true`.    |
+| SERVER_SSL_KEY_STORE_TYPE     | BCFKS         |  false   | Type of the keystore. By default `BCFKS` value is used.                |
+| SERVER_SSL_KEY_STORE_PROVIDER | BCFIPS        |  false   | Provider of the keystore.                                              |
+| SERVER_SSL_KEY_STORE_PASSWORD |               |  false   | Password for keystore.                                                 |
+| SERVER_SSL_KEY_PASSWORD       |               |  false   | Password for key in keystore.                                          |
 
 ### Secure storage environment variables
 
@@ -92,34 +105,37 @@ The feature is controlled by two env variables `SECURITY_ENABLED` and `KEYCLOAK_
 
 ### Keycloak specific environment variables
 
-| Name                               | Default value                |  Required   | Description                                                                                                                                             |
-|:-----------------------------------|:-----------------------------|:-----------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| KC_URL                             | http://keycloak:8080         |    false    | Keycloak URL used to perform HTTP requests.                                                                                                             |
-| KC_INTEGRATION_ENABLED             | false                        |    false    | Defines if Keycloak integration is enabled or <br/>disabled.<br/>If it set to `false` - it will exclude all keycloak-related beans from spring context. |
-| KC_IMPORT_ENABLED                  | false                        |    false    | If true - at startup, register/create necessary records in keycloak from the internal module descriptor.                                                |
-| KC_ADMIN_CLIENT_ID                 | folio-backend-admin-client   |    false    | Keycloak admin client id. Used for register/create necessary records in keycloak from the internal module descriptor.                                   |
-| KC_ADMIN_CLIENT_SECRET             | -                            | conditional | Keycloak admin secret. Required only if admin username/password are not set.                                                                            |
-| KC_ADMIN_USERNAME                  | -                            | conditional | Keycloak admin username. Required only if admin secret is not set.                                                                                      |
-| KC_ADMIN_PASSWORD                  | -                            | conditional | Keycloak admin password. Required only if admin secret is not set.                                                                                      |
-| KC_ADMIN_GRANT_TYPE                | client_credentials           |    false    | Keycloak admin grant type. Should be set to `password` if username/password are used instead of client secret.                                          |
-| KC_CLIENT_ID                       | mgr-tenants                  |    false    | client id to be imported to Keycloak.                                                                                                                   |
-| KC_CLIENT_SECRET                   | -                            |    true     | client secret to be imported to Keycloak.                                                                                                               |
-| KC_SERVICE_CLIENT_ID               | sidecar-module-access-client |    false    | Tenant specific client id for authenticating module-to-module requests.                                                                                 |
-| KC_SERVICE_CLIENT_SECRET           | -                            |    true     | Tenant specific client secret for authenticating module-to-module requests.                                                                             |
-| KC_LOGIN_CLIENT_SUFFIX             | -login-application           |    false    | Tenant specific client id suffix for login operations.                                                                                                  |
-| KC_LOGIN_CLIENT_SECRET             | -                            |    true     | Tenant specific client secret for login operations.                                                                                                     |
-| KC_CLIENT_SECRET_LENGTH            | 32                           |    false    | Configure a length to generate a client secret.                                                                                                         |
-| KC_PASSWORD_RESET_CLIENT_ID        | password-reset-client        |    false    | Tenant specific client id for password reset operations.                                                                                                |
-| KC_PASSWORD_RESET_TOKEN_TTL        | 86400                        |    false    | Password reset token Lifespan in seconds. Default value is 1 day, max value is 4 weeks.                                                                 |
-| KC_CLIENT_TLS_ENABLED              | -                            |    false    | Enables TLS for keycloak clients.                                                                                                                       |
-| KC_CLIENT_TLS_TRUSTSTORE_PATH      | -                            |    false    | Truststore file path for keycloak clients.                                                                                                              |
-| KC_CLIENT_TLS_TRUSTSTORE_PASSWORD  | -                            |    false    | Truststore password for keycloak clients.                                                                                                               |
-| KC_CLIENT_TLS_TRUSTSTORE_TYPE      | -                            |    false    | Truststore file type for keycloak clients.                                                                                                              |
+| Name                              | Default value                |  Required   | Description                                                                                                                                             |
+|:----------------------------------|:-----------------------------|:-----------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| KC_URL                            | http://keycloak:8080         |    false    | Keycloak URL used to perform HTTP requests.                                                                                                             |
+| KC_INTEGRATION_ENABLED            | false                        |    false    | Defines if Keycloak integration is enabled or <br/>disabled.<br/>If it set to `false` - it will exclude all keycloak-related beans from spring context. |
+| KC_IMPORT_ENABLED                 | false                        |    false    | If true - at startup, register/create necessary records in keycloak from the internal module descriptor.                                                |
+| KC_ADMIN_CLIENT_ID                | folio-backend-admin-client   |    false    | Keycloak admin client id. Used for register/create necessary records in keycloak from the internal module descriptor.                                   |
+| KC_ADMIN_CLIENT_SECRET            | -                            | conditional | Keycloak admin secret. Required only if admin username/password are not set.                                                                            |
+| KC_ADMIN_USERNAME                 | -                            | conditional | Keycloak admin username. Required only if admin secret is not set.                                                                                      |
+| KC_ADMIN_PASSWORD                 | -                            | conditional | Keycloak admin password. Required only if admin secret is not set.                                                                                      |
+| KC_ADMIN_GRANT_TYPE               | client_credentials           |    false    | Keycloak admin grant type. Should be set to `password` if username/password are used instead of client secret.                                          |
+| KC_CLIENT_ID                      | mgr-tenants                  |    false    | client id to be imported to Keycloak.                                                                                                                   |
+| KC_CLIENT_SECRET                  | -                            |    true     | client secret to be imported to Keycloak.                                                                                                               |
+| KC_SERVICE_CLIENT_ID              | sidecar-module-access-client |    false    | Tenant specific client id for authenticating module-to-module requests.                                                                                 |
+| KC_SERVICE_CLIENT_SECRET          | -                            |    true     | Tenant specific client secret for authenticating module-to-module requests.                                                                             |
+| KC_LOGIN_CLIENT_SUFFIX            | -login-application           |    false    | Tenant specific client id suffix for login operations.                                                                                                  |
+| KC_LOGIN_CLIENT_SECRET            | -                            |    true     | Tenant specific client secret for login operations.                                                                                                     |
+| KC_CLIENT_SECRET_LENGTH           | 32                           |    false    | Configure a length to generate a client secret.                                                                                                         |
+| KC_PASSWORD_RESET_CLIENT_ID       | password-reset-client        |    false    | Tenant specific client id for password reset operations.                                                                                                |
+| KC_PASSWORD_RESET_TOKEN_TTL       | 86400                        |    false    | Password reset token Lifespan in seconds. Default value is 1 day, max value is 4 weeks.                                                                 |
+| KC_CLIENT_TLS_ENABLED             | -                            |    false    | Enables TLS for keycloak clients.                                                                                                                       |
+| KC_CLIENT_TLS_TRUSTSTORE_PATH     | -                            |    false    | Truststore file path for keycloak clients.                                                                                                              |
+| KC_CLIENT_TLS_TRUSTSTORE_PASSWORD | -                            |    false    | Truststore password for keycloak clients.                                                                                                               |
+| KC_CLIENT_TLS_TRUSTSTORE_TYPE     | -                            |    false    | Truststore file type for keycloak clients.                                                                                                              |
 
 ### Interaction with Keycloak
-The module before performing operations on Keycloak, sends auth request with grant type client_credential or password flow
+
+The module before performing operations on Keycloak, sends auth request with grant type client_credential or password
+flow
 
 ### Authenticate with Keycloak (using client's credentials) and get back an access token
+
 ```shell
 curl -XPOST \
 -H "Content-Type: application/x-www-form-urlencoded" \
@@ -128,7 +144,9 @@ curl -XPOST \
 --data-urlencode "grant_type=client_credentials" \
 "$keycloakUrl/realms/$tenantId/protocol/openid-connect/token"
 ```
+
 ### Create a realm
+
 ```shell
 curl -XPOST \
 -H "Content-Type: application/json" \
@@ -136,7 +154,9 @@ curl -XPOST \
 -d "{"id":"05a2a258-462d-11ed-b878-0242ac120002","realm":"tenant2","enabled":"true"}" \
 "$keycloakUrl/admin/realms"
 ```
+
 ### Delete a realm
+
 ```shell
 curl -XDELETE \
 -H "Content-Type: application/json" \
