@@ -8,15 +8,6 @@ spring:
       auto-offset-reset: earliest
       group-id: testing
 
-server:
-  ssl:
-    enabled: true
-    key-store: certificates/keystore.bcfks
-    key-store-type: BCFKS
-    key-store-provider: BCFIPS
-    key-store-password: secretpassword
-    key-password: secretpassword
-
 application:
   environment: it
   kong:
