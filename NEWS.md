@@ -1,7 +1,11 @@
-## v1.3.0 In progress
+## v1.3.0 In Progress
 
-* Description ([ISSUE_NUMBER](https://issues.folio.org/browse/ISSUE_NUMBER))
+---
+## v1.3.0 2024-05-25
 
+* Add Dockerfile that is based on the FIPS-140-2 compliant base image (#63) ([MGRTENANT-19](https://issues.folio.org/browse/MGRTENANT-19))
+* Secure mgr-tenants HTTP endpoints with SSL (#62) ([MGRTENANT-18](https://issues.folio.org/browse/MGRTENANT-18))
+* Keycloak client: add support TLS certificates issued by trusted certificate authorities (#60) ([MGRTENANT-26](https://issues.folio.org/browse/MGRTENANT-26))
 ---
 
 ## v1.2.0 2024-04-16
