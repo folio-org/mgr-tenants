@@ -39,6 +39,7 @@ public class KeycloakConfiguration {
   @Bean
   public KeycloakClient keycloakClient(OkHttpClient okHttpClient, KeycloakProperties properties, Contract contract,
     Encoder encoder, Decoder decoder) {
+    log.warn("KeycloakProperties: " + properties);
     return buildTargetFeignClient(okHttpClient, contract, encoder, decoder, properties.getTls(), properties.getUrl(),
       KeycloakClient.class);
   }
