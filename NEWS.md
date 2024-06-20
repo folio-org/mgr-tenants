@@ -1,6 +1,12 @@
-## v1.3.0 In Progress
+## v1.3.2 In Progress
+
+## v1.3.1 2024-06-20
+
+* Add FIPS compliance check and lost Kong configuration parameters (#66)
+* Put application to Docker Image and upload to ECR (#69) ([RANCHER-1515](https://issues.folio.org/browse/RANCHER-1515))
 
 ---
+
 ## v1.3.0 2024-05-25
 
 * Add Dockerfile that is based on the FIPS-140-2 compliant base image (#63) ([MGRTENANT-19](https://issues.folio.org/browse/MGRTENANT-19))
