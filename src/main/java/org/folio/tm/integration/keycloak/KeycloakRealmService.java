@@ -4,9 +4,11 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.singletonList;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -140,6 +142,7 @@ public class KeycloakRealmService {
     realm.setEnabled(true);
     realm.setDuplicateEmailsAllowed(TRUE);
     realm.setLoginWithEmailAllowed(FALSE);
+    realm.setRequiredActions(getAuthenticationRequiredActions());
     realm.setComponents(Map.of(
       "org.keycloak.userprofile.UserProfileProvider", List.of(Map.of(
         "providerId", "declarative-user-profile",
@@ -150,13 +153,27 @@ public class KeycloakRealmService {
     return realm;
   }
 
+  private List<Map<String, Object>> getAuthenticationRequiredActions() {
+    var userProfileFileLocation = "json/realms/authentication-required-actions.json";
+    try {
+      var inStream = getResourceFileInputStream(userProfileFileLocation);
+      return objectMapper.readValue(inStream, new TypeReference<>() {});
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to read ream user profile configuration: " + userProfileFileLocation, e);
+    }
+  }
+
   private String getDeclarativeUserProfileConfiguration() {
     var userProfileFileLocation = "json/realms/user-profile-configuration.json";
     try {
-      var inStream = KeycloakRealmService.class.getClassLoader().getResourceAsStream(userProfileFileLocation);
+      var inStream = getResourceFileInputStream(userProfileFileLocation);
       return objectMapper.readTree(inStream).toString();
     } catch (IOException e) {
       throw new IllegalStateException("Failed to read ream user profile configuration: " + userProfileFileLocation, e);
     }
+  }
+
+  private static InputStream getResourceFileInputStream(String userProfileFileLocation) {
+    return KeycloakRealmService.class.getClassLoader().getResourceAsStream(userProfileFileLocation);
   }
 }

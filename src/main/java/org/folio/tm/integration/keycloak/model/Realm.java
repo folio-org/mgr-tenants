@@ -32,6 +32,10 @@ public class Realm implements Serializable {
   @JsonProperty("loginWithEmailAllowed")
   private Boolean loginWithEmailAllowed;
 
+  @JsonProperty("requiredActions")
+  private List<Map<String, Object>> requiredActions;
+
+  @JsonProperty("components")
   private Map<String, List<Map<String, Object>>> components;
 
   /**
@@ -81,6 +85,16 @@ public class Realm implements Serializable {
    */
   public Realm loginWithEmailAllowed(Boolean loginWithEmailAllowed) {
     this.loginWithEmailAllowed = loginWithEmailAllowed;
+    return this;
+  }
+
+  /**
+   * Sets requiredActions for {@link Realm} and returns {@link Realm}.
+   *
+   * @return this {@link Realm} with new requiredActions value
+   */
+  public Realm requiredActions(List<Map<String, Object>> requiredActions) {
+    this.requiredActions = requiredActions;
     return this;
   }
 

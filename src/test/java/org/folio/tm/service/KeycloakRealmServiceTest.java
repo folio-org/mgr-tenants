@@ -18,6 +18,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import feign.FeignException.InternalServerError;
@@ -61,7 +62,9 @@ class KeycloakRealmServiceTest {
 
   @Test
   void create_positive() {
-    var expected = realmDescriptor().components(realmComponents());
+    var expected = realmDescriptor()
+      .components(realmComponents())
+      .requiredActions(requiredActions());
     var token = getAccessToken();
     when(tokenService.issueToken()).thenReturn(token);
     when(tokenService.renewToken()).thenReturn(token);
@@ -80,7 +83,9 @@ class KeycloakRealmServiceTest {
   @Test
   void create_negative() {
     var tenant = tenant();
-    var expected = realmDescriptor().components(realmComponents());
+    var expected = realmDescriptor()
+      .components(realmComponents())
+      .requiredActions(requiredActions());
     var token = getAccessToken();
 
     when(tokenService.issueToken()).thenReturn(token);
@@ -94,7 +99,9 @@ class KeycloakRealmServiceTest {
 
   @Test
   void update_positive() {
-    var expected = realmDescriptor().components(realmComponents());
+    var expected = realmDescriptor()
+      .components(realmComponents())
+      .requiredActions(requiredActions());
     var token = getAccessToken();
     when(tokenService.issueToken()).thenReturn(token);
     when(tokenService.renewToken()).thenReturn(token);
@@ -107,7 +114,9 @@ class KeycloakRealmServiceTest {
 
   @Test
   void update_negative() {
-    var expected = realmDescriptor().components(realmComponents());
+    var expected = realmDescriptor()
+      .components(realmComponents())
+      .requiredActions(requiredActions());
     var token = getAccessToken();
     var tenant = tenant();
 
@@ -154,6 +163,12 @@ class KeycloakRealmServiceTest {
 
     var result = keycloakService.getServerInfo();
     assertThat(result).isEqualTo(expected);
+  }
+
+  @SneakyThrows
+  private static List<Map<String, Object>> requiredActions() {
+    var configuration = readString("json/realms/authentication-required-actions.json");
+    return OBJECT_MAPPER.readValue(configuration, new TypeReference<>() {});
   }
 
   private static Map<String, List<Map<String, Object>>> realmComponents() {
