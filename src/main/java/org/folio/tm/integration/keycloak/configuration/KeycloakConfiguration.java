@@ -2,6 +2,7 @@ package org.folio.tm.integration.keycloak.configuration;
 
 import static org.folio.common.utils.FeignClientTlsUtils.buildTargetFeignClient;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Contract;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
@@ -56,8 +57,8 @@ public class KeycloakConfiguration {
 
   @Bean
   public KeycloakRealmService keycloakRealmService(KeycloakClient keycloakClient, KeycloakTemplate template,
-    TokenService tokenService) {
-    return new KeycloakRealmService(keycloakClient, template, tokenService);
+    TokenService tokenService, ObjectMapper objectMapper) {
+    return new KeycloakRealmService(objectMapper, keycloakClient, template, tokenService);
   }
 
   @Bean

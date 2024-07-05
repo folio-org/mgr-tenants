@@ -2,6 +2,8 @@ package org.folio.tm.support;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.folio.tm.domain.dto.TenantType.DEFAULT;
 import static org.folio.tm.integration.keycloak.model.AuthorizationRolePolicy.RolePolicy;
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
@@ -80,7 +82,7 @@ public class TestConstants {
   }
 
   public static Realm realmDescriptor() {
-    return new Realm(TENANT_ID.toString(), true, TENANT_NAME, TRUE, FALSE);
+    return new Realm(TENANT_ID.toString(), true, TENANT_NAME, TRUE, FALSE, emptyList(), emptyMap());
   }
 
   public static TokenResponse tokenResponse() {
