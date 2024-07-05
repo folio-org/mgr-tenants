@@ -7,12 +7,12 @@ import static java.util.Collections.singletonList;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.integration.keycloak.KeycloakTemplate.KeycloakFunction;
@@ -153,23 +153,19 @@ public class KeycloakRealmService {
     return realm;
   }
 
+  @SneakyThrows
   private List<Map<String, Object>> getAuthenticationRequiredActions() {
     var userProfileFileLocation = "json/realms/authentication-required-actions.json";
-    try {
-      var inStream = getResourceFileInputStream(userProfileFileLocation);
+    try (var inStream = getResourceFileInputStream(userProfileFileLocation)) {
       return objectMapper.readValue(inStream, new TypeReference<>() {});
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to read ream user profile configuration: " + userProfileFileLocation, e);
     }
   }
 
+  @SneakyThrows
   private String getDeclarativeUserProfileConfiguration() {
     var userProfileFileLocation = "json/realms/user-profile-configuration.json";
-    try {
-      var inStream = getResourceFileInputStream(userProfileFileLocation);
+    try (var inStream = getResourceFileInputStream(userProfileFileLocation)) {
       return objectMapper.readTree(inStream).toString();
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to read ream user profile configuration: " + userProfileFileLocation, e);
     }
   }
 
