@@ -1,4 +1,11 @@
-## v1.3.2 In Progress
+## v1.3.3 In Progress
+
+## v1.3.2 2024-07-10
+
+* KONG-10: upgrade kong version to 3.7.1 (#76) ([KONG-10](https://issues.folio.org/browse/KONG-10))
+* MGRTENANT-28 Upgrade keycloak client to v25.0.1 (#74) ([MGRTENANT-28](https://issues.folio.org/browse/MGRTENANT-28))
+
+---
 
 ## v1.3.1 2024-06-20
 
