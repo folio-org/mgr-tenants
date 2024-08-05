@@ -24,6 +24,10 @@
       "description": "Tenant type",
       "$ref": "tenantType.json"
     },
+    "secure": {
+      "description": "The flag shows whether the particular tenant is secure or not",
+      "type": "boolean"
+    },
     "attributes": {
       "description": "List of tenant attributes",
       "type": "array",

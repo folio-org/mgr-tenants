@@ -45,6 +45,9 @@ public class TenantEntity extends Auditable implements Identifiable {
   @Column(name = "type", columnDefinition = "tenant_type")
   private TenantType type;
 
+  @Column(name = "is_secure", updatable = false)
+  private Boolean secure;
+
   @OrderBy("key")
   @Fetch(FetchMode.SUBSELECT)
   @OneToMany(cascade = CascadeType.ALL,

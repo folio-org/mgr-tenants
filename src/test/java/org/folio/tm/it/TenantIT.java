@@ -200,6 +200,9 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
+  @WireMockStub(scripts = {
+    "/wiremock/stubs/okapi/update-tenant.json"
+  })
   void update_tenant_negative_notFound() throws Exception {
     var tenant = TENANT4;
 
@@ -274,6 +277,45 @@ class TenantIT extends BaseIntegrationTest {
     mockMvc.perform(delete("/tenants/{id}", TENANT4.getId())
         .header(TOKEN, AUTH_TOKEN))
       .andExpect(status().isNoContent());
+  }
+
+  @WireMockStub(scripts = {
+    "/wiremock/stubs/okapi/create-tenant.json",
+    "/wiremock/stubs/okapi/get-tenant-not-found.json"
+  })
+  @Test
+  void positive_create_secure_tenant() throws Exception  {
+    var tenant = TENANT4.secure(true);
+
+    mockMvc.perform(post("/tenants")
+        .contentType(APPLICATION_JSON)
+        .header(TOKEN, AUTH_TOKEN)
+        .content(TestUtils.asJsonString(tenant)))
+      .andExpect(status().isCreated())
+      .andExpect(jsonPath("$.id", is(valueOf(tenant.getId()))))
+      .andExpect(jsonPath("$.name", is(tenant.getName())))
+      .andExpect(jsonPath("$.description", is(tenant.getDescription())))
+      .andExpect(jsonPath("$.type", is(tenant.getType().getValue())))
+      .andExpect(jsonPath("$.secure", is(tenant.getSecure())))
+      .andExpect(jsonPath("$.metadata", is(notNullValue())));
+  }
+
+  @Test
+  @WireMockStub(scripts = {
+    "/wiremock/stubs/okapi/update-tenant.json"
+  })
+  void negative_update_secure_tenant() throws Exception {
+    var tenant = copyFrom(TENANT1).secure(true);
+
+    mockMvc.perform(put("/tenants/{id}", tenant.getId())
+        .contentType(APPLICATION_JSON)
+        .header(TOKEN, AUTH_TOKEN)
+        .content(TestUtils.asJsonString(tenant)))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.total_records", is(1)))
+      .andExpect(jsonPath("$.errors[0].message", is("Secure field cannot be modified")))
+      .andExpect(jsonPath("$.errors[0].type", is("RequestValidationException")))
+      .andExpect(jsonPath("$.errors[0].code", is("validation_error")));
   }
 
   private static Tenant copyFrom(Tenant source) {

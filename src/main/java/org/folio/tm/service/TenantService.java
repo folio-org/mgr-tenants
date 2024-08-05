@@ -66,14 +66,16 @@ public class TenantService {
 
   public Tenant updateTenantById(UUID id, Tenant tenant) {
     var existing = getOne(id);
-
     var tenantId = tenant.getId();
+
     if (!Objects.equals(existing.getId(), tenantId)) {
       throw new RequestValidationException("Tenant id doesn't match to the one in the path", "id", tenantId);
     }
-
     if (!Objects.equals(existing.getName(), tenant.getName())) {
       throw new RequestValidationException("Tenant name cannot be modified", "name", tenant.getName());
+    }
+    if (!Objects.equals(existing.getSecure(), tenant.getSecure())) {
+      throw new RequestValidationException("Secure field cannot be modified", "secure", tenant.getSecure());
     }
 
     var saved = repository.saveAndFlush(mapper.toEntity(tenant));

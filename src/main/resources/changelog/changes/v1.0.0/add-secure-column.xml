@@ -4,7 +4,10 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
-  <include file="changes/v1.0.0/create-tenant-table.xml" relativeToChangelogFile="true"/>
-  <include file="changes/v1.0.0/create-tenant-attr-table.xml" relativeToChangelogFile="true"/>
-  <include file="changes/v1.0.0/add-secure-column.xml" relativeToChangelogFile="true"/>
+  <changeSet id="add-secure-column" author="okuzminov">
+    <addColumn tableName="tenant">
+      <column name="is_secure" type="boolean"/>
+    </addColumn>
+  </changeSet>
+
 </databaseChangeLog>
