@@ -60,7 +60,7 @@ public class KongGatewayExtension implements BeforeAllCallback, AfterAllCallback
       .withEnv(kongMigrationEnvironment())
       .withCommand(command)
       .withNetwork(Network.SHARED)
-      .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(ofSeconds(5)));
+      .withStartupCheckStrategy(new OneShotStartupCheckStrategy().withTimeout(ofSeconds(15)));
   }
 
   private static Map<String, String> kongMigrationEnvironment() {
