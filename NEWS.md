@@ -1,4 +1,8 @@
-## v1.3.3 In Progress
+## v1.4.0 In Progress
+
+## v1.3.3 2024-08-14
+* MGRTENANT-32 Implement the ability to designate a tenant as "secure" (#85) ([MGRTENANT-32](https://issues.folio.org/browse/MGRTENANT-32))
+
 
 ## v1.3.2 2024-07-10
 
