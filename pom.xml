@@ -26,10 +26,10 @@
   <properties>
     <java.version>17</java.version>
     <lombok.version>1.18.34</lombok.version>
-    <mapstruct.version>1.5.5.Final</mapstruct.version>
+    <mapstruct.version>1.6.0</mapstruct.version>
     <hypersistence-utils-hibernate-63.version>3.8.2</hypersistence-utils-hibernate-63.version>
     <swagger-annotations.version>2.2.22</swagger-annotations.version>
-    <apache-commons-lang3.version>3.14.0</apache-commons-lang3.version>
+    <apache-commons-lang3.version>3.16.0</apache-commons-lang3.version>
     <apache-commons-collections4.version>4.4</apache-commons-collections4.version>
     <cql2pgjson.version>35.2.2</cql2pgjson.version>
     <spring-cloud-bom.version>2023.0.3</spring-cloud-bom.version>
@@ -47,7 +47,7 @@
     <maven-checkstyle.version>10.17.0</maven-checkstyle.version>
     <maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
-    <openapi-generator.version>7.7.0</openapi-generator.version>
+    <openapi-generator.version>7.8.0</openapi-generator.version>
 
     <sonar.exclusions>
       src/main/java/org/folio/tm/cql/**,
