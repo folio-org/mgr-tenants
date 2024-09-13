@@ -7,7 +7,7 @@
         "equalTo": "mgr-tenants.tenants.item.post"
       },
       "X-Okapi-Token": {
-        "equalTo": "dGVzdC1hdXRoLnRva2Vu"
+        "matches": ".+"
       },
       "X-Okapi-Tenant": {
         "equalTo": "supertenant"

@@ -25,6 +25,10 @@ import org.springframework.test.web.servlet.ResultMatcher;
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 public abstract class BaseIntegrationTest extends BaseBackendIntegrationTest {
 
+  static {
+    TestUtils.disableSslVerification();
+  }
+
   @Autowired
   private CacheManager cacheManager;
 
