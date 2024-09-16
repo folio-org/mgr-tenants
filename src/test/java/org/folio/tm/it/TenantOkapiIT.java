@@ -41,7 +41,13 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class TenantOkapiIT extends BaseIntegrationTest {
 
-  private static final String AUTH_TOKEN = "dGVzdC1hdXRoLnRva2Vu";
+  /**
+   * Sample JWT that will expire in 2030 year for test_tenant with randomly generated user id.
+   */
+  public static final String AUTH_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmb2xpbyIsInVzZXJfaWQiOiJlNmQyODVlOS03M"
+    + "mVkLTQxYTQtOGIzYi01Y2VlNGNiYzg0MjUiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxODkzNTAyODAwLCJpYXQiOjE3MjUzMDM2ODgsInRlbmFud"
+    + "CI6InRlc3RfdGVuYW50In0.SdtIQTrn7_XPnyi75Ai9bBkCWa8eQ69U6VAidCCRFFQ";
+
   private static final Tenant TENANT1 = new Tenant()
     .id(TestConstants.TENANT_ID)
     .name(TestConstants.TENANT_NAME)

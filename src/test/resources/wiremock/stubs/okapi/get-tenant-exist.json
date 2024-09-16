@@ -6,8 +6,8 @@
       "content-type": {
         "equalTo": "application/json"
       },
-      "x-okapi-token": {
-        "equalTo": "dGVzdC1hdXRoLnRva2Vu"
+      "X-Okapi-Token": {
+        "matches": ".+"
       }
     }
   },

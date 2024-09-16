@@ -21,6 +21,9 @@ import feign.FeignException.NotFound;
 import feign.Request;
 import feign.RequestTemplate;
 import java.util.List;
+import java.util.UUID;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.folio.jwt.openid.JsonWebTokenParser;
 import org.folio.security.exception.NotAuthorizedException;
 import org.folio.security.integration.keycloak.client.KeycloakAuthClient;
 import org.folio.test.extensions.EnableKeycloakSecurity;
@@ -31,6 +34,7 @@ import org.folio.tm.service.TenantService;
 import org.folio.tm.support.TestConstants;
 import org.folio.tm.support.TestUtils;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -45,8 +49,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 class TenantControllerTest {
 
   private static final String AUTH_TOKEN = "dGVzdC1hdXRoLnRva2Vu";
+  private static final String TOKEN_ISSUER = "https://keycloak/realms/test";
+  private static final String TOKEN_SUB = UUID.randomUUID().toString();
 
   @Autowired private MockMvc mockMvc;
+  @Mock private JsonWebToken jsonWebToken;
+  @MockBean private JsonWebTokenParser jsonWebTokenParser;
   @MockBean private TenantService tenantService;
   @MockBean private KeycloakAuthClient authClient;
 
@@ -101,6 +109,9 @@ class TenantControllerTest {
     var tenant = TestConstants.tenant();
 
     when(tenantService.createTenant(tenant)).thenReturn(tenant);
+    when(jsonWebTokenParser.parse(AUTH_TOKEN)).thenReturn(jsonWebToken);
+    when(jsonWebToken.getIssuer()).thenReturn(TOKEN_ISSUER);
+    when(jsonWebToken.getSubject()).thenReturn(TOKEN_SUB);
 
     var mvcResult = mockMvc.perform(post("/tenants")
         .content(TestUtils.asJsonString(tenant))
@@ -117,6 +128,9 @@ class TenantControllerTest {
   void update_positive() throws Exception {
     var tenant = TestConstants.tenant();
     when(tenantService.updateTenantById(TestConstants.TENANT_ID, tenant)).thenReturn(tenant);
+    when(jsonWebTokenParser.parse(AUTH_TOKEN)).thenReturn(jsonWebToken);
+    when(jsonWebToken.getIssuer()).thenReturn(TOKEN_ISSUER);
+    when(jsonWebToken.getSubject()).thenReturn(TOKEN_SUB);
 
     var mvcResult = mockMvc.perform(MockMvcRequestBuilders.put("/tenants/{id}", TestConstants.TENANT_ID)
         .content(TestUtils.asJsonString(tenant))
@@ -132,6 +146,9 @@ class TenantControllerTest {
   @Test
   void delete_positive() throws Exception {
     doNothing().when(tenantService).deleteTenantById(TestConstants.TENANT_ID);
+    when(jsonWebTokenParser.parse(AUTH_TOKEN)).thenReturn(jsonWebToken);
+    when(jsonWebToken.getIssuer()).thenReturn(TOKEN_ISSUER);
+    when(jsonWebToken.getSubject()).thenReturn(TOKEN_SUB);
 
     mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TestConstants.TENANT_ID)
         .contentType(APPLICATION_JSON)

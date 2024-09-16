@@ -3,8 +3,12 @@
     "method": "PUT",
     "url": "/_/proxy/tenants/tenant1",
     "headers": {
-      "content-type": { "equalTo": "application/json" },
-      "x-okapi-token": { "equalTo": "dGVzdC1hdXRoLnRva2Vu" }
+      "content-type": {
+        "equalTo": "application/json"
+      },
+      "X-Okapi-Token": {
+        "matches": ".+"
+      }
     },
     "bodyPatterns": [
       {
