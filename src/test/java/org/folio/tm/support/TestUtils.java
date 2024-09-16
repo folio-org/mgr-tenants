@@ -85,26 +85,32 @@ public class TestUtils {
 
       @Override
       public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
+        // not implemented
       }
 
       @Override
       public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+        // not implemented
       }
 
       @Override
       public void checkClientTrusted(X509Certificate[] chain, String authType) {
+        // not implemented
       }
 
       @Override
       public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
+        // not implemented
       }
 
       @Override
       public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+        // not implemented
       }
 
       @Override
       public void checkServerTrusted(X509Certificate[] chain, String authType) {
+        // not implemented
       }
 
       @Override
