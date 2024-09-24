@@ -79,6 +79,7 @@ class KeycloakRealmServiceTest {
     realmRepresentation.setRealm(TENANT_NAME);
     realmRepresentation.setDuplicateEmailsAllowed(true);
     realmRepresentation.setLoginWithEmailAllowed(false);
+    realmRepresentation.setEditUsernameAllowed(true);
     realmRepresentation.setEnabled(true);
     realmRepresentation.setRequiredActions(requiredActions());
     realmRepresentation.setComponents(realmComponents());
