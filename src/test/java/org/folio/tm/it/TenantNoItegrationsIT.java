@@ -63,7 +63,7 @@ class TenantNoItegrationsIT extends BaseIntegrationTest {
   private OkapiService okapiService;
 
   @Test
-  void create_tenant_positive() throws Exception {
+  void createTenant_positive() throws Exception {
     var tenant = TENANT4;
 
     mockMvc.perform(post("/tenants")
@@ -82,7 +82,7 @@ class TenantNoItegrationsIT extends BaseIntegrationTest {
   }
 
   @Test
-  void update_tenant_positive() throws Exception {
+  void updateTenant_positive() throws Exception {
     var tenant = copyFrom().description("modified").type(VIRTUAL);
 
     mockMvc.perform(put("/tenants/{id}", tenant.getId())
@@ -102,7 +102,7 @@ class TenantNoItegrationsIT extends BaseIntegrationTest {
   }
 
   @Test
-  void delete_tenant_positive() throws Exception {
+  void deleteTenant_positive() throws Exception {
     var existing = repository.findById(TestConstants.TENANT_ID);
     assertTrue(existing.isPresent());
 

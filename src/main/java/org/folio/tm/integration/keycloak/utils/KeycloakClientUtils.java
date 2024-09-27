@@ -1,68 +1,50 @@
 package org.folio.tm.integration.keycloak.utils;
 
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.STRING_TYPE_LABEL;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.SUB_CLAIM;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_PROPERTY_MAPPER_TYPE;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.forUserAttribute;
 
-import java.time.Instant;
 import java.util.List;
+import java.util.function.Consumer;
 import lombok.experimental.UtilityClass;
-import org.folio.tm.integration.keycloak.model.Client;
-import org.folio.tm.integration.keycloak.model.ProtocolMapper;
+import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
 @UtilityClass
 public class KeycloakClientUtils {
 
-  private static final String URIS = "/*";
   private static final String USERNAME_PROPERTY = "username";
   private static final String USER_ID_PROPERTY = "user_id";
   private static final String USER_ID_MAPPER_NAME = "user_id mapper";
 
-  public static Client buildClient(String clientId, String clientSecret, String desc, List<ProtocolMapper> mappers,
-                                   boolean authEnabled, boolean serviceAccountEnabled) {
-    var attributes = buildClientAttributes();
-    return Client.builder()
-      .clientId(clientId)
-      .name(clientId)
-      .description(desc)
-      .secret(clientSecret)
-      .enabled(true)
-      .authorizationServicesEnabled(authEnabled)
-      .directAccessGrantsEnabled(true)
-      .serviceAccountsEnabled(serviceAccountEnabled)
-      .frontChannelLogout(true)
-      .redirectUris(List.of(URIS))
-      .webOrigins(List.of(URIS))
-      .attributes(attributes)
-      .protocolMappers(mappers)
-      .build();
+  public static <T> void applyIfNotNull(T value, Consumer<T> valueConsumer) {
+    if (value != null) {
+      valueConsumer.accept(value);
+    }
   }
 
-  public static List<ProtocolMapper> folioUserTokenMappers() {
-    var usernameMapper = protocolMapper(USER_PROPERTY_MAPPER_TYPE, USERNAME_PROPERTY, USERNAME_PROPERTY, SUB_CLAIM);
-    var userIdMapper =
-      protocolMapper(USER_ATTRIBUTE_MAPPER_TYPE, USER_ID_MAPPER_NAME, USER_ID_PROPERTY, USER_ID_PROPERTY);
-    return List.of(usernameMapper, userIdMapper);
+  public static List<ProtocolMapperRepresentation> getFolioUserTokenMappers() {
+    return List.of(buildUsernameProtocolMapper(), buildUserIdProtocolMapper());
   }
 
-  public static Client.Attribute buildClientAttributes() {
-    return Client.Attribute.builder()
-      .oauth2DeviceAuthGrantEnabled(false)
-      .oidcCibaGrantEnabled(false)
-      .clientSecretCreationTime(Instant.now().getEpochSecond())
-      .backChannelLogoutSessionRequired(true)
-      .backChannelLogoutRevokeOfflineTokens(false)
-      .build();
+  private static ProtocolMapperRepresentation buildUsernameProtocolMapper() {
+    var usernameMapper = new ProtocolMapperRepresentation();
+    usernameMapper.setProtocolMapper(USER_PROPERTY_MAPPER_TYPE);
+    usernameMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
+    usernameMapper.setName(USERNAME_PROPERTY);
+    usernameMapper.setConfig(forUserAttribute(USERNAME_PROPERTY, SUB_CLAIM).asMap());
+
+    return usernameMapper;
   }
 
-  public static ProtocolMapper protocolMapper(String mapperType, String mapperName, String userAttr, String claimName) {
-    return ProtocolMapper.builder()
-      .mapper(mapperType)
-      .protocol(OPENID_CONNECT_PROTOCOL)
-      .name(mapperName)
-      .config(ProtocolMapper.Config.of(true, true, true, userAttr, claimName, STRING_TYPE_LABEL))
-      .build();
+  private static ProtocolMapperRepresentation buildUserIdProtocolMapper() {
+    var usernameMapper = new ProtocolMapperRepresentation();
+    usernameMapper.setName(USER_ID_MAPPER_NAME);
+    usernameMapper.setProtocolMapper(USER_ATTRIBUTE_MAPPER_TYPE);
+    usernameMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
+    usernameMapper.setConfig(forUserAttribute(USER_ID_PROPERTY, USER_ID_PROPERTY).asMap());
+
+    return usernameMapper;
   }
 }

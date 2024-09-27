@@ -4,6 +4,7 @@ import static java.lang.String.valueOf;
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.tm.domain.dto.TenantType.VIRTUAL;
+import static org.folio.tm.support.TestConstants.AUTH_TOKEN;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -40,13 +41,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @Sql(scripts = "classpath:/sql/populate_tenants.sql", executionPhase = BEFORE_TEST_METHOD)
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class TenantOkapiIT extends BaseIntegrationTest {
-
-  /**
-   * Sample JWT that will expire in 2030 year for test_tenant with randomly generated user id.
-   */
-  public static final String AUTH_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmb2xpbyIsInVzZXJfaWQiOiJlNmQyODVlOS03M"
-    + "mVkLTQxYTQtOGIzYi01Y2VlNGNiYzg0MjUiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxODkzNTAyODAwLCJpYXQiOjE3MjUzMDM2ODgsInRlbmFud"
-    + "CI6InRlc3RfdGVuYW50In0.SdtIQTrn7_XPnyi75Ai9bBkCWa8eQ69U6VAidCCRFFQ";
 
   private static final Tenant TENANT1 = new Tenant()
     .id(TestConstants.TENANT_ID)

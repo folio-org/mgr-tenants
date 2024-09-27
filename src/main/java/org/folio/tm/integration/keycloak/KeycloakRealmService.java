@@ -2,42 +2,66 @@ package org.folio.tm.integration.keycloak;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.util.Collections.singletonList;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.folio.tm.domain.dto.Tenant;
-import org.folio.tm.integration.keycloak.KeycloakTemplate.KeycloakFunction;
-import org.folio.tm.integration.keycloak.KeycloakTemplate.KeycloakMethod;
-import org.folio.tm.integration.keycloak.model.Realm;
-import org.folio.tm.integration.keycloak.model.ServerInfo;
+import org.folio.tm.integration.keycloak.exception.KeycloakException;
+import org.folio.tm.integration.keycloak.service.clients.KeycloakClientService;
+import org.folio.tm.integration.keycloak.service.roles.KeycloakRealmRoleService;
+import org.folio.tm.utils.JsonHelper;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.common.util.MultivaluedHashMap;
+import org.keycloak.representations.idm.ComponentExportRepresentation;
+import org.keycloak.representations.idm.RealmRepresentation;
+import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
+import org.springframework.util.Assert;
 
 @Log4j2
 @RequiredArgsConstructor
 public class KeycloakRealmService {
 
-  private final ObjectMapper objectMapper;
-  private final KeycloakClient keycloakClient;
-  private final KeycloakTemplate template;
-  private final TokenService tokenService;
+  private final Keycloak keycloak;
+  private final JsonHelper jsonHelper;
+  private final List<KeycloakClientService> keycloakClientServices;
+  private final List<KeycloakRealmRoleService> keycloakRoleServices;
 
   /**
    * Creates keycloak realm for given tenant.
    *
    * @param tenant - tenant descriptor as {@link Tenant} object
    */
-  public Realm createRealm(Tenant tenant) {
-    var realm = toRealm(tenant);
+  public RealmRepresentation createRealm(Tenant tenant) {
+    var realmName = tenant.getName();
+    try {
+      var realmByName = findRealmByName(realmName);
+      if (realmByName.isPresent()) {
+        return realmByName.get();
+      }
 
-    return template.call(create(realm), () -> "Failed to create realm for tenant: " + tenant.getName());
+      var realmResource = keycloak.realms();
+      var realm = toRealmRepresentation(tenant);
+      realmResource.create(realm);
+      keycloak.tokenManager().grantToken();
+
+      keycloakRoleServices.forEach(roleService -> roleService.setupRole(realmName));
+      keycloakClientServices.forEach(clientService -> clientService.setupClient(realmName));
+      return realm;
+    } catch (Exception exception) {
+      deleteRealm(realmName);
+      if (exception instanceof KeycloakException) {
+        throw exception;
+      }
+
+      throw new KeycloakException("Failed to create realm for tenant: " + tenant.getName(), exception);
+    }
   }
 
   /**
@@ -45,10 +69,16 @@ public class KeycloakRealmService {
    *
    * @param tenant - tenant descriptor as {@link Tenant} object
    */
-  public Realm updateRealm(Tenant tenant) {
-    var realm = toRealm(tenant);
-
-    return template.call(update(realm), () -> "Failed to update realm for tenant: " + tenant.getName());
+  public RealmRepresentation updateRealm(Tenant tenant) {
+    var realmRepresentation = toRealmRepresentation(tenant);
+    try {
+      keycloak.tokenManager().grantToken();
+      var realmResource = keycloak.realm(tenant.getName());
+      realmResource.update(realmRepresentation);
+      return realmRepresentation;
+    } catch (WebApplicationException exception) {
+      throw new KeycloakException("Failed to update realm for tenant: " + tenant.getName(), exception);
+    }
   }
 
   /**
@@ -57,115 +87,85 @@ public class KeycloakRealmService {
    * @param name - tenant name as {@link String} object
    */
   public void deleteRealm(String name) {
-    template.call(delete(name), () -> "Failed to delete realm for tenant: " + name);
-  }
-
-  public boolean isRealmExist(String name) {
-    return template.call(isExist(name), () -> "Failed to test realm existence: " + name);
-  }
-
-  public ServerInfo getServerInfo() {
-    return template.call(retrieveServerInfo(), () -> "Failed to get server info");
-  }
-
-  private KeycloakFunction<Realm> create(Realm realm) {
-    return token -> {
-      if (!isRealmExist(realm.getName())) {
-        log.info("Creating realm [realm: {}]", realm);
-
-        var res = keycloakClient.createRealm(realm, token);
-
-        realm.setId(KeycloakUtils.extractResourceId(res).orElse(null));
-
-        log.info("Realm created [id: {}]", realm.getId());
-
-        tokenService.renewToken();
-        log.info("Token renewed");
+    try {
+      var realmByName = findRealmByName(name);
+      if (realmByName.isEmpty()) {
+        log.debug("Realm is not found by name");
+        return;
       }
 
-      return realm;
-    };
+      keycloak.tokenManager().grantToken();
+      keycloak.realm(name).remove();
+    } catch (WebApplicationException exception) {
+      throw new KeycloakException("Failed to delete realm for tenant: " + name, exception);
+    }
   }
 
-  private KeycloakFunction<ServerInfo> retrieveServerInfo() {
-    return keycloakClient::getServerInfo;
+  /**
+   * Retrieves realm by name.
+   *
+   * @param name - realm name
+   * @return {@link Optional} with found {@link RealmRepresentation} object, empty if realm is not found.
+   */
+  public Optional<RealmRepresentation> findRealmByName(String name) {
+    try {
+      log.debug("Check existence of realm [name: {}]", name);
+      var realmRepresentation = keycloak.realm(name).toRepresentation();
+      log.debug("Realm exists in Keycloak [name: {}]", name);
+      return Optional.ofNullable(realmRepresentation);
+    } catch (NotFoundException cause) {
+      log.debug("Realm was not found [name: {}]", name);
+      return Optional.empty();
+    } catch (WebApplicationException exception) {
+      throw new KeycloakException("Failed to find Keycloak realm by name: " + name, exception);
+    }
   }
 
-  private KeycloakFunction<Realm> update(Realm realm) {
-    return token -> {
-      log.info("Updating realm [realm: {}]", realm);
-      keycloakClient.updateRealm(realm.getName(), realm, token);
+  private RealmRepresentation toRealmRepresentation(Tenant tenant) {
+    Assert.notNull(tenant.getId(), "Tenant identifier must not be null");
+    var realmName = tenant.getName();
 
-      tokenService.renewToken();
-      log.info("Token renewed");
-
-      return realm;
-    };
-  }
-
-  private KeycloakMethod delete(String name) {
-    return token -> {
-      if (isRealmExist(name)) {
-        log.info("Deleting realm [name: {}]", name);
-
-        keycloakClient.deleteRealm(name, token);
-
-        tokenService.renewToken();
-        log.info("Token renewed");
-      } else {
-        log.info("Realm already deleted [name: {}]", name);
-      }
-    };
-  }
-
-  private KeycloakFunction<Boolean> isExist(String name) {
-    return token -> {
-      try {
-        log.info("Check existence of realm [name: {}]", name);
-        var realm = keycloakClient.getRealm(name, token);
-        log.info("Realm exists in Keycloak [name: {}]", name);
-        return Objects.nonNull(realm);
-      } catch (FeignException.NotFound cause) {
-        log.info("Realm was not found [name: {}]", name);
-        return false;
-      }
-    };
-  }
-
-  private Realm toRealm(Tenant tenant) {
-    var realm = new Realm();
-
-    assert tenant.getId() != null;
+    var realm = new RealmRepresentation();
     realm.setId(tenant.getId().toString());
-
-    realm.setName(tenant.getName());
+    realm.setRealm(realmName);
     realm.setEnabled(true);
     realm.setDuplicateEmailsAllowed(TRUE);
     realm.setLoginWithEmailAllowed(FALSE);
     realm.setRequiredActions(getAuthenticationRequiredActions());
-    realm.setComponents(Map.of(
-      "org.keycloak.userprofile.UserProfileProvider", List.of(Map.of(
-        "providerId", "declarative-user-profile",
-        "config", Map.of("kc.user.profile.config", singletonList(getDeclarativeUserProfileConfiguration()))
-      ))
-    ));
+    realm.setComponents(getRealmComponentsConfiguration());
 
     return realm;
   }
 
-  @SneakyThrows
-  private List<Map<String, Object>> getAuthenticationRequiredActions() {
+  private MultivaluedHashMap<String, ComponentExportRepresentation> getRealmComponentsConfiguration() {
+    var componentExportRepresentation = new ComponentExportRepresentation();
+    componentExportRepresentation.setProviderId("declarative-user-profile");
+    componentExportRepresentation.setConfig(getDeclarativeUserProfileConfiguration());
+
+    var componentExportRepr = new MultivaluedHashMap<String, ComponentExportRepresentation>();
+    componentExportRepr.add("org.keycloak.userprofile.UserProfileProvider", componentExportRepresentation);
+    return componentExportRepr;
+  }
+
+  private List<RequiredActionProviderRepresentation> getAuthenticationRequiredActions() {
     var userProfileFileLocation = "json/realms/authentication-required-actions.json";
     try (var inStream = getResourceFileInputStream(userProfileFileLocation)) {
-      return objectMapper.readValue(inStream, new TypeReference<>() {});
+      return jsonHelper.parse(inStream, new TypeReference<>() {});
+    } catch (Exception exception) {
+      throw new IllegalStateException("Failed to read authentication request actions", exception);
     }
   }
 
   @SneakyThrows
-  private String getDeclarativeUserProfileConfiguration() {
+  private MultivaluedHashMap<String, String> getDeclarativeUserProfileConfiguration() {
     var userProfileFileLocation = "json/realms/user-profile-configuration.json";
     try (var inStream = getResourceFileInputStream(userProfileFileLocation)) {
-      return objectMapper.readTree(inStream).toString();
+      var userProfileConfigurationString = jsonHelper.parse(inStream).toString();
+      var userProfileConfigurationMap = new MultivaluedHashMap<String, String>();
+      userProfileConfigurationMap.add("kc.user.profile.config", userProfileConfigurationString);
+      return userProfileConfigurationMap;
+    } catch (Exception exception) {
+      throw new IllegalStateException("Failed to read user profile configuration", exception);
     }
   }
 
