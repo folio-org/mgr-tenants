@@ -4,6 +4,7 @@ import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static java.lang.String.format;
 import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.applyIfNotNull;
 
+import jakarta.annotation.Nullable;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
@@ -132,6 +133,7 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
   /**
    * Defines if Keycloak client service account enabled.
    */
+  @Nullable
   protected Boolean isServiceAccountEnabled() {
     return null;
   }
@@ -139,6 +141,7 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
   /**
    * Defines if Keycloak client authorization service enabled.
    */
+  @Nullable
   protected Boolean isAuthorizationServicesEnabled() {
     return null;
   }
@@ -167,6 +170,8 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
   /**
    * Defines a map with Keycloak client attributes.
    */
+  @Nullable
+  @SuppressWarnings("java:S1168")
   protected Map<String, String> getAttributes() {
     return null;
   }
@@ -174,6 +179,8 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
   /**
    * Defines a list with Keycloak client protocol mappers.
    */
+  @Nullable
+  @SuppressWarnings("java:S1168")
   protected List<ProtocolMapperRepresentation> getProtocolMappers() {
     return null;
   }

@@ -77,9 +77,23 @@ class JsonHelperTest {
     }
 
     @Test
+    void positive_nullStringInputSingleArgument() {
+      var actual = helper.parse((String) null);
+      assertThat(actual).isNull();
+    }
+
+    @Test
     void negative_stringInputMapperException() throws JsonProcessingException {
       when(mapper.readValue(TEST_USER_JSON, User.class)).thenThrow(new TestJsonProcessingException("Failed"));
       assertThatThrownBy(() -> helper.parse(TEST_USER_JSON, User.class))
+        .isInstanceOf(SerializationException.class)
+        .hasMessage("Failed to deserialize: value = %s, message = Failed", TEST_USER_JSON);
+    }
+
+    @Test
+    void negative_stringInputSingleArgumentMapperException() throws JsonProcessingException {
+      when(mapper.readTree(TEST_USER_JSON)).thenThrow(new TestJsonProcessingException("Failed"));
+      assertThatThrownBy(() -> helper.parse(TEST_USER_JSON))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to deserialize: value = %s, message = Failed", TEST_USER_JSON);
     }
@@ -143,6 +157,25 @@ class JsonHelperTest {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       when(mapper.readValue(inputStream, User.class)).thenThrow(new TestJsonProcessingException("Failed"));
       assertThatThrownBy(() -> helper.parse(inputStream, User.class))
+        .isInstanceOf(SerializationException.class)
+        .hasMessage("Failed to deserialize: value = %s, message = Failed", inputStream);
+    }
+
+    @Test
+    void positive_inputStreamTypeRefMapperException() throws IOException {
+      var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
+      var typeReference = new TypeReference<User>() {};
+      when(mapper.readValue(inputStream, typeReference)).thenThrow(new TestJsonProcessingException("Failed"));
+      assertThatThrownBy(() -> helper.parse(inputStream, typeReference))
+        .isInstanceOf(SerializationException.class)
+        .hasMessage("Failed to deserialize: value = %s, message = Failed", inputStream);
+    }
+
+    @Test
+    void positive_inputStreamSingleArgumentMapperException() throws IOException {
+      var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
+      when(mapper.readTree(inputStream)).thenThrow(new TestJsonProcessingException("Failed"));
+      assertThatThrownBy(() -> helper.parse(inputStream))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to deserialize: value = %s, message = Failed", inputStream);
     }

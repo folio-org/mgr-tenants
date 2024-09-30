@@ -64,7 +64,7 @@ import org.springframework.test.context.jdbc.SqlMergeMode;
 @Import(KeycloakTestClientConfiguration.class)
 @TestPropertySource(properties = "application.okapi.enabled=false")
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
-public class KeycloakInteractionsIT extends BaseIntegrationTest {
+class KeycloakInteractionsIT extends BaseIntegrationTest {
 
   private static final String TENANT = "test";
   private static final String TEST_USER_POLICY_ID = UUID.randomUUID().toString();

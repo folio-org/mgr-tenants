@@ -47,11 +47,6 @@ public class KeycloakTestClientConfiguration {
   @RequiredArgsConstructor
   public static final class KeycloakTestClient {
 
-    public static final ClientCredentials TEST_LOGIN_CLIENT_CREDENTIALS =
-      ClientCredentials.of("test-login-application", "test-login-application-secret");
-    public static final ClientCredentials TEST_IMPERSONATION_CLIENT_CREDENTIALS =
-      ClientCredentials.of("test-login-application", "test-login-application-secret");
-
     private final Keycloak keycloak;
     private final KeycloakProperties keycloakConfiguration;
 

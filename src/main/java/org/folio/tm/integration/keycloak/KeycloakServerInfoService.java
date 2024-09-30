@@ -20,7 +20,7 @@ public class KeycloakServerInfoService {
     try {
       return keycloak.serverInfo().getInfo();
     } catch (WebApplicationException exception) {
-      throw new KeycloakException("Failed to get server info");
+      throw new KeycloakException("Failed to get server info", exception);
     }
   }
 }
