@@ -31,6 +31,10 @@ application:
       content:
         folio_master_folio-backend-admin-client: supersecret
         folio_master_mgr-tenants: supersecret
+        folio_test_test-login-application: supersecret
+        folio_test_password-reset-client: supersecret
+        folio_test_impersonation-client: supersecret
+        folio_test_sidecar-module-access-client: supersecret
         folio_tenant1_sidecar-module-access-client: supersecret
         folio_tenant4_sidecar-module-access-client: supersecret
         folio_tenant1_tenant1-login-application: supersecret

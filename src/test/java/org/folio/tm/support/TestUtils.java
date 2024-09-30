@@ -4,6 +4,8 @@ import static java.util.Objects.requireNonNull;
 import static javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier;
 import static javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory;
 import static javax.net.ssl.SSLContext.getInstance;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -11,9 +13,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.net.Socket;
+import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Objects;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -25,6 +29,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -59,6 +66,23 @@ public class TestUtils {
     return FileUtils.readFileToString(file, StandardCharsets.UTF_8.name());
   }
 
+  public static void assertEqualsUsingRecursiveComparison(Object actual, Object expected, String... ignoredFields) {
+    assertThat(actual)
+      .usingRecursiveComparison()
+      .ignoringFields(ignoredFields)
+      .isEqualTo(expected);
+  }
+
+  public static void verifyNoMoreInteractions(Object testClassInstance) {
+    var declaredFields = testClassInstance.getClass().getDeclaredFields();
+    var mocks = Arrays.stream(declaredFields)
+      .filter(field -> field.getAnnotation(Mock.class) != null || field.getAnnotation(Spy.class) != null)
+      .map(field -> getField(testClassInstance, field.getName()))
+      .toArray();
+
+    Mockito.verifyNoMoreInteractions(mocks);
+  }
+
   public static void cleanUpCaches(CacheManager cacheManager) {
     cacheManager.getCacheNames().forEach(name -> requireNonNull(cacheManager.getCache(name)).clear());
   }
@@ -77,6 +101,10 @@ public class TestUtils {
     } catch (Exception e) {
       throw new RuntimeException("Failed to disable SSL verification", e);
     }
+  }
+
+  public static HttpClient httpClientWithDummySslContext() {
+    return HttpClient.newBuilder().sslContext(dummySslContext()).build();
   }
 
   @SneakyThrows

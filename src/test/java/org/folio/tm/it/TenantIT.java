@@ -2,16 +2,17 @@ package org.folio.tm.it;
 
 import static java.lang.String.valueOf;
 import static java.util.Objects.requireNonNull;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.tm.domain.dto.TenantType.DEFAULT;
 import static org.folio.tm.domain.dto.TenantType.VIRTUAL;
+import static org.folio.tm.support.TestConstants.AUTH_TOKEN;
+import static org.folio.tm.support.TestConstants.TENANT_ID;
+import static org.folio.tm.support.TestConstants.TENANT_NAME;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
-import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
+import static org.springframework.test.context.jdbc.SqlMergeMode.MergeMode.MERGE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -26,57 +27,52 @@ import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.domain.dto.TenantAttribute;
-import org.folio.tm.domain.dto.TenantType;
-import org.folio.tm.repository.TenantRepository;
 import org.folio.tm.support.TestConstants;
 import org.folio.tm.support.TestUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlMergeMode;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @IntegrationTest
-@Sql(scripts = "classpath:/sql/populate_tenants.sql", executionPhase = BEFORE_TEST_METHOD)
+@SqlMergeMode(MERGE)
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class TenantIT extends BaseIntegrationTest {
 
-  private static final String AUTH_TOKEN = "dGVzdC1hdXRoLnRva2Vu";
   private static final Tenant TENANT1 = new Tenant()
-      .id(TestConstants.TENANT_ID)
-      .name(TestConstants.TENANT_NAME)
-      .description(TestConstants.TENANT_DESCRIPTION)
-      .type(TenantType.DEFAULT);
-  private static final Tenant TENANT4 = new Tenant()
-      .id(UUID.fromString("12a50c0a-b3b7-4992-bd70-442ac1d8e212"))
-      .name("tenant4")
-      .description("test tenant4")
-      .type(TenantType.VIRTUAL);
+    .id(TENANT_ID)
+    .name(TENANT_NAME)
+    .description(TestConstants.TENANT_DESCRIPTION)
+    .type(DEFAULT);
 
-  @Autowired
-  private TenantRepository repository;
+  private static final Tenant TENANT4 = new Tenant()
+    .id(UUID.fromString("12a50c0a-b3b7-4992-bd70-442ac1d8e212"))
+    .name("tenant4")
+    .description("test tenant4")
+    .type(VIRTUAL);
 
   @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
   void getById_positive() throws Exception {
-    doGet("/tenants/{id}", TestConstants.TENANT_ID)
+    doGet("/tenants/{id}", TENANT_ID)
       .andExpect(json("tenant/get-tenant-response.json"));
   }
 
   @Test
-  void get_all_positive() throws Exception {
-    doGet("/tenants")
-      .andExpect(json("tenant/get-all-tenants-response.json"));
+  @Sql("classpath:/sql/populate_tenants.sql")
+  void getAll_positive() throws Exception {
+    doGet("/tenants").andExpect(json("tenant/get-all-tenants-response.json"));
   }
 
   @Test
-  @Sql(scripts = "classpath:/sql/clear_tenants.sql")
-  void get_all_positive_noTenants() throws Exception {
+  void getAll_positive_noTenants() throws Exception {
     doGet("/tenants")
       .andExpect(jsonPath("$.tenants", is(empty())))
       .andExpect(jsonPath("$.totalRecords", is(0)));
   }
 
   @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
   void getByQuery_positive() throws Exception {
     doGet(get("/tenants")
       .queryParam("query", "name==\"tenant1\" or name==\"tenant2\" or name==\"tenant3\""))
@@ -88,18 +84,16 @@ class TenantIT extends BaseIntegrationTest {
     "/wiremock/stubs/okapi/create-tenant.json",
     "/wiremock/stubs/okapi/get-tenant-not-found.json"
   })
-  void create_tenant_positive() throws Exception {
-    var tenant = TENANT4;
-
+  void createTenant_positive() throws Exception {
     mockMvc.perform(post("/tenants")
         .contentType(APPLICATION_JSON)
         .header(TOKEN, AUTH_TOKEN)
-        .content(TestUtils.asJsonString(tenant)))
+        .content(TestUtils.asJsonString(TENANT4)))
       .andExpect(status().isCreated())
-      .andExpect(jsonPath("$.id", is(valueOf(tenant.getId()))))
-      .andExpect(jsonPath("$.name", is(tenant.getName())))
-      .andExpect(jsonPath("$.description", is(tenant.getDescription())))
-      .andExpect(jsonPath("$.type", is(tenant.getType().getValue())))
+      .andExpect(jsonPath("$.id", is(valueOf(TENANT4.getId()))))
+      .andExpect(jsonPath("$.name", is(TENANT4.getName())))
+      .andExpect(jsonPath("$.description", is(TENANT4.getDescription())))
+      .andExpect(jsonPath("$.type", is(TENANT4.getType().getValue())))
       .andExpect(jsonPath("$.metadata", is(notNullValue())));
   }
 
@@ -129,7 +123,8 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
-  void create_tenant_negative_nameExists() throws Exception {
+  @Sql("classpath:/sql/populate_tenants.sql")
+  void createTenant_negative_nameExists() throws Exception {
     var tenant = copyFrom(TENANT4).name("tenant3");
 
     mockMvc.perform(post("/tenants")
@@ -144,7 +139,7 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
-  void create_tenant_negative_nameEmpty() throws Exception {
+  void createTenant_negative_nameEmpty() throws Exception {
     var tenant = copyFrom(TENANT4).name(null);
 
     mockMvc.perform(post("/tenants")
@@ -155,10 +150,11 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/update-tenant.json"
   })
-  void update_tenant_positive() throws Exception {
+  void updateTenant_positive() throws Exception {
     var tenant = copyFrom(TENANT1).description("modified").type(VIRTUAL);
 
     mockMvc.perform(put("/tenants/{id}", tenant.getId())
@@ -169,16 +165,17 @@ class TenantIT extends BaseIntegrationTest {
       .andExpect(jsonPath("$.description", is(tenant.getDescription())))
       .andExpect(jsonPath("$.type", is(tenant.getType().getValue())));
 
-    var saved = repository.findById(requireNonNull(tenant.getId())).orElseThrow();
-    assertThat(saved.getDescription()).isEqualTo(tenant.getDescription());
-    assertThat(saved.getType().name()).isEqualTo(tenant.getType().name());
+    doGet("/tenants/{id}", tenant.getId())
+      .andExpect(jsonPath("$.description", is(tenant.getDescription())))
+      .andExpect(jsonPath("$.type", is(tenant.getType().getValue())));
   }
 
   @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/update-tenant.json"
   })
-  void update_tenant_positive_addAttributes() throws Exception {
+  void updateTenant_positive_addAttributes() throws Exception {
     var tenant = copyFrom(TENANT1).description("modified").type(VIRTUAL)
       .attributes(List.of(tenantAttribute("attr1", "1"), tenantAttribute("attr2", "2")));
 
@@ -200,10 +197,11 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/update-tenant.json"
   })
-  void update_tenant_negative_notFound() throws Exception {
+  void updateTenant_negative_notFound() throws Exception {
     var tenant = TENANT4;
 
     mockMvc.perform(put("/tenants/{id}", tenant.getId())
@@ -214,7 +212,8 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
-  void update_tenant_negative_idDoesntMatch() throws Exception {
+  @Sql("classpath:/sql/populate_tenants.sql")
+  void updateTenant_negative_idDoesntMatch() throws Exception {
     var tenant = TENANT4;
 
     mockMvc.perform(put("/tenants/{id}", TENANT1.getId())
@@ -225,7 +224,8 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
-  void update_tenant_negative_nameModified() throws Exception {
+  @Sql("classpath:/sql/populate_tenants.sql")
+  void updateTenant_negative_nameModified() throws Exception {
     var tenant = copyFrom(TENANT1).name("modified");
 
     mockMvc.perform(put("/tenants/{id}", tenant.getId())
@@ -236,55 +236,61 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/delete-tenant.json",
     "/wiremock/stubs/okapi/get-tenant-exist.json"
   })
-  void delete_tenant_positive() throws Exception {
-    var existing = repository.findById(TestConstants.TENANT_ID);
-    assertTrue(existing.isPresent());
+  void deleteTenant_positive() throws Exception {
+    var tenantId = TENANT_ID.toString();
+    doGet("/tenants/{id}", tenantId).andExpect(jsonPath("$.id", is(tenantId)));
 
-    mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TestConstants.TENANT_ID)
+    mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", tenantId)
         .header(TOKEN, AUTH_TOKEN))
       .andExpect(status().isNoContent());
 
-    repository.findById(TestConstants.TENANT_ID)
-      .ifPresent(tenantEntity -> Assertions.fail("Tenant is not deleted: " + TestConstants.TENANT_ID));
+    attemptGet("/tenants/{id}", tenantId)
+      .andExpect(status().isNotFound());
   }
 
   @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/get-tenant5-exist.json",
     "/wiremock/stubs/okapi/delete-tenant.json"
   })
   void deleteTenantWithAttributes_positive() throws Exception {
-    var tenantId = UUID.fromString("42e36904-d009-4884-8338-3df14a18dfef");
-    var existing = repository.findById(tenantId);
-    assertTrue(existing.isPresent());
+    var tenantId = "42e36904-d009-4884-8338-3df14a18dfef";
+    doGet("/tenants/{id}", tenantId)
+      .andExpect(jsonPath("$.id", is(tenantId)))
+      .andExpect(jsonPath("$.name", is("tenant5")));
 
     mockMvc.perform(delete("/tenants/{id}", tenantId)
         .header(TOKEN, AUTH_TOKEN))
       .andExpect(status().isNoContent());
 
-    assertThat(repository.findById(tenantId)).isEmpty();
+    attemptGet("/tenants/{id}", tenantId)
+      .andExpect(status().isNotFound());
   }
 
   @Test
-  void delete_tenant_positive_notPresent() throws Exception {
-    var existing = repository.findById(requireNonNull(TENANT4.getId()));
-    assertFalse(existing.isPresent());
+  @Sql("classpath:/sql/populate_tenants.sql")
+  void deleteTenant_positive_notPresent() throws Exception {
+    var tenantId = requireNonNull(TENANT4.getId()).toString();
+    attemptGet("/tenants/{id}", tenantId).andExpect(status().isNotFound());
 
     mockMvc.perform(delete("/tenants/{id}", TENANT4.getId())
         .header(TOKEN, AUTH_TOKEN))
       .andExpect(status().isNoContent());
   }
 
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/create-tenant.json",
     "/wiremock/stubs/okapi/get-tenant-not-found.json"
   })
-  @Test
-  void positive_create_secure_tenant() throws Exception  {
+  void createTenant_positive_secureTenant() throws Exception {
     var tenant = TENANT4.secure(true);
 
     mockMvc.perform(post("/tenants")
@@ -301,10 +307,11 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
+  @Sql(scripts = "classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/update-tenant.json"
   })
-  void negative_update_secure_tenant() throws Exception {
+  void updateTenant_positive_secureTenant() throws Exception {
     var tenant = copyFrom(TENANT1).secure(true);
 
     mockMvc.perform(put("/tenants/{id}", tenant.getId())

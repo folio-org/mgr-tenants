@@ -89,20 +89,20 @@ public class TenantAttributeIT extends BaseIntegrationTest {
 
   @Test
   @Sql(scripts = "classpath:/sql/clear_tenant_attrs.sql")
-  void get_all_positive_noAttrs() throws Exception {
+  void getAll_positive_noAttrs() throws Exception {
     doGet("/tenants/{tenantId}/tenant-attributes", TestConstants.TENANT_ID)
       .andExpectAll(emptyCollection("tenantAttributes"));
   }
 
   @Test
-  void get_all_positive_offsetAndLimit() throws Exception {
+  void getAll_positive_offsetAndLimit() throws Exception {
     doGet(MockMvcRequestBuilders.get("/tenants/{tenantId}/tenant-attributes", TestConstants.TENANT_ID)
         .queryParam("offset", "9").queryParam("limit", "1"))
       .andExpect(json("tenant-attr/get-all-tenant-attrs-offset-limit-response.json"));
   }
 
   @Test
-  void get_by_query_positive() throws Exception {
+  void getByQuery_positive() throws Exception {
     doGet(MockMvcRequestBuilders.get("/tenants/{tenantId}/tenant-attributes", TestConstants.TENANT_ID)
         .queryParam("query", "key==\"key1\" or key==\"key2\""))
       .andExpect(json("tenant-attr/get-tenant-attrs-by-query-response.json"));
@@ -110,7 +110,7 @@ public class TenantAttributeIT extends BaseIntegrationTest {
 
   @Test
   @Sql("classpath:/sql/clear_tenant_attrs.sql")
-  void post_all_positive_newCollection() throws Exception {
+  void createAll_positive_newCollection() throws Exception {
     var attr1 = copyFrom(ATTRIBUTE1).id(null);
     var attr11 = copyFrom(ATTRIBUTE11).id(null);
     var attrs = new TenantAttributes().tenantAttributes(List.of(attr1, attr11));
@@ -128,7 +128,7 @@ public class TenantAttributeIT extends BaseIntegrationTest {
   }
 
   @Test
-  void post_all_positive_mergeCollection() throws Exception {
+  void createAll_positive_mergeCollection() throws Exception {
     var attr1 = copyFrom(ATTRIBUTE1).value("modified");
     var attr11 = copyFrom(ATTRIBUTE11);
     var attrs = new TenantAttributes().tenantAttributes(List.of(attr1, attr11));
@@ -146,7 +146,7 @@ public class TenantAttributeIT extends BaseIntegrationTest {
   }
 
   @Test
-  void post_all_positive_emptyCollection() throws Exception {
+  void createAll_positive_emptyCollection() throws Exception {
     var attrs = new TenantAttributes();
 
     doPost("/tenants/{tenantId}/tenant-attributes", attrs, TestConstants.TENANT_ID)

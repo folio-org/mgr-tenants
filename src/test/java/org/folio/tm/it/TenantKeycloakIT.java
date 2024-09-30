@@ -6,24 +6,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.tm.domain.dto.TenantType.VIRTUAL;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_PROPERTY_MAPPER_TYPE;
+import static org.folio.tm.support.TestConstants.TENANT_ID;
 import static org.folio.tm.support.TestConstants.protocolMapper;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
-import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
+import static org.springframework.test.context.jdbc.SqlMergeMode.MergeMode.MERGE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import org.folio.common.utils.CollectionUtils;
 import org.folio.test.extensions.EnableKeycloakDataImport;
 import org.folio.test.extensions.EnableKeycloakSecurity;
 import org.folio.test.extensions.EnableKeycloakTlsMode;
@@ -32,73 +32,72 @@ import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.domain.dto.TenantType;
-import org.folio.tm.integration.keycloak.KeycloakClient;
-import org.folio.tm.integration.keycloak.KeycloakClientService;
-import org.folio.tm.integration.keycloak.KeycloakRealmService;
-import org.folio.tm.integration.okapi.OkapiService;
 import org.folio.tm.repository.TenantRepository;
+import org.folio.tm.support.KeycloakTestClientConfiguration;
+import org.folio.tm.support.KeycloakTestClientConfiguration.KeycloakTestClient;
 import org.folio.tm.support.TestConstants;
 import org.folio.tm.support.TestUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlMergeMode;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @IntegrationTest
+@SqlMergeMode(MERGE)
 @EnableKeycloakTlsMode
 @EnableKeycloakSecurity
 @EnableKeycloakDataImport
-@KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+@Import(KeycloakTestClientConfiguration.class)
 @TestPropertySource(properties = "application.okapi.enabled=false")
-@Sql(scripts = "classpath:/sql/populate_tenants.sql", executionPhase = BEFORE_TEST_METHOD)
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class TenantKeycloakIT extends BaseIntegrationTest {
 
   private static final Tenant TENANT1 = new Tenant()
-    .id(TestConstants.TENANT_ID)
+    .id(TENANT_ID)
     .name(TestConstants.TENANT_NAME)
     .description(TestConstants.TENANT_DESCRIPTION)
     .type(TenantType.DEFAULT);
+
   private static final Tenant TENANT4 = new Tenant()
     .id(UUID.fromString("12a50c0a-b3b7-4992-bd70-442ac1d8e212"))
     .name("tenant4")
     .description("test tenant4")
     .type(TenantType.VIRTUAL);
 
-  @Autowired
-  private TenantRepository repository;
+  @Autowired private TenantRepository repository;
+  @Autowired private KeycloakTestClient keycloakTestClient;
 
-  @Autowired
-  private KeycloakRealmService keycloakRealmService;
+  @BeforeAll
+  static void beforeAll(@Autowired ApplicationContext applicationContext) {
+    assertThat(applicationContext.containsBean("okapiService")).isFalse();
+  }
 
-  @Autowired
-  private KeycloakClientService keycloakClientService;
-
-  @Autowired(required = false)
-  private OkapiService okapiService;
-
-  @Autowired
-  private KeycloakClient keycloakClient;
-
-  @Value("${application.keycloak.admin.client_id}")
-  private String clientId;
-
-  @Value("${application.keycloak.admin.client_secret}")
-  private String clientSecret;
-
-  @Value("${application.keycloak.admin.grant_type}")
-  private String grantType;
+  @AfterEach
+  void tearDown(@Autowired Keycloak keycloak) {
+    var realms = keycloak.realms().findAll();
+    for (var realm : realms) {
+      var realmName = realm.getRealm();
+      if (!Objects.equals(realmName, "master")) {
+        keycloak.realm(realmName).remove();
+      }
+    }
+  }
 
   @Test
-  void create_tenant_positive() throws Exception {
+  void createTenant_positive() throws Exception {
     var tenant = TENANT4;
-    var token = keycloakClient.login(requestBody());
     mockMvc.perform(post("/tenants")
         .contentType(APPLICATION_JSON)
-        .header(TOKEN, token.getAccessToken())
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin())
         .content(TestUtils.asJsonString(tenant)))
       .andExpect(status().isCreated())
       .andExpect(jsonPath("$.id", is(valueOf(tenant.getId()))))
@@ -107,27 +106,19 @@ class TenantKeycloakIT extends BaseIntegrationTest {
       .andExpect(jsonPath("$.type", is(tenant.getType().getValue())))
       .andExpect(jsonPath("$.metadata", is(notNullValue())));
 
-    assertTrue(keycloakRealmService.isRealmExist(tenant.getName()));
-    assertNull(okapiService);
-
-    var client = keycloakClientService.findClientByClientId(TENANT4.getName(), "impersonation-client");
-    var mappers = client.getProtocolMappers();
-    var expectedMappers = List.of(
-      protocolMapper(USER_PROPERTY_MAPPER_TYPE, "username", "username", "sub"),
-      protocolMapper(USER_ATTRIBUTE_MAPPER_TYPE, "user_id mapper", "user_id", "user_id")
-    );
-
-    assertThat(mappers).containsAll(expectedMappers);
+    var tenantName = TENANT4.getName();
+    var realm = keycloakTestClient.getRealm(tenantName);
+    assertThat(realm.getRealm()).isEqualTo(tenantName);
+    checkImpersonationClient(tenantName);
   }
 
   @Test
   void createTenant_positive_nameContainingUnderscore() throws Exception {
     var tenantName = "test_tenant";
     var tenant = new Tenant().name(tenantName).description("Test tenant with underscore in name");
-    var token = keycloakClient.login(requestBody());
     mockMvc.perform(post("/tenants")
         .contentType(APPLICATION_JSON)
-        .header(TOKEN, token.getAccessToken())
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin())
         .content(TestUtils.asJsonString(tenant)))
       .andExpect(status().isCreated())
       .andExpect(jsonPath("$.id", is(notNullValue())))
@@ -136,26 +127,17 @@ class TenantKeycloakIT extends BaseIntegrationTest {
       .andExpect(jsonPath("$.type", is(tenant.getType().getValue())))
       .andExpect(jsonPath("$.metadata", is(notNullValue())));
 
-    assertTrue(keycloakRealmService.isRealmExist(tenantName));
-    assertNull(okapiService);
-
-    var client = keycloakClientService.findClientByClientId(tenantName, "impersonation-client");
-    var mappers = client.getProtocolMappers();
-
-    var expectedMappers = List.of(
-      protocolMapper(USER_PROPERTY_MAPPER_TYPE, "username", "username", "sub"),
-      protocolMapper(USER_ATTRIBUTE_MAPPER_TYPE, "user_id mapper", "user_id", "user_id")
-    );
-
-    assertThat(mappers).containsAll(expectedMappers);
+    var realm = keycloakTestClient.getRealm(tenantName);
+    assertThat(realm.getRealm()).isEqualTo(tenantName);
+    checkImpersonationClient(tenantName);
   }
 
   @Test
-  void create_tenant_negative_tenant_exists() throws Exception {
-    var token = keycloakClient.login(requestBody());
+  @Sql("classpath:/sql/populate_tenants.sql")
+  void createTenant_negative_tenantExists() throws Exception {
     mockMvc.perform(post("/tenants")
         .contentType(APPLICATION_JSON)
-        .header(TOKEN, token.getAccessToken())
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin())
         .content(TestUtils.asJsonString(TENANT1)))
       .andExpect(status().isBadRequest())
       .andExpect(
@@ -166,12 +148,13 @@ class TenantKeycloakIT extends BaseIntegrationTest {
   }
 
   @Test
-  void update_tenant_positive() throws Exception {
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  void updateTenant_positive() throws Exception {
     var tenant = copyFrom().description("modified").type(VIRTUAL);
-    var token = keycloakClient.login(requestBody());
     mockMvc.perform(put("/tenants/{id}", tenant.getId())
         .contentType(APPLICATION_JSON)
-        .header(TOKEN, token.getAccessToken())
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin())
         .content(TestUtils.asJsonString(tenant)))
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.description", is(tenant.getDescription())))
@@ -181,25 +164,24 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     assertThat(saved.getDescription()).isEqualTo(tenant.getDescription());
     assertThat(saved.getType().name()).isEqualTo(tenant.getType().name());
 
-    assertTrue(keycloakRealmService.isRealmExist(tenant.getName()));
-    assertNull(okapiService);
+    var tenantName = tenant.getName();
+    var realm = keycloakTestClient.getRealm(tenantName);
+    assertThat(realm.getRealm()).isEqualTo(tenantName);
   }
 
   @Test
-  void delete_tenant_positive() throws Exception {
-    var existing = repository.findById(TestConstants.TENANT_ID);
-    var token = keycloakClient.login(requestBody());
-
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  void deleteTenant_positive() throws Exception {
+    var existing = repository.findById(TENANT_ID);
     assertTrue(existing.isPresent());
 
-    mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TestConstants.TENANT_ID)
-        .header(TOKEN, token.getAccessToken()))
+    mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TENANT_ID)
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin()))
       .andExpect(status().isNoContent());
 
-    repository.findById(TestConstants.TENANT_ID)
-      .ifPresent(tenantEntity -> Assertions.fail("Tenant is not deleted: " + TestConstants.TENANT_ID));
-
-    assertNull(okapiService);
+    repository.findById(TENANT_ID)
+      .ifPresent(tenantEntity -> Assertions.fail("Tenant is not deleted: " + TENANT_ID));
   }
 
   private static Tenant copyFrom() {
@@ -215,11 +197,27 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     return result;
   }
 
-  private Map<String, String> requestBody() {
-    var loginRequest = new HashMap<String, String>();
-    loginRequest.put("client_id", clientId);
-    loginRequest.put("client_secret", clientSecret);
-    loginRequest.put("grant_type", grantType);
-    return loginRequest;
+  private static ProtocolMapperRepresentation getMapperByName(
+    List<ProtocolMapperRepresentation> protocolMappers, String name) {
+    return CollectionUtils.toStream(protocolMappers)
+      .filter(mapper -> mapper.getName().equals(name))
+      .findFirst()
+      .orElseThrow(() -> new AssertionError("Failed to find protocol mapper by name: " + name));
+  }
+
+  private void checkImpersonationClient(String tenantName) {
+    var client = keycloakTestClient.findClientByClientId(tenantName, "impersonation-client");
+    assertThat(client).isPresent();
+
+    var mappers = client.get().getProtocolMappers();
+    assertThat(getMapperByName(mappers, "username"))
+      .usingRecursiveComparison()
+      .ignoringFields("id")
+      .isEqualTo(protocolMapper(USER_PROPERTY_MAPPER_TYPE, "username", "username", "sub"));
+
+    assertThat(getMapperByName(mappers, "user_id mapper"))
+      .usingRecursiveComparison()
+      .ignoringFields("id")
+      .isEqualTo(protocolMapper(USER_ATTRIBUTE_MAPPER_TYPE, "user_id mapper", "user_id", "user_id"));
   }
 }

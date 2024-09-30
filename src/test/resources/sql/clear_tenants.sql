@@ -1,1 +1,2 @@
-DELETE FROM tenant;
+TRUNCATE TABLE tenant CASCADE;
+TRUNCATE TABLE tenant_attribute CASCADE;
