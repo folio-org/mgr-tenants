@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.folio.common.utils.CollectionUtils;
 import org.folio.test.extensions.EnableKeycloakDataImport;
@@ -36,9 +37,11 @@ import org.folio.tm.support.KeycloakTestClientConfiguration;
 import org.folio.tm.support.KeycloakTestClientConfiguration.KeycloakTestClient;
 import org.folio.tm.support.TestConstants;
 import org.folio.tm.support.TestUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -76,6 +79,17 @@ class TenantKeycloakIT extends BaseIntegrationTest {
   @BeforeAll
   static void beforeAll(@Autowired ApplicationContext applicationContext) {
     assertThat(applicationContext.containsBean("okapiService")).isFalse();
+  }
+
+  @AfterEach
+  void tearDown(@Autowired Keycloak keycloak) {
+    var realms = keycloak.realms().findAll();
+    for (var realm : realms) {
+      var realmName = realm.getRealm();
+      if (!Objects.equals(realmName, "master")) {
+        keycloak.realm(realmName).remove();
+      }
+    }
   }
 
   @Test

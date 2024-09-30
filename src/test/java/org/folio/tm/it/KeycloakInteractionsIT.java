@@ -147,6 +147,7 @@ public class KeycloakInteractionsIT extends BaseIntegrationTest {
       "passwordResetActionId", UUID.randomUUID().toString());
 
     var passwordResetToken = kcTestClient.login(TENANT, loginRequest);
+    assertThat(passwordResetToken).isNotNull();
   }
 
   private static Tenant tenant() {
