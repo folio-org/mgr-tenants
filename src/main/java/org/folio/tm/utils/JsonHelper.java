@@ -120,7 +120,6 @@ public class JsonHelper {
    * @param <T> - generic type for class.
    * @return converted {@link T} from json value
    */
-  @SuppressWarnings("unused")
   public <T> T parse(String value, TypeReference<T> type) {
     if (value == null) {
       return null;

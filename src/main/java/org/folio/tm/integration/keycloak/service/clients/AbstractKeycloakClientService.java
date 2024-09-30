@@ -133,18 +133,13 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
   /**
    * Defines if Keycloak client service account enabled.
    */
-  @Nullable
-  protected Boolean isServiceAccountEnabled() {
-    return null;
-  }
+  protected abstract Boolean isServiceAccountEnabled();
 
   /**
    * Defines if Keycloak client authorization service enabled.
    */
   @Nullable
-  protected Boolean isAuthorizationServicesEnabled() {
-    return null;
-  }
+  protected abstract Boolean isAuthorizationServicesEnabled();
 
   /**
    * Defines authorization settings for Keycloak client.
@@ -171,10 +166,7 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
    * Defines a map with Keycloak client attributes.
    */
   @Nullable
-  @SuppressWarnings("java:S1168")
-  protected Map<String, String> getAttributes() {
-    return null;
-  }
+  protected abstract Map<String, String> getAttributes();
 
   /**
    * Defines a list with Keycloak client protocol mappers.

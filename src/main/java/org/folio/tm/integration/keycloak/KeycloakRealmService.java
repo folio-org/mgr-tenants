@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.integration.keycloak.exception.KeycloakException;
@@ -156,7 +155,6 @@ public class KeycloakRealmService {
     }
   }
 
-  @SneakyThrows
   private MultivaluedHashMap<String, String> getDeclarativeUserProfileConfiguration() {
     var userProfileFileLocation = "json/realms/user-profile-configuration.json";
     try (var inStream = getResourceFileInputStream(userProfileFileLocation)) {

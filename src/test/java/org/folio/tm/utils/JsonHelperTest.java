@@ -83,6 +83,13 @@ class JsonHelperTest {
     }
 
     @Test
+    void positive_nullStringForTypeReference() {
+      var typeReference = new TypeReference<User>() {};
+      var actual = helper.parse((String) null, typeReference);
+      assertThat(actual).isNull();
+    }
+
+    @Test
     void negative_stringInputMapperException() throws JsonProcessingException {
       when(mapper.readValue(TEST_USER_JSON, User.class)).thenThrow(new TestJsonProcessingException("Failed"));
       assertThatThrownBy(() -> helper.parse(TEST_USER_JSON, User.class))
@@ -104,20 +111,6 @@ class JsonHelperTest {
       when(mapper.readValue(TEST_USER_JSON, typeReference)).thenReturn(TEST_USER);
       var actual = helper.parse(TEST_USER_JSON, typeReference);
       assertThat(actual).isEqualTo(TEST_USER);
-    }
-
-    @Test
-    void positive_nullStringForTypeReference() {
-      var typeReference = new TypeReference<User>() {};
-      var actual = helper.parse((String) null, typeReference);
-      assertThat(actual).isNull();
-    }
-
-    @Test
-    void positive_nullInputStreamForTypeReference() {
-      var typeReference = new TypeReference<User>() {};
-      var actual = helper.parse((InputStream) null, typeReference);
-      assertThat(actual).isNull();
     }
 
     @Test
@@ -148,7 +141,20 @@ class JsonHelperTest {
 
     @Test
     void positive_nullInputStream() {
+      var actual = helper.parse((InputStream) null);
+      assertThat(actual).isNull();
+    }
+
+    @Test
+    void positive_nullInputStreamClass() {
       var actual = helper.parse((InputStream) null, User.class);
+      assertThat(actual).isNull();
+    }
+
+    @Test
+    void positive_nullInputStreamTypeReference() {
+      var typeReference = new TypeReference<User>() {};
+      var actual = helper.parse((InputStream) null, typeReference);
       assertThat(actual).isNull();
     }
 

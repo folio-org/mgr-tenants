@@ -20,6 +20,7 @@ import jakarta.ws.rs.WebApplicationException;
 import java.io.InputStream;
 import java.util.List;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.SerializationException;
 import org.folio.test.types.UnitTest;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.integration.keycloak.exception.KeycloakException;
@@ -219,6 +220,40 @@ class KeycloakRealmServiceTest {
       //noinspection unchecked
       verify(jsonHelper).parse(any(InputStream.class), any(TypeReference.class));
       verify(jsonHelper).parse(any(InputStream.class));
+    }
+
+    @Test
+    void negative_failedToReadAuthenticationRequiredActions() {
+      when(keycloak.realm(TENANT_NAME)).thenThrow(NotFoundException.class);
+      when(keycloak.realms()).thenReturn(realmsResource);
+      when(jsonHelper.parse(any(InputStream.class), any(TypeReference.class))).thenCallRealMethod();
+      when(jsonHelper.parse(any(InputStream.class))).thenThrow(new SerializationException("Failed to read input"));
+
+      var tenant = tenant();
+      assertThatThrownBy(() -> keycloakRealmService.createRealm(tenant))
+        .isInstanceOf(KeycloakException.class)
+        .hasMessage("Failed to create realm for tenant: %s", TENANT_NAME)
+        .hasCauseInstanceOf(IllegalStateException.class);
+
+      //noinspection unchecked
+      verify(jsonHelper).parse(any(InputStream.class), any(TypeReference.class));
+      verify(jsonHelper).parse(any(InputStream.class));
+    }
+
+    @Test
+    void negative_failedToReadUserProfileConfiguration() {
+      when(keycloak.realm(TENANT_NAME)).thenThrow(NotFoundException.class);
+      when(keycloak.realms()).thenReturn(realmsResource);
+
+      //noinspection unchecked
+      when(jsonHelper.parse(any(InputStream.class), any(TypeReference.class)))
+        .thenThrow(new SerializationException("Failed to read input"));
+
+      var tenant = tenant();
+      assertThatThrownBy(() -> keycloakRealmService.createRealm(tenant))
+        .isInstanceOf(KeycloakException.class)
+        .hasMessage("Failed to create realm for tenant: %s", TENANT_NAME)
+        .hasCauseInstanceOf(IllegalStateException.class);
     }
   }
 
