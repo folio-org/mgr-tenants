@@ -1,4 +1,6 @@
-## v1.4.0 In Progress
+## v1.4.0 2024-09-30
+* Use folio-auth-openid library for JWT validation (APPPOCTOOL-28)
+* Use keycloak client instead of Feign client
 
 ## v1.3.3 2024-08-14
 * MGRTENANT-32 Implement the ability to designate a tenant as "secure" (#85) ([MGRTENANT-32](https://issues.folio.org/browse/MGRTENANT-32))
