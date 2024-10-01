@@ -130,6 +130,7 @@ public class KeycloakRealmService {
     realm.setEnabled(true);
     realm.setDuplicateEmailsAllowed(TRUE);
     realm.setLoginWithEmailAllowed(FALSE);
+    realm.setEditUsernameAllowed(TRUE);
     realm.setRequiredActions(getAuthenticationRequiredActions());
     realm.setComponents(getRealmComponentsConfiguration());
 
