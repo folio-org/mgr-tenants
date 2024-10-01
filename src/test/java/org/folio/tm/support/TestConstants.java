@@ -1,9 +1,5 @@
 package org.folio.tm.support;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static org.folio.tm.domain.dto.TenantType.DEFAULT;
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
@@ -17,7 +13,6 @@ import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.domain.dto.TenantAttribute;
 import org.folio.tm.domain.dto.TenantAttributes;
 import org.folio.tm.integration.keycloak.model.ProtocolMapperConfig;
-import org.folio.tm.integration.keycloak.model.Realm;
 import org.folio.tm.integration.okapi.model.TenantDescriptor;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
@@ -52,10 +47,6 @@ public class TestConstants {
 
   public static TenantDescriptor tenantDescriptor(String id) {
     return new TenantDescriptor(id, TENANT_NAME, TENANT_DESCRIPTION);
-  }
-
-  public static Realm realmDescriptor() {
-    return new Realm(TENANT_ID.toString(), true, TENANT_NAME, TRUE, FALSE, emptyList(), emptyMap());
   }
 
   public static ProtocolMapperRepresentation usernameProtocolMapper() {
