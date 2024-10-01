@@ -37,7 +37,7 @@ import org.keycloak.representations.idm.authorization.ScopeRepresentation;
 public class LoginClientService extends AbstractKeycloakClientService {
 
   public static final String SYSTEM_ROLE_POLICY_NAME = "System role policy";
-  public static final String PASSWORD_RESET_ROLE_POLICY_NAME = "Password reset role policy";
+  public static final String PASSWORD_RESET_ROLE_POLICY_NAME = PASSWORD_RESET_ROLE_NAME + " policy";
   public static final List<String> SCOPES = List.of(GET, POST, PUT, DELETE, PATCH, OPTIONS);
 
   private static final String USERNAME_PROPERTY = "username";

@@ -204,7 +204,7 @@ class LoginClientServiceTest {
   private static PolicyRepresentation passwordResetPolicy() {
     var policyRepresentation = new PolicyRepresentation();
     policyRepresentation.setType("role");
-    policyRepresentation.setName("Password reset role policy");
+    policyRepresentation.setName("Password Reset policy");
     policyRepresentation.setLogic(POSITIVE);
     policyRepresentation.setDecisionStrategy(UNANIMOUS);
     policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"Password Reset\",\"required\":false}]"));
