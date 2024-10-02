@@ -1,3 +1,8 @@
+## v1.4.1 2024-10-02
+* Fix password reset policy name (#104) ([MGRTENANT-34](https://issues.folio.org/browse/MGRTENANT-34))
+* Enable option in Keycloak making username editable (#99) ([MGRTENANT-27](https://issues.folio.org/browse/MGRTENANT-27))
+* Increase keycloak-admin-client to v25.0.6 (#105) ([KEYCLOAK-24](https://issues.folio.org/browse/KEYCLOAK-24))
+
 ## v1.4.0 2024-09-30
 * Use folio-auth-openid library for JWT validation (APPPOCTOOL-28)
 * Use keycloak client instead of Feign client
