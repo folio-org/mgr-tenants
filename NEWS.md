@@ -1,53 +1,57 @@
-## v1.4.2 in progress
-* description of the changes in the release (optional) ([TEMPLATE](https://issues.folio.org/browse/TEMPLATE))
+## Version `v2.0.0` (01.11.2024)
+* bump up applications-poc-tools dependencies to 2.0.0
 
-## v1.4.1 2024-10-02
-* Fix password reset policy name (#104) ([MGRTENANT-34](https://issues.folio.org/browse/MGRTENANT-34))
-* Enable option in Keycloak making username editable (#99) ([MGRTENANT-27](https://issues.folio.org/browse/MGRTENANT-27))
-* Increase keycloak-admin-client to v25.0.6 (#105) ([KEYCLOAK-24](https://issues.folio.org/browse/KEYCLOAK-24))
+---
 
-## v1.4.0 2024-09-30
+## Version `v1.4.1` (02.10.2024)
+* Fix password reset policy name (MGRTENANT-34)
+* Enable option in Keycloak making username editable (MGRTENANT-27)
+* Increase keycloak-admin-client to v25.0.6 (KEYCLOAK-24)
+
+---
+
+## Version `v1.4.0` (30.09.2024)
 * Use folio-auth-openid library for JWT validation (APPPOCTOOL-28)
 * Use keycloak client instead of Feign client
 
-## v1.3.3 2024-08-14
-* MGRTENANT-32 Implement the ability to designate a tenant as "secure" (#85) ([MGRTENANT-32](https://issues.folio.org/browse/MGRTENANT-32))
+---
 
-
-## v1.3.2 2024-07-10
-
-* KONG-10: upgrade kong version to 3.7.1 (#76) ([KONG-10](https://issues.folio.org/browse/KONG-10))
-* MGRTENANT-28 Upgrade keycloak client to v25.0.1 (#74) ([MGRTENANT-28](https://issues.folio.org/browse/MGRTENANT-28))
+## Version `v1.3.3` (14.08.2024)
+* Implement the ability to designate a tenant as "secure" (MGRTENANT-32)
 
 ---
 
-## v1.3.1 2024-06-20
-
-* Add FIPS compliance check and lost Kong configuration parameters (#66)
-* Put application to Docker Image and upload to ECR (#69) ([RANCHER-1515](https://issues.folio.org/browse/RANCHER-1515))
-
----
-
-## v1.3.0 2024-05-25
-
-* Add Dockerfile that is based on the FIPS-140-2 compliant base image (#63) ([MGRTENANT-19](https://issues.folio.org/browse/MGRTENANT-19))
-* Secure mgr-tenants HTTP endpoints with SSL (#62) ([MGRTENANT-18](https://issues.folio.org/browse/MGRTENANT-18))
-* Keycloak client: add support TLS certificates issued by trusted certificate authorities (#60) ([MGRTENANT-26](https://issues.folio.org/browse/MGRTENANT-26))
----
-
-## v1.2.0 2024-04-16
-
-* update keycloak related tests (#50)
-* ([KONG-6](https://issues.folio.org/browse/KONG-6)): Kong timeouts should be extended (#48)
-* ([MGRTENANT-12](https://issues.folio.org/browse/MGRTENANT-12)): support TLS for keycloak clients (#46)
+## Version `v1.3.2` (10.07.2024)
+* upgrade kong version to 3.7.1 (KONG-10)
+* Upgrade keycloak client to v25.0.1 (MGRTENANT-28)
 
 ---
 
-## v1.1.0 2024-02-28
+## Version `v1.3.1` (20.06.2024)
+* Add FIPS compliance check and lost Kong configuration parameters
+* Put application to Docker Image and upload to ECR (RANCHER-1515)
+
+---
+
+## Version `v1.3.0` (25.05.2024)
+* Add Dockerfile that is based on the FIPS-140-2 compliant base image (MGRTENANT-19)
+* Secure mgr-tenants HTTP endpoints with SSL (MGRTENANT-18)
+* Keycloak client: add support TLS certificates issued by trusted certificate authorities (MGRTENANT-26)
+
+---
+
+## Version `v1.2.0` (16.04.2024)
+* update keycloak related tests
+* Kong timeouts should be extended (KONG-6)
+* support TLS for keycloak clients (MGRTENANT-12)
+
+---
+
+## Version `v1.1.0` (28.02.2024)
 ### Features
-* Self-register routes in Kong ([MGRAPPS-2](https://issues.folio.org/browse/MGRAPPS-2))
-* Upgrade to Keycloak 23.0.6 ([KEYCLOAK-6](https://issues.folio.org/browse/KEYCLOAK-6))
-* Implement router prefix for the generated endpoints ([MGRAPPS-8](https://issues.folio.org/browse/MGRAPPS-8))
+* Self-register routes in Kong (MGRAPPS-2)
+* Upgrade to Keycloak 23.0.6 (KEYCLOAK-6)
+* Implement router prefix for the generated endpoints (MGRAPPS-8)
 
 ### Dependencies
 * Add `org.folio:folio-integration-kong` `1.3.0`
@@ -66,14 +70,14 @@
 
 ---
 
-## v1.0.0 2024-01-22
+## Version `v1.0.0` (22.01.2024)
 ### New APIs versions
 * Provides `tenants v1.0`
 * Provides `tenant-attributes v1.0`
 
 ### Features
-* Upgrade Spring Boot to v3.2.1 (#4) ([MODROLESKC-21](https://issues.folio.org/browse/MODROLESKC-21))
-* Upgrade to Keycloak 23.0.6 ([KEYCLOAK-6](https://issues.folio.org/browse/KEYCLOAK-6))
+* Upgrade Spring Boot to v3.2.1 (MODROLESKC-21)
+* Upgrade to Keycloak 23.0.6 (KEYCLOAK-6)
 
 ### Tech Dept
 * Fix maven deploy/build issues
@@ -90,4 +94,3 @@
 * Bump `org.mapstruct:mapstruct-processor` from `1.5.3.Final` to `1.5.5.Final`
 * Bump `com.puppycrawl.tools:checkstyle` from `10.12.3` to `10.12.7`
 * Bump `org.folio:folio-spring-cql` from `7.0.0` to `7.2.2`
-
