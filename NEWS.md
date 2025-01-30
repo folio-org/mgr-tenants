@@ -1,3 +1,7 @@
+## Version `v2.0.1` (30.01.2025)
+* bump application-poc-tools to 2.1.1 to update Keycloak dependencies (MGRTENANT-39)
+---
+
 ## Version `v2.0.0` (01.11.2024)
 * bump up applications-poc-tools dependencies to 2.0.0
 
