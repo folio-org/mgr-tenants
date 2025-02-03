@@ -1,3 +1,6 @@
+## v1.4.2 2025-02-03
+* KEYCLOAK-37 Add support for Keycloak v26.1.0 ([KEYCLOAK-37](https://issues.folio.org/browse/KEYCLOAK-37))
+
 ## v1.4.1 2024-10-02
 * Fix password reset policy name (#104) ([MGRTENANT-34](https://issues.folio.org/browse/MGRTENANT-34))
 * Enable option in Keycloak making username editable (#99) ([MGRTENANT-27](https://issues.folio.org/browse/MGRTENANT-27))
