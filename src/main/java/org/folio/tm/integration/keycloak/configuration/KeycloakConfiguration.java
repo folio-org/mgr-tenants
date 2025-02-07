@@ -63,8 +63,11 @@ public class KeycloakConfiguration {
 
   @Bean
   public KeycloakRealmService keycloakRealmService(Keycloak keycloak, JsonHelper jsonHelper,
-    List<KeycloakRealmRoleService> keycloakRealmRoleServices, List<KeycloakClientService> keycloakClientServices) {
-    return new KeycloakRealmService(keycloak, jsonHelper, keycloakClientServices, keycloakRealmRoleServices);
+    List<KeycloakRealmRoleService> keycloakRealmRoleServices,
+    List<KeycloakClientService> keycloakClientServices,
+    KeycloakRealmSetupProperties keycloakRealmSetupProperties) {
+    return new KeycloakRealmService(keycloak, jsonHelper, keycloakClientServices, keycloakRealmRoleServices,
+      keycloakRealmSetupProperties);
   }
 
   @Bean

@@ -18,4 +18,6 @@ public class KeycloakRealmSetupProperties {
   private PasswordResetClientProperties passwordResetClient;
   private Integer clientSecretLength;
   private String impersonationClient;
+  private Integer accessCodeLifespan;
+  private Integer parRequestUriLifespan;
 }

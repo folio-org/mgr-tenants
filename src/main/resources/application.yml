@@ -69,6 +69,8 @@ application:
       password-reset-client:
         client_id: ${KC_PASSWORD_RESET_CLIENT_ID:password-reset-client}
         token_lifespan: ${KC_PASSWORD_RESET_TOKEN_TTL:86400}
+      access-code-lifespan: ${KC_ACCESS_CODE_TTL:600}
+      par-request-uri-lifespan: ${KC_PAR_REQUEST_URI_TTL:600}
     tls:
       enabled: ${KC_CLIENT_TLS_ENABLED:false}
       trust-store-path: ${KC_CLIENT_TLS_TRUSTSTORE_PATH}

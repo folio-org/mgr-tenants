@@ -18,11 +18,13 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.SerializationException;
 import org.folio.test.types.UnitTest;
 import org.folio.tm.domain.dto.Tenant;
+import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
 import org.folio.tm.integration.keycloak.exception.KeycloakException;
 import org.folio.tm.integration.keycloak.service.clients.KeycloakClientService;
 import org.folio.tm.integration.keycloak.service.roles.KeycloakRealmRoleService;
@@ -50,6 +52,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class KeycloakRealmServiceTest {
+  private static final Integer ACCESS_CODE_LIFESPAN_VALUE = 600;
+  private static final Integer PAR_REQUEST_LIFESPAN_VALUE = 600;
 
   private KeycloakRealmService keycloakRealmService;
 
@@ -65,8 +69,12 @@ class KeycloakRealmServiceTest {
 
   @BeforeEach
   void setUp() {
+    var keycloakRealmSetupProperties = new KeycloakRealmSetupProperties();
+    keycloakRealmSetupProperties.setAccessCodeLifespan(ACCESS_CODE_LIFESPAN_VALUE);
+    keycloakRealmSetupProperties.setParRequestUriLifespan(PAR_REQUEST_LIFESPAN_VALUE);
     keycloakRealmService = new KeycloakRealmService(
-      keycloak, jsonHelper, List.of(keycloakClientService), List.of(keycloakRealmRoleService));
+      keycloak, jsonHelper, List.of(keycloakClientService), List.of(keycloakRealmRoleService),
+      keycloakRealmSetupProperties);
   }
 
   @AfterEach
@@ -83,6 +91,9 @@ class KeycloakRealmServiceTest {
     realmRepresentation.setEnabled(true);
     realmRepresentation.setRequiredActions(requiredActions());
     realmRepresentation.setComponents(realmComponents());
+    realmRepresentation.setAccessCodeLifespan(ACCESS_CODE_LIFESPAN_VALUE);
+    realmRepresentation.setAttributes(new HashMap<>());
+    realmRepresentation.getAttributes().put("parRequestUriLifespan", PAR_REQUEST_LIFESPAN_VALUE.toString());
     return realmRepresentation;
   }
 

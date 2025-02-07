@@ -2,16 +2,20 @@ package org.folio.tm.integration.keycloak;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.util.Optional.ofNullable;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.tm.domain.dto.Tenant;
+import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
 import org.folio.tm.integration.keycloak.exception.KeycloakException;
 import org.folio.tm.integration.keycloak.service.clients.KeycloakClientService;
 import org.folio.tm.integration.keycloak.service.roles.KeycloakRealmRoleService;
@@ -31,6 +35,7 @@ public class KeycloakRealmService {
   private final JsonHelper jsonHelper;
   private final List<KeycloakClientService> keycloakClientServices;
   private final List<KeycloakRealmRoleService> keycloakRoleServices;
+  private final KeycloakRealmSetupProperties keycloakRealmSetupProperties;
 
   /**
    * Creates keycloak realm for given tenant.
@@ -111,7 +116,7 @@ public class KeycloakRealmService {
       log.debug("Check existence of realm [name: {}]", name);
       var realmRepresentation = keycloak.realm(name).toRepresentation();
       log.debug("Realm exists in Keycloak [name: {}]", name);
-      return Optional.ofNullable(realmRepresentation);
+      return ofNullable(realmRepresentation);
     } catch (NotFoundException cause) {
       log.debug("Realm was not found [name: {}]", name);
       return Optional.empty();
@@ -133,6 +138,14 @@ public class KeycloakRealmService {
     realm.setEditUsernameAllowed(TRUE);
     realm.setRequiredActions(getAuthenticationRequiredActions());
     realm.setComponents(getRealmComponentsConfiguration());
+    realm.setAccessCodeLifespan(keycloakRealmSetupProperties.getAccessCodeLifespan());
+    ofNullable(keycloakRealmSetupProperties.getParRequestUriLifespan())
+      .ifPresent(parRequestUriLifespan -> {
+        if (isEmpty(realm.getAttributes())) {
+          realm.setAttributes(new HashMap<>());
+        }
+        realm.getAttributes().put("parRequestUriLifespan", parRequestUriLifespan.toString());
+      });
 
     return realm;
   }
