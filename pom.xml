@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.2</version>
+    <version>3.4.3</version>
     <relativePath />
   </parent>
 
@@ -41,10 +41,10 @@
     <mgr-tenants.yaml-file>${project.basedir}/src/main/resources/swagger.api/mgr-tenants.yaml</mgr-tenants.yaml-file>
 
     <!-- Test dependencies versions -->
-    <testcontainer.version>1.20.4</testcontainer.version>
+    <testcontainer.version>1.20.5</testcontainer.version>
 
     <!-- Plugins versions -->
-    <maven-checkstyle.version>10.21.2</maven-checkstyle.version>
+    <maven-checkstyle.version>10.21.3</maven-checkstyle.version>
     <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
     <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
     <openapi-generator.version>7.11.0</openapi-generator.version>
