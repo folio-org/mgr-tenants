@@ -1,3 +1,10 @@
+## Version `v3.0.0` (11.03.2025)
+* Upgrade Java to version 21. (MGRTENANT-49)
+* Entitlement issue for newly created tenant due to default keycloak configurations (MGRTENANT-47)
+* Update version of keycloak-admin-client to v26.0.3 (KEYCLOAK-25)
+
+---
+
 ## Version `v2.0.0` (01.11.2024)
 * bump up applications-poc-tools dependencies to 2.0.0
 
