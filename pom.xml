@@ -12,7 +12,7 @@
   <name>mgr-tenants</name>
   <groupId>org.folio</groupId>
   <artifactId>mgr-tenants</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
   <description>Manager responsible for the tenants</description>
   <packaging>jar</packaging>
 
