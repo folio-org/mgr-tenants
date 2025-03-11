@@ -37,8 +37,8 @@
     <spring-cloud-bom.version>2024.0.0</spring-cloud-bom.version>
     <openapi-tools.jackson-databind-nullable.version>0.2.6</openapi-tools.jackson-databind-nullable.version>
     <folio-spring-cql.version>9.0.0</folio-spring-cql.version>
-    <applications-poc-tools.version>2.3.0-SNAPSHOT</applications-poc-tools.version>
-    <folio-java-checkstyle.version>1.0.1</folio-java-checkstyle.version>
+    <applications-poc-tools.version>3.0.0</applications-poc-tools.version>
+    <folio-java-checkstyle.version>1.1.0</folio-java-checkstyle.version>
 
     <mgr-tenants.yaml-file>${project.basedir}/src/main/resources/swagger.api/mgr-tenants.yaml</mgr-tenants.yaml-file>
 
