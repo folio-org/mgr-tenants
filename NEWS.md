@@ -1,3 +1,8 @@
+## Version `v3.1.0` (in progress)
+* Enable security by default (MGRTENANT-50)
+
+---
+
 ## Version `v3.0.0` (11.03.2025)
 * Upgrade Java to version 21. (MGRTENANT-49)
 * Entitlement issue for newly created tenant due to default keycloak configurations (MGRTENANT-47)
