@@ -10,6 +10,8 @@ spring:
 
 application:
   environment: it
+  security:
+    enabled: false
   kong:
     enabled: false
     register-module: false
