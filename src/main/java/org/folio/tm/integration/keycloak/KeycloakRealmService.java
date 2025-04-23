@@ -148,10 +148,10 @@ public class KeycloakRealmService {
       });
 
     realm.setAccessTokenLifespan(keycloakRealmSetupProperties.getAccessTokenLifespan());
-    realm.setSsoSessionIdleTimeout(keycloakRealmSetupProperties.getSsoSessionIdleTimeout());
-    realm.setSsoSessionMaxLifespan(keycloakRealmSetupProperties.getSsoSessionMaxLifespan());
-    realm.setClientSessionIdleTimeout(keycloakRealmSetupProperties.getClientSessionIdleTimeout());
-    realm.setClientSessionMaxLifespan(keycloakRealmSetupProperties.getClientSessionMaxLifespan());
+    realm.setSsoSessionIdleTimeout(keycloakRealmSetupProperties.getSsoSession().getIdleTimeout());
+    realm.setSsoSessionMaxLifespan(keycloakRealmSetupProperties.getSsoSession().getMaxLifespan());
+    realm.setClientSessionIdleTimeout(keycloakRealmSetupProperties.getClientSession().getIdleTimeout());
+    realm.setClientSessionMaxLifespan(keycloakRealmSetupProperties.getClientSession().getMaxLifespan());
 
     return realm;
   }

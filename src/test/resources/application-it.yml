@@ -27,10 +27,12 @@ application:
       trust-store-type: JKS
     realm-setup:
       access-token-lifespan: 261
-      sso-session-idle-timeout: 262
-      sso-session-max-lifespan: 263
-      client-session-idle-timeout: 264
-      client-session-max-lifespan: 265
+      sso-session:
+        idle-timeout: 262
+        max-lifespan: 263
+      client-session:
+        idle-timeout: 264
+        max-lifespan: 265
   secret-store:
     type: EPHEMERAL
     ephemeral:
