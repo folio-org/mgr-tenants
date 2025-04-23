@@ -128,6 +128,12 @@ The feature is controlled by two env variables `SECURITY_ENABLED` and `KC_INTEGR
 | KC_CLIENT_TLS_TRUSTSTORE_PATH     | -                            |    false    | Truststore file path for keycloak clients.                                                                                                              |
 | KC_CLIENT_TLS_TRUSTSTORE_PASSWORD | -                            |    false    | Truststore password for keycloak clients.                                                                                                               |
 | KC_CLIENT_TLS_TRUSTSTORE_TYPE     | -                            |    false    | Truststore file type for keycloak clients.                                                                                                              |
+| KC_ACCESS_TOKEN_TTL               | 300                          |    false    | Keycloak access token lifespan.                                                                                                                         |
+| KC_SSO_SESSION_IDLE_TTL           | 64800                        |    false    | Keycloak SSO session idle timeout.                                                                                                                      |
+| KC_SSO_SESSION_MAX_TTL            | 64800                        |    false    | Keycloak SSO session max lifespan.                                                                                                                      |
+| KC_CLIENT_SESSION_IDLE_TTL        | 64800                        |    false    | Keycloak client session idle timeout.                                                                                                                   |
+| KC_CLIENT_SESSION_MAX_TTL         | 64800                        |    false    | Keycloak client session max lifespan.                                                                                                                   |
+
 
 ### Interaction with Keycloak
 

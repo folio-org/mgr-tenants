@@ -20,4 +20,10 @@ public class KeycloakRealmSetupProperties {
   private String impersonationClient;
   private Integer accessCodeLifespan;
   private Integer parRequestUriLifespan;
+
+  private Integer accessTokenLifespan;
+  private Integer ssoSessionIdleTimeout;
+  private Integer ssoSessionMaxLifespan;
+  private Integer clientSessionIdleTimeout;
+  private Integer clientSessionMaxLifespan;
 }
