@@ -71,6 +71,13 @@ application:
         token_lifespan: ${KC_PASSWORD_RESET_TOKEN_TTL:86400}
       access-code-lifespan: ${KC_ACCESS_CODE_TTL:600}
       par-request-uri-lifespan: ${KC_PAR_REQUEST_URI_TTL:600}
+      access-token-lifespan: ${KC_ACCESS_TOKEN_TTL:300}
+      sso-session:
+        idle-timeout: ${KC_SSO_SESSION_IDLE_TTL:64800}
+        max-lifespan: ${KC_SSO_SESSION_MAX_TTL:64800}
+      client-session:
+        idle-timeout: ${KC_CLIENT_SESSION_IDLE_TTL:64800}
+        max-lifespan: ${KC_CLIENT_SESSION_MAX_TTL:64800}
     tls:
       enabled: ${KC_CLIENT_TLS_ENABLED:false}
       trust-store-path: ${KC_CLIENT_TLS_TRUSTSTORE_PATH}
