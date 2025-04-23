@@ -1,3 +1,7 @@
+## Version `v3.0.6` (21.01.2026)
+* Setup default keycloak realm session timeouts (MGRTENANT-55)
+---
+
 ## Version `v3.0.5` (12.12.2025)
 * bump applications-poc-tools dependencies to 3.0.9
 ---

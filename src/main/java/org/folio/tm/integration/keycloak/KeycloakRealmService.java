@@ -147,6 +147,12 @@ public class KeycloakRealmService {
         realm.getAttributes().put("parRequestUriLifespan", parRequestUriLifespan.toString());
       });
 
+    realm.setAccessTokenLifespan(keycloakRealmSetupProperties.getAccessTokenLifespan());
+    realm.setSsoSessionIdleTimeout(keycloakRealmSetupProperties.getSsoSession().getIdleTimeout());
+    realm.setSsoSessionMaxLifespan(keycloakRealmSetupProperties.getSsoSession().getMaxLifespan());
+    realm.setClientSessionIdleTimeout(keycloakRealmSetupProperties.getClientSession().getIdleTimeout());
+    realm.setClientSessionMaxLifespan(keycloakRealmSetupProperties.getClientSession().getMaxLifespan());
+
     return realm;
   }
 

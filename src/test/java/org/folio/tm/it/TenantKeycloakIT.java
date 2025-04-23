@@ -130,6 +130,11 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     var realm = keycloakTestClient.getRealm(tenantName);
     assertThat(realm.getRealm()).isEqualTo(tenantName);
     checkImpersonationClient(tenantName);
+    assertThat(realm.getAccessTokenLifespan()).isEqualTo(261);
+    assertThat(realm.getSsoSessionIdleTimeout()).isEqualTo(262);
+    assertThat(realm.getSsoSessionMaxLifespan()).isEqualTo(263);
+    assertThat(realm.getClientSessionIdleTimeout()).isEqualTo(264);
+    assertThat(realm.getClientSessionMaxLifespan()).isEqualTo(265);
   }
 
   @Test
