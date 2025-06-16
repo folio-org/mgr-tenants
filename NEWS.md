@@ -1,5 +1,6 @@
 ## Version `v3.1.0` (in progress)
 * Setup default keycloak realm session timeouts (MGRTENANT-55)
+* Introduce configuration for FSSP (APPPOCTOOL-59)
 
 ## Version `v3.0.0` (11.03.2025)
 * Upgrade Java to version 21. (MGRTENANT-49)

@@ -8,8 +8,12 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 ## Table of contents
 
 * [Introduction](#introduction)
-* [Interaction with keycloak](#interaction-with-keycloak)
 * [Environment Variables](#environment-variables)
+  * [SSL Configuration environment variables](#ssl-configuration-environment-variables)
+  * [Secure storage environment variables](#secure-storage-environment-variables)
+    * [AWS-SSM](#aws-ssm)
+    * [Vault](#vault)
+    * [Folio Secure Store Proxy (FSSP)](#folio-secure-store-proxy-fssp)
 * [Keycloak Integration](#keycloak-integration)
 
 ## Introduction
@@ -37,10 +41,10 @@ to realm
 | KONG_WRITE_TIMEOUT           | -                    |  false   | Defines the timeout in milliseconds between two successive write operations for transmitting a request from Kong to the upstream service. If the value is not provided then Kong defaults are applied.    |
 | KONG_RETRIES                 | -                    |  false   | Defines the number of retries to execute upon failure to proxy. If the value is not provided then Kong defaults are applied.                                                                              |
 | CACHE_EXPIRATION_TTL         | 60s                  |  false   | ttl value for token to persist in cache                                                                                                                                                                   |
-| SECURITY_ENABLED             | false                |  false   | Allows to enable/disable security. <br/>If true and KC_INTEGRATION_ENABLED is also true - the Keycloak will be used as a security provider.                                                         |
+| SECURITY_ENABLED             | false                |  false   | Allows to enable/disable security. <br/>If true and KC_INTEGRATION_ENABLED is also true - the Keycloak will be used as a security provider.                                                               |
 | KC_IMPERSONATION_CLIENT      | impersonation-client |  false   | Defined client in Keycloak, that has permissions to impersonate users.                                                                                                                                    |
 | MOD_AUTHTOKEN_URL            | -                    |   true   | Mod-authtoken URL. Required if OKAPI_INTEGRATION_ENABLED is true and SECURITY_ENABLED is true and KC_INTEGRATION_ENABLED is false.                                                                        |
-| SECRET_STORE_TYPE            | -                    |   true   | Secure storage type. Supported values: `Ephemeral`, `Aws_ssm`, `Vault`                                                                                                                                    |
+| SECRET_STORE_TYPE            | -                    |   true   | Secure storage type. Supported values: `EPHEMERAL`, `AWS_SSM`, `VAULT`, `FSSP`                                                                                                                            |
 | MAX_HTTP_REQUEST_HEADER_SIZE | 200KB                |   true   | Maximum size of the HTTP request header.                                                                                                                                                                  |
 | ROUTER_PATH_PREFIX           |                      |  false   | Defines routes prefix to be added to the generated endpoints by OpenAPI generator (`/foo/entites` -> `{{prefix}}/foo/entities`). Required if load balancing group has format like `{{host}}/{{moduleId}}` |
 
@@ -60,7 +64,7 @@ to realm
 
 #### AWS-SSM
 
-Required when `SECRET_STORE_TYPE=Aws_ssm`
+Required when `SECRET_STORE_TYPE=AWS_SSM`
 
 | Name                                          | Default value | Description                                                                                                                                                    |
 |:----------------------------------------------|:--------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -71,7 +75,7 @@ Required when `SECRET_STORE_TYPE=Aws_ssm`
 
 #### Vault
 
-Required when `SECRET_STORE_TYPE=Vault`
+Required when `SECRET_STORE_TYPE=VAULT`
 
 | Name                                    | Default value | Description                                                                         |
 |:----------------------------------------|:--------------|:------------------------------------------------------------------------------------|
@@ -82,6 +86,19 @@ Required when `SECRET_STORE_TYPE=Vault`
 | SECRET_STORE_VAULT_KEYSTORE_PASSWORD    | -             | the password used to access the JKS keystore (optional)                             |
 | SECRET_STORE_VAULT_KEYSTORE_FILE_PATH   | -             | the path to a JKS keystore file containing a client cert and private key            |
 | SECRET_STORE_VAULT_TRUSTSTORE_FILE_PATH | -             | the path to a JKS truststore file containing Vault server certs that can be trusted |
+
+#### Folio Secure Store Proxy (FSSP)
+
+Required when `SECRET_STORE_TYPE=FSSP`
+
+| Name                                   | Default value         | Description                                          |
+|:---------------------------------------|:----------------------|:-----------------------------------------------------|
+| SECRET_STORE_FSSP_ADDRESS              | -                     | The address (URL) of the FSSP service.               |
+| SECRET_STORE_FSSP_SECRET_PATH          | secure-store/entries  | The path in FSSP where secrets are stored/retrieved. |
+| SECRET_STORE_FSSP_ENABLE_SSL           | false                 | Whether to use SSL when connecting to FSSP.          |
+| SECRET_STORE_FSSP_TRUSTSTORE_PATH      | -                     | Path to the truststore file for SSL connections.     |
+| SECRET_STORE_FSSP_TRUSTSTORE_FILE_TYPE | -                     | The type of the truststore file (e.g., JKS, PKCS12). |
+| SECRET_STORE_FSSP_TRUSTSTORE_PASSWORD  | -                     | The password for the truststore file.                |
 
 ## Keycloak Integration
 
