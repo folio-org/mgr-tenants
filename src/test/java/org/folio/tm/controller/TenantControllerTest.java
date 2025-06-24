@@ -145,7 +145,7 @@ class TenantControllerTest {
 
   @Test
   void delete_positive() throws Exception {
-    doNothing().when(tenantService).deleteTenantById(TestConstants.TENANT_ID);
+    doNothing().when(tenantService).deleteTenantById(TestConstants.TENANT_ID, null);
     when(jsonWebTokenParser.parse(AUTH_TOKEN)).thenReturn(jsonWebToken);
     when(jsonWebToken.getIssuer()).thenReturn(TOKEN_ISSUER);
     when(jsonWebToken.getSubject()).thenReturn(TOKEN_SUB);
@@ -210,7 +210,7 @@ class TenantControllerTest {
 
   @Test
   void delete_negative_unauthorized() throws Exception {
-    doNothing().when(tenantService).deleteTenantById(TestConstants.TENANT_ID);
+    doNothing().when(tenantService).deleteTenantById(TestConstants.TENANT_ID, null);
     when(authClient.evaluatePermissions(anyMap(), anyString())).thenThrow(new NotAuthorizedException("test"));
 
     mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TestConstants.TENANT_ID)
@@ -221,7 +221,7 @@ class TenantControllerTest {
 
   @Test
   void delete_negative_noAuthToken() throws Exception {
-    doNothing().when(tenantService).deleteTenantById(TestConstants.TENANT_ID);
+    doNothing().when(tenantService).deleteTenantById(TestConstants.TENANT_ID, null);
 
     mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TestConstants.TENANT_ID)
         .contentType(APPLICATION_JSON))

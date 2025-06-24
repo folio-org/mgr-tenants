@@ -14,6 +14,7 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
     * [AWS-SSM](#aws-ssm)
     * [Vault](#vault)
     * [Folio Secure Store Proxy (FSSP)](#folio-secure-store-proxy-fssp)
+    * [Kafka](#kafka)
 * [Keycloak Integration](#keycloak-integration)
 
 ## Introduction
@@ -99,6 +100,19 @@ Required when `SECRET_STORE_TYPE=FSSP`
 | SECRET_STORE_FSSP_TRUSTSTORE_PATH      | -                     | Path to the truststore file for SSL connections.     |
 | SECRET_STORE_FSSP_TRUSTSTORE_FILE_TYPE | -                     | The type of the truststore file (e.g., JKS, PKCS12). |
 | SECRET_STORE_FSSP_TRUSTSTORE_PASSWORD  | -                     | The password for the truststore file.                |
+
+#### Kafka
+
+| Name                                         | Default value | Required | Description                                                                                                                                                |
+|:---------------------------------------------|:--------------|:--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| KAFKA_HOST                                   | kafka         |  false   | Kafka broker hostname                                                                                                                                      |
+| KAFKA_PORT                                   | 9092          |  false   | Kafka broker port                                                                                                                                          |
+| KAFKA_SECURITY_PROTOCOL                      | PLAINTEXT     |  false   | Kafka security protocol used to communicate with brokers (SSL or PLAINTEXT)                                                                                |
+| KAFKA_SSL_KEYSTORE_LOCATION                  | -             |  false   | The location of the Kafka key store file. This is optional for client and can be used for two-way authentication for client.                               |
+| KAFKA_SSL_KEYSTORE_PASSWORD                  | -             |  false   | The store password for the Kafka key store file. This is optional for client and only needed if 'ssl.keystore.location' is configured.                     |
+| KAFKA_SSL_TRUSTSTORE_LOCATION                | -             |  false   | The location of the Kafka trust store file.                                                                                                                |
+| KAFKA_SSL_TRUSTSTORE_PASSWORD                | -             |  false   | The password for the Kafka trust store file. If a password is not set, trust store file configured will still be used, but integrity checking is disabled. |
+
 
 ## Keycloak Integration
 
