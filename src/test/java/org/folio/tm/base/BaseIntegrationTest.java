@@ -2,6 +2,7 @@ package org.folio.tm.base;
 
 import lombok.extern.log4j.Log4j2;
 import org.folio.test.base.BaseBackendIntegrationTest;
+import org.folio.test.extensions.EnableKafka;
 import org.folio.test.extensions.EnableWireMock;
 import org.folio.tm.exception.RequestValidationException;
 import org.folio.tm.extension.EnablePostgres;
@@ -17,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 @Log4j2
+@EnableKafka
 @EnableWireMock
 @EnablePostgres
 @SpringBootTest
