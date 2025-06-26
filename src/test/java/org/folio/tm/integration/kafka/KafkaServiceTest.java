@@ -99,6 +99,20 @@ class KafkaServiceTest {
     verifyNoInteractions(adminClient.deleteTopics(anySet()));
   }
 
+  @Test
+  void deleteTopics_positive_interruptedException() throws Exception {
+    var listTopicsResult = mock(ListTopicsResult.class);
+    var names = mock(KafkaFuture.class);
+    doReturn(listTopicsResult).when(adminClient).listTopics();
+    when(listTopicsResult.names()).thenReturn(names);
+    when(names.get(anyLong(), eq(SECONDS))).thenThrow(new InterruptedException("Test exception"));
+
+    kafkaService.deleteTopics("tenant", TRUE);
+
+    verify(adminClient).listTopics();
+    verifyNoInteractions(adminClient.deleteTopics(anySet()));
+  }
+
   static Stream<Arguments> positiveTopicsProvider() {
     return Stream.of(
       Arguments.of("tenant", Set.of("folio.tenant.topic1", "folio.tenant1.topic1", "env.tenant.topic"),
