@@ -24,6 +24,7 @@ import org.folio.test.types.UnitTest;
 import org.folio.tm.domain.dto.Tenants;
 import org.folio.tm.domain.entity.TenantEntity;
 import org.folio.tm.exception.RequestValidationException;
+import org.folio.tm.integration.kafka.KafkaService;
 import org.folio.tm.mapper.TenantMapper;
 import org.folio.tm.repository.TenantRepository;
 import org.folio.tm.service.listeners.TenantEventsPublisher;
@@ -47,6 +48,7 @@ class TenantServiceTest {
   @Mock private TenantRepository repository;
   @Mock private TenantEventsPublisher tenantEventsPublisher;
   @Mock private TenantAttributeService tenantAttributeService;
+  @Mock private KafkaService kafkaService;
 
   @AfterEach
   void tearDown() {
@@ -210,10 +212,11 @@ class TenantServiceTest {
     var entity = tenantEntity();
     when(repository.findById(TENANT_ID)).thenReturn(Optional.of(entity));
 
-    tenantService.deleteTenantById(TENANT_ID);
+    tenantService.deleteTenantById(TENANT_ID, null);
 
     verify(repository).delete(entity);
     verify(tenantEventsPublisher).onTenantDelete(TENANT_NAME);
+    verify(kafkaService).deleteTopics(entity.getName(), null);
   }
 
   @Test
@@ -222,7 +225,7 @@ class TenantServiceTest {
 
     when(repository.findById(TENANT_ID)).thenReturn(Optional.empty());
 
-    tenantService.deleteTenantById(TENANT_ID);
+    tenantService.deleteTenantById(TENANT_ID, null);
 
     verify(repository, never()).delete(entity);
     verify(tenantEventsPublisher, never()).onTenantDelete(anyString());

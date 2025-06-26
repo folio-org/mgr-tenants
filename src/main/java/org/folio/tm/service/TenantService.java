@@ -15,6 +15,7 @@ import org.folio.tm.domain.dto.TenantAttributes;
 import org.folio.tm.domain.dto.Tenants;
 import org.folio.tm.domain.entity.TenantEntity;
 import org.folio.tm.exception.RequestValidationException;
+import org.folio.tm.integration.kafka.KafkaService;
 import org.folio.tm.mapper.TenantMapper;
 import org.folio.tm.repository.TenantRepository;
 import org.folio.tm.service.listeners.TenantEventsPublisher;
@@ -30,6 +31,7 @@ public class TenantService {
   private final TenantRepository repository;
   private final TenantAttributeService tenantAttributeService;
   private final TenantEventsPublisher tenantEventsPublisher;
+  private final KafkaService kafkaService;
 
   public Tenant createTenant(Tenant tenant) {
     var name = tenant.getName();
@@ -88,10 +90,11 @@ public class TenantService {
     return mapper.toDto(saved, tenantAttributes);
   }
 
-  public void deleteTenantById(UUID id) {
+  public void deleteTenantById(UUID id, Boolean purgeKafkaTopics) {
     repository.findById(id).ifPresent(entity -> {
       repository.delete(entity);
       tenantEventsPublisher.onTenantDelete(entity.getName());
+      kafkaService.deleteTopics(entity.getName(), purgeKafkaTopics);
     });
   }
 
