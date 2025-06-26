@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.DeleteTopicsResult;
@@ -91,7 +92,7 @@ class KafkaServiceTest {
     var names = mock(KafkaFuture.class);
     doReturn(listTopicsResult).when(adminClient).listTopics();
     when(listTopicsResult.names()).thenReturn(names);
-    when(names.get(anyLong(), eq(SECONDS))).thenThrow(new InterruptedException("Test exception"));
+    when(names.get(anyLong(), eq(SECONDS))).thenThrow(new TimeoutException("Test exception"));
 
     kafkaService.deleteTopics("tenant", TRUE);
 
