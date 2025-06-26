@@ -42,8 +42,10 @@ public class KafkaService {
       log.info("Deleting topics for tenant: tenant = {}, topics = {}", tenant, topicsToDelete);
       adminClient.deleteTopics(topicsToDelete).all().get(TIMEOUT_SECONDS, SECONDS);
       log.info("Deleted topics successfully: tenant = {}", tenant);
-    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+    } catch (InterruptedException e) {
       currentThread().interrupt();
+      log.warn("Interrupted while deleting topics: tenant = {}", tenant, e);
+    } catch (ExecutionException | TimeoutException e) {
       log.warn("Error deleting topics: tenant = {}", tenant, e);
     }
   }
