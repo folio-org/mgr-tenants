@@ -25,6 +25,15 @@ spring:
     openfeign:
       okhttp:
         enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
+    security:
+      protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+    ssl:
+      key-store-password: ${KAFKA_SSL_KEYSTORE_PASSWORD:}
+      key-store-location: ${KAFKA_SSL_KEYSTORE_LOCATION:}
+      trust-store-password: ${KAFKA_SSL_TRUSTSTORE_PASSWORD:}
+      trust-store-location: ${KAFKA_SSL_TRUSTSTORE_LOCATION:}
 
 server:
   port: ${SERVER_PORT:8081}
@@ -71,6 +80,13 @@ application:
         token_lifespan: ${KC_PASSWORD_RESET_TOKEN_TTL:86400}
       access-code-lifespan: ${KC_ACCESS_CODE_TTL:600}
       par-request-uri-lifespan: ${KC_PAR_REQUEST_URI_TTL:600}
+      access-token-lifespan: ${KC_ACCESS_TOKEN_TTL:300}
+      sso-session:
+        idle-timeout: ${KC_SSO_SESSION_IDLE_TTL:64800}
+        max-lifespan: ${KC_SSO_SESSION_MAX_TTL:64800}
+      client-session:
+        idle-timeout: ${KC_CLIENT_SESSION_IDLE_TTL:64800}
+        max-lifespan: ${KC_CLIENT_SESSION_MAX_TTL:64800}
     tls:
       enabled: ${KC_CLIENT_TLS_ENABLED:false}
       trust-store-path: ${KC_CLIENT_TLS_TRUSTSTORE_PATH}
@@ -113,6 +129,13 @@ application:
       keystore-password: ${SECRET_STORE_VAULT_KEYSTORE_PASSWORD:}
       keystore-file-path: ${SECRET_STORE_VAULT_KEYSTORE_FILE_PATH:}
       truststore-file-path: ${SECRET_STORE_VAULT_TRUSTSTORE_FILE_PATH:}
+    fssp:
+      address: ${SECRET_STORE_FSSP_ADDRESS:}
+      secret-path: ${SECRET_STORE_FSSP_SECRET_PATH:secure-store/entries}
+      enable-ssl: ${SECRET_STORE_FSSP_ENABLE_SSL:false}
+      trust-store-path: ${SECRET_STORE_FSSP_TRUSTSTORE_PATH:}
+      trust-store-file-type: ${SECRET_STORE_FSSP_TRUSTSTORE_FILE_TYPE:}
+      trust-store-password: ${SECRET_STORE_FSSP_TRUSTSTORE_PASSWORD:}
 
 management:
   endpoints.web:

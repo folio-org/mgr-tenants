@@ -8,8 +8,13 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 ## Table of contents
 
 * [Introduction](#introduction)
-* [Interaction with keycloak](#interaction-with-keycloak)
 * [Environment Variables](#environment-variables)
+  * [SSL Configuration environment variables](#ssl-configuration-environment-variables)
+  * [Secure storage environment variables](#secure-storage-environment-variables)
+    * [AWS-SSM](#aws-ssm)
+    * [Vault](#vault)
+    * [Folio Secure Store Proxy (FSSP)](#folio-secure-store-proxy-fssp)
+    * [Kafka](#kafka)
 * [Keycloak Integration](#keycloak-integration)
 
 ## Introduction
@@ -40,7 +45,7 @@ to realm
 | SECURITY_ENABLED             | true                 |  false   | Allows to enable/disable security. <br/>If true and KC_INTEGRATION_ENABLED is also true - the Keycloak will be used as a security provider.                                                         |
 | KC_IMPERSONATION_CLIENT      | impersonation-client |  false   | Defined client in Keycloak, that has permissions to impersonate users.                                                                                                                                    |
 | MOD_AUTHTOKEN_URL            | -                    |   true   | Mod-authtoken URL. Required if OKAPI_INTEGRATION_ENABLED is true and SECURITY_ENABLED is true and KC_INTEGRATION_ENABLED is false.                                                                        |
-| SECRET_STORE_TYPE            | -                    |   true   | Secure storage type. Supported values: `Ephemeral`, `Aws_ssm`, `Vault`                                                                                                                                    |
+| SECRET_STORE_TYPE            | -                    |   true   | Secure storage type. Supported values: `EPHEMERAL`, `AWS_SSM`, `VAULT`, `FSSP`                                                                                                                            |
 | MAX_HTTP_REQUEST_HEADER_SIZE | 200KB                |   true   | Maximum size of the HTTP request header.                                                                                                                                                                  |
 | ROUTER_PATH_PREFIX           |                      |  false   | Defines routes prefix to be added to the generated endpoints by OpenAPI generator (`/foo/entites` -> `{{prefix}}/foo/entities`). Required if load balancing group has format like `{{host}}/{{moduleId}}` |
 
@@ -60,7 +65,7 @@ to realm
 
 #### AWS-SSM
 
-Required when `SECRET_STORE_TYPE=Aws_ssm`
+Required when `SECRET_STORE_TYPE=AWS_SSM`
 
 | Name                                          | Default value | Description                                                                                                                                                    |
 |:----------------------------------------------|:--------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -71,7 +76,7 @@ Required when `SECRET_STORE_TYPE=Aws_ssm`
 
 #### Vault
 
-Required when `SECRET_STORE_TYPE=Vault`
+Required when `SECRET_STORE_TYPE=VAULT`
 
 | Name                                    | Default value | Description                                                                         |
 |:----------------------------------------|:--------------|:------------------------------------------------------------------------------------|
@@ -82,6 +87,32 @@ Required when `SECRET_STORE_TYPE=Vault`
 | SECRET_STORE_VAULT_KEYSTORE_PASSWORD    | -             | the password used to access the JKS keystore (optional)                             |
 | SECRET_STORE_VAULT_KEYSTORE_FILE_PATH   | -             | the path to a JKS keystore file containing a client cert and private key            |
 | SECRET_STORE_VAULT_TRUSTSTORE_FILE_PATH | -             | the path to a JKS truststore file containing Vault server certs that can be trusted |
+
+#### Folio Secure Store Proxy (FSSP)
+
+Required when `SECRET_STORE_TYPE=FSSP`
+
+| Name                                   | Default value         | Description                                          |
+|:---------------------------------------|:----------------------|:-----------------------------------------------------|
+| SECRET_STORE_FSSP_ADDRESS              | -                     | The address (URL) of the FSSP service.               |
+| SECRET_STORE_FSSP_SECRET_PATH          | secure-store/entries  | The path in FSSP where secrets are stored/retrieved. |
+| SECRET_STORE_FSSP_ENABLE_SSL           | false                 | Whether to use SSL when connecting to FSSP.          |
+| SECRET_STORE_FSSP_TRUSTSTORE_PATH      | -                     | Path to the truststore file for SSL connections.     |
+| SECRET_STORE_FSSP_TRUSTSTORE_FILE_TYPE | -                     | The type of the truststore file (e.g., JKS, PKCS12). |
+| SECRET_STORE_FSSP_TRUSTSTORE_PASSWORD  | -                     | The password for the truststore file.                |
+
+#### Kafka
+
+| Name                                         | Default value | Required | Description                                                                                                                                                |
+|:---------------------------------------------|:--------------|:--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| KAFKA_HOST                                   | kafka         |  false   | Kafka broker hostname                                                                                                                                      |
+| KAFKA_PORT                                   | 9092          |  false   | Kafka broker port                                                                                                                                          |
+| KAFKA_SECURITY_PROTOCOL                      | PLAINTEXT     |  false   | Kafka security protocol used to communicate with brokers (SSL or PLAINTEXT)                                                                                |
+| KAFKA_SSL_KEYSTORE_LOCATION                  | -             |  false   | The location of the Kafka key store file. This is optional for client and can be used for two-way authentication for client.                               |
+| KAFKA_SSL_KEYSTORE_PASSWORD                  | -             |  false   | The store password for the Kafka key store file. This is optional for client and only needed if 'ssl.keystore.location' is configured.                     |
+| KAFKA_SSL_TRUSTSTORE_LOCATION                | -             |  false   | The location of the Kafka trust store file.                                                                                                                |
+| KAFKA_SSL_TRUSTSTORE_PASSWORD                | -             |  false   | The password for the Kafka trust store file. If a password is not set, trust store file configured will still be used, but integrity checking is disabled. |
+
 
 ## Keycloak Integration
 
@@ -128,6 +159,12 @@ The feature is controlled by two env variables `SECURITY_ENABLED` and `KC_INTEGR
 | KC_CLIENT_TLS_TRUSTSTORE_PATH     | -                            |    false    | Truststore file path for keycloak clients.                                                                                                              |
 | KC_CLIENT_TLS_TRUSTSTORE_PASSWORD | -                            |    false    | Truststore password for keycloak clients.                                                                                                               |
 | KC_CLIENT_TLS_TRUSTSTORE_TYPE     | -                            |    false    | Truststore file type for keycloak clients.                                                                                                              |
+| KC_ACCESS_TOKEN_TTL               | 300                          |    false    | Keycloak access token lifespan.                                                                                                                         |
+| KC_SSO_SESSION_IDLE_TTL           | 64800                        |    false    | Keycloak SSO session idle timeout.                                                                                                                      |
+| KC_SSO_SESSION_MAX_TTL            | 64800                        |    false    | Keycloak SSO session max lifespan.                                                                                                                      |
+| KC_CLIENT_SESSION_IDLE_TTL        | 64800                        |    false    | Keycloak client session idle timeout.                                                                                                                   |
+| KC_CLIENT_SESSION_MAX_TTL         | 64800                        |    false    | Keycloak client session max lifespan.                                                                                                                   |
+
 
 ### Interaction with Keycloak
 

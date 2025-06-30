@@ -104,6 +104,7 @@ paths:
         - tenants
       parameters:
         - $ref: '#/components/parameters/path-entity-id'
+        - $ref: '#/components/parameters/purgeKafkaTopics'
       responses:
         '204':
           description: No content
@@ -301,4 +302,12 @@ components:
       description: A CQL query string with search conditions.
       schema:
         type: string
+    purgeKafkaTopics:
+      name: purgeKafkaTopics
+      in: query
+      description: |
+        If set to true, the tenant's Kafka topics will be purged.
+      schema:
+        type: boolean
+        default: false
 

@@ -39,8 +39,8 @@ public class TenantController extends BaseController implements TenantsApi {
   }
 
   @Override
-  public ResponseEntity<Void> deleteTenantById(UUID id) {
-    tenantService.deleteTenantById(id);
+  public ResponseEntity<Void> deleteTenantById(UUID id, Boolean purgeKafkaTopics) {
+    tenantService.deleteTenantById(id, purgeKafkaTopics);
     return ResponseEntity.status(NO_CONTENT).build();
   }
 }

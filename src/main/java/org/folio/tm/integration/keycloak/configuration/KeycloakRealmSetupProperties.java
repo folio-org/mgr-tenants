@@ -20,4 +20,10 @@ public class KeycloakRealmSetupProperties {
   private String impersonationClient;
   private Integer accessCodeLifespan;
   private Integer parRequestUriLifespan;
+  private Integer accessTokenLifespan;
+
+  @NestedConfigurationProperty
+  private KeycloakSessionProperties ssoSession = new KeycloakSessionProperties();
+  @NestedConfigurationProperty
+  private KeycloakSessionProperties clientSession = new KeycloakSessionProperties();
 }
