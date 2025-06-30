@@ -2,6 +2,7 @@
 * Setup default keycloak realm session timeouts (MGRTENANT-55)
 * Introduce configuration for FSSP (APPPOCTOOL-59)
 * Delete Kafka topics during tenant deletion (MGRTENANT-59)
+* Enable security by default (MGRTENANT-50)
 
 ## Version `v3.0.0` (11.03.2025)
 * Upgrade Java to version 21. (MGRTENANT-49)

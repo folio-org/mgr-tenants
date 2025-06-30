@@ -54,9 +54,9 @@ application:
     path-prefix: ${ROUTER_PATH_PREFIX:}
   environment: ${ENV:folio}
   security:
-    enabled: ${SECURITY_ENABLED:false}
+    enabled: ${SECURITY_ENABLED:true}
   keycloak:
-    enabled: ${KC_INTEGRATION_ENABLED:false}
+    enabled: ${KC_INTEGRATION_ENABLED:true}
     url: ${KC_URL:http://keycloak:8080}
     admin:
       url: ${KC_URL:http://keycloak:8080}
