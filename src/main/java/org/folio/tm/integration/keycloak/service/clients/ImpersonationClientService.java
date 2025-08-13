@@ -18,6 +18,7 @@ import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupPropert
 import org.folio.tm.integration.keycloak.exception.KeycloakException;
 import org.folio.tm.integration.keycloak.model.ClientAttributes;
 import org.folio.tm.integration.keycloak.model.UserManagementPermission;
+import org.keycloak.admin.client.resource.AuthorizationResource;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation;
@@ -41,43 +42,13 @@ public class ImpersonationClientService extends AbstractKeycloakClientService {
     var impersonationClient = setupKeycloakClient(realm);
     var impersonationClientId = impersonationClient.getId();
 
-    var realmResource = keycloak.realm(realm);
-    var realmManagementClient = getRealmManagementClient(realm);
-    var realmMgmtClientId = realmManagementClient.getId();
-    var authorizationResource = realmResource.clients().get(realmMgmtClientId).authorization();
-    var impersonationPolicy = buildImpersonationPolicy(impersonationClientId);
+    var realmMgmtClientId = getRealmMgmtClientId(realm);
+    var authorizationResource = getRealmMgmtAuthorizationResource(realm, realmMgmtClientId);
 
-    var clientPoliciesResource = authorizationResource.policies().client();
-    try (var response = clientPoliciesResource.create(impersonationPolicy)) {
-      processKeycloakResponse(response, impersonationPolicy);
-    } catch (WebApplicationException exception) {
-      throw new KeycloakException("Failed to create impersonation policy for client: " + realmMgmtClientId, exception);
-    }
-
-    var scopePermissionId = userManagementPermission.getScopePermissions().getImpersonate();
-    try {
-      var newScopePermission = buildNewImpersonationPermission();
-      authorizationResource.permissions().scope().findById(scopePermissionId).update(newScopePermission);
-    } catch (Exception exception) {
-      throw new KeycloakException("Failed to update impersonation permission: " + scopePermissionId, exception);
-    }
+    createImpersonationPolicy(impersonationClientId, authorizationResource, realmMgmtClientId);
+    updateImpersonationPermissions(userManagementPermission, authorizationResource);
 
     return impersonationClient;
-  }
-
-  private static ClientPolicyRepresentation buildImpersonationPolicy(String impersonationClientId) {
-    var policy = new ClientPolicyRepresentation();
-    policy.setName(IMPERSONATION_POLICY_NAME);
-    policy.setClients(singleton(impersonationClientId));
-    policy.setType(CLIENT_POLICY_TYPE);
-    return policy;
-  }
-
-  private static ScopePermissionRepresentation buildNewImpersonationPermission() {
-    var scopePermission = new ScopePermissionRepresentation();
-    scopePermission.setName(ADMIN_IMPERSONATING_PERMISSION);
-    scopePermission.setPolicies(Set.of(IMPERSONATION_POLICY_NAME));
-    return scopePermission;
   }
 
   @Override
@@ -127,6 +98,16 @@ public class ImpersonationClientService extends AbstractKeycloakClientService {
       .orElseThrow(() -> new KeycloakException("Failed to find realm management client for realm: " + realm));
   }
 
+  private AuthorizationResource getRealmMgmtAuthorizationResource(String realm, String realmMgmtClientId) {
+    var realmResource = keycloak.realm(realm);
+    return realmResource.clients().get(realmMgmtClientId).authorization();
+  }
+
+  private String getRealmMgmtClientId(String realm) {
+    var realmManagementClient = getRealmManagementClient(realm);
+    return realmManagementClient.getId();
+  }
+
   private static void processKeycloakResponse(Response response, ClientPolicyRepresentation policy) {
     var statusInfo = response.getStatusInfo();
     if (statusInfo.getFamily() == SUCCESSFUL) {
@@ -137,5 +118,43 @@ public class ImpersonationClientService extends AbstractKeycloakClientService {
     throw new KeycloakException(format(
       "Failed to create impersonation policy. Details: clientId = %s, name = %s, status = %s, message = %s",
       REALM_MANAGEMENT_CLIENT, policy.getName(), statusInfo.getStatusCode(), statusInfo.getReasonPhrase()));
+  }
+
+  private static ClientPolicyRepresentation buildImpersonationPolicy(String impersonationClientId) {
+    var policy = new ClientPolicyRepresentation();
+    policy.setName(IMPERSONATION_POLICY_NAME);
+    policy.setClients(singleton(impersonationClientId));
+    policy.setType(CLIENT_POLICY_TYPE);
+    return policy;
+  }
+
+  private static ScopePermissionRepresentation buildNewImpersonationPermission() {
+    var scopePermission = new ScopePermissionRepresentation();
+    scopePermission.setName(ADMIN_IMPERSONATING_PERMISSION);
+    scopePermission.setPolicies(Set.of(IMPERSONATION_POLICY_NAME));
+    return scopePermission;
+  }
+
+  private static void createImpersonationPolicy(String impersonationClientId,
+    AuthorizationResource authorizationResource, String realmMgmtClientId) {
+    var impersonationPolicy = buildImpersonationPolicy(impersonationClientId);
+
+    var clientPoliciesResource = authorizationResource.policies().client();
+    try (var response = clientPoliciesResource.create(impersonationPolicy)) {
+      processKeycloakResponse(response, impersonationPolicy);
+    } catch (WebApplicationException exception) {
+      throw new KeycloakException("Failed to create impersonation policy for client: " + realmMgmtClientId, exception);
+    }
+  }
+
+  private static void updateImpersonationPermissions(UserManagementPermission userManagementPermission,
+    AuthorizationResource authorizationResource) {
+    var scopePermissionId = userManagementPermission.getScopePermissions().getImpersonate();
+    try {
+      var newScopePermission = buildNewImpersonationPermission();
+      authorizationResource.permissions().scope().findById(scopePermissionId).update(newScopePermission);
+    } catch (Exception exception) {
+      throw new KeycloakException("Failed to update impersonation permission: " + scopePermissionId, exception);
+    }
   }
 }
