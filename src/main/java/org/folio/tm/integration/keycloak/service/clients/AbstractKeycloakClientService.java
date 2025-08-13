@@ -41,23 +41,7 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
     Assert.notNull(clientId, "client id must not be null");
     log.info("Generating client representation: clientId = {}, realm = {}", clientId, realm);
 
-    var clientRepresentation = new ClientRepresentation();
-    clientRepresentation.setName(getName(realm));
-    clientRepresentation.setClientId(clientId);
-    clientRepresentation.setEnabled(true);
-    clientRepresentation.setDirectAccessGrantsEnabled(true);
-    clientRepresentation.setFrontchannelLogout(true);
-
-    applyIfNotNull(getClientDescription(), clientRepresentation::setDescription);
-    applyIfNotNull(getClientSecret(realm, clientId), clientRepresentation::setSecret);
-    applyIfNotNull(getClientAuthenticatorType(), clientRepresentation::setClientAuthenticatorType);
-    applyIfNotNull(isServiceAccountEnabled(), clientRepresentation::setServiceAccountsEnabled);
-    applyIfNotNull(isAuthorizationServicesEnabled(), clientRepresentation::setAuthorizationServicesEnabled);
-    applyIfNotNull(getWebOrigins(), clientRepresentation::setWebOrigins);
-    applyIfNotNull(getRedirectUris(), clientRepresentation::setRedirectUris);
-    applyIfNotNull(getAttributes(), clientRepresentation::setAttributes);
-    applyIfNotNull(getProtocolMappers(), clientRepresentation::setProtocolMappers);
-    applyIfNotNull(getAuthorizationSettings(), clientRepresentation::setAuthorizationSettings);
+    var clientRepresentation = prepareClientRepresentation(realm, clientId);
 
     var realmResource = keycloak.realm(realm);
     try (var response = realmResource.clients().create(clientRepresentation)) {
@@ -195,6 +179,28 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
       var clientId = client.getClientId();
       throw new KeycloakException(format("Failed to assign a role: '%s' to a client: %s", role, clientId), exception);
     }
+  }
+
+  private ClientRepresentation prepareClientRepresentation(String realm, String clientId) {
+    var clientRepresentation = new ClientRepresentation();
+    clientRepresentation.setName(getName(realm));
+    clientRepresentation.setClientId(clientId);
+    clientRepresentation.setEnabled(true);
+    clientRepresentation.setDirectAccessGrantsEnabled(true);
+    clientRepresentation.setFrontchannelLogout(true);
+
+    applyIfNotNull(getClientDescription(), clientRepresentation::setDescription);
+    applyIfNotNull(getClientSecret(realm, clientId), clientRepresentation::setSecret);
+    applyIfNotNull(getClientAuthenticatorType(), clientRepresentation::setClientAuthenticatorType);
+    applyIfNotNull(isServiceAccountEnabled(), clientRepresentation::setServiceAccountsEnabled);
+    applyIfNotNull(isAuthorizationServicesEnabled(), clientRepresentation::setAuthorizationServicesEnabled);
+    applyIfNotNull(getWebOrigins(), clientRepresentation::setWebOrigins);
+    applyIfNotNull(getRedirectUris(), clientRepresentation::setRedirectUris);
+    applyIfNotNull(getAttributes(), clientRepresentation::setAttributes);
+    applyIfNotNull(getProtocolMappers(), clientRepresentation::setProtocolMappers);
+    applyIfNotNull(getAuthorizationSettings(), clientRepresentation::setAuthorizationSettings);
+
+    return clientRepresentation;
   }
 
   private static void processKeycloakResponse(ClientRepresentation client, Response response) {

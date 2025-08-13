@@ -46,18 +46,8 @@ public class KeycloakRealmService {
     var realmName = tenant.getName();
     try {
       var realmByName = findRealmByName(realmName);
-      if (realmByName.isPresent()) {
-        return realmByName.get();
-      }
 
-      var realmResource = keycloak.realms();
-      var realm = toRealmRepresentation(tenant);
-      realmResource.create(realm);
-      keycloak.tokenManager().grantToken();
-
-      keycloakRoleServices.forEach(roleService -> roleService.setupRole(realmName));
-      keycloakClientServices.forEach(clientService -> clientService.setupClient(realmName));
-      return realm;
+      return realmByName.orElseGet(() -> createRealmInternal(tenant));
     } catch (Exception exception) {
       deleteRealm(realmName);
       if (exception instanceof KeycloakException) {
@@ -125,6 +115,7 @@ public class KeycloakRealmService {
     }
   }
 
+  @SuppressWarnings("checkstyle:MethodLength")
   private RealmRepresentation toRealmRepresentation(Tenant tenant) {
     Assert.notNull(tenant.getId(), "Tenant identifier must not be null");
     var realmName = tenant.getName();
@@ -152,6 +143,20 @@ public class KeycloakRealmService {
     realm.setSsoSessionMaxLifespan(keycloakRealmSetupProperties.getSsoSession().getMaxLifespan());
     realm.setClientSessionIdleTimeout(keycloakRealmSetupProperties.getClientSession().getIdleTimeout());
     realm.setClientSessionMaxLifespan(keycloakRealmSetupProperties.getClientSession().getMaxLifespan());
+
+    return realm;
+  }
+
+  private RealmRepresentation createRealmInternal(Tenant tenant) {
+    var realmResource = keycloak.realms();
+    var realm = toRealmRepresentation(tenant);
+    realmResource.create(realm);
+
+    keycloak.tokenManager().grantToken();
+
+    var realmName = tenant.getName();
+    keycloakRoleServices.forEach(roleService -> roleService.setupRole(realmName));
+    keycloakClientServices.forEach(clientService -> clientService.setupClient(realmName));
 
     return realm;
   }

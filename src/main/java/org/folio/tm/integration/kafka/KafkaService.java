@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import static org.folio.common.configuration.properties.FolioEnvironment.getFolioEnvName;
 
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +30,7 @@ public class KafkaService {
     }
 
     try {
-      var allTopics = adminClient.listTopics().names().get(TIMEOUT_SECONDS, SECONDS);
-      log.debug("All topics: {}", () -> allTopics);
-      var topicPrefix = getTopicPrefix(tenant);
-      var topicsToDelete = allTopics.stream()
-        .filter(name -> name.contains(topicPrefix))
-        .collect(toSet());
+      var topicsToDelete = getTopicsToDelete(tenant);
       if (topicsToDelete.isEmpty()) {
         log.info("No topics to delete for tenant: tenant = {}", tenant);
         return;
@@ -48,6 +44,16 @@ public class KafkaService {
     } catch (ExecutionException | TimeoutException e) {
       log.warn("Error deleting topics: tenant = {}", tenant, e);
     }
+  }
+
+  private Set<String> getTopicsToDelete(String tenant)
+    throws InterruptedException, ExecutionException, TimeoutException {
+    var allTopics = adminClient.listTopics().names().get(TIMEOUT_SECONDS, SECONDS);
+    log.debug("All topics: {}", () -> allTopics);
+    var topicPrefix = getTopicPrefix(tenant);
+    return allTopics.stream()
+      .filter(name -> name.contains(topicPrefix))
+      .collect(toSet());
   }
 
   public static String getTopicPrefix(String tenant) {
