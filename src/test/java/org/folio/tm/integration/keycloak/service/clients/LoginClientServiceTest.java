@@ -196,7 +196,8 @@ class LoginClientServiceTest {
     policyRepresentation.setName("System role policy");
     policyRepresentation.setLogic(POSITIVE);
     policyRepresentation.setDecisionStrategy(UNANIMOUS);
-    policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"System\",\"required\":false}]"));
+    policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"System\",\"required\":false}]",
+      "fetchRoles", "true"));
 
     return policyRepresentation;
   }
@@ -207,7 +208,8 @@ class LoginClientServiceTest {
     policyRepresentation.setName("Password Reset policy");
     policyRepresentation.setLogic(POSITIVE);
     policyRepresentation.setDecisionStrategy(UNANIMOUS);
-    policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"Password Reset\",\"required\":false}]"));
+    policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"Password Reset\",\"required\":false}]",
+      "fetchRoles", "true"));
 
     return policyRepresentation;
   }

@@ -23,9 +23,9 @@ public class ClientAttributes {
   public static final String CLIENT_SECRET_CREATION_TIME = "client.secret.creation.time";
   public static final String BACKCHANNEL_LOGOUT_SESSION_REQUIRED = "backchannel.logout.session.required";
   public static final String BACKCHANNEL_LOGOUT_REVOKE_OFFLINE_TOKENS = "backchannel.logout.revoke.offline.tokens";
+  public static final String USE_LIGHTWEIGHT_ACCESS_TOKEN = "use.lightweight.access.token";
   public static final String ACCESS_TOKEN_LIFESPAN = "access.token.lifespan";
   public static final String USE_REFRESH_TOKENS = "use.refresh.tokens";
-  public static final String USE_LIGHTWEIGHT_ACCESS_TOKEN = "use.lightweight.access.token";
 
   @JsonProperty(OIDC_CIBA_GRANT_ENABLED)
   private boolean oidcCibaGrantEnabled;

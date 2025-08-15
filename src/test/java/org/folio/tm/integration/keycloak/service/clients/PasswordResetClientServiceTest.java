@@ -322,7 +322,8 @@ class PasswordResetClientServiceTest {
     protocolMapper.setProtocol("openid-connect");
     protocolMapper.setProtocolMapper("script-pass-reset-action-mapper.js");
 
-    var protocolMapperConfig = new ProtocolMapperConfig(true, true, true, null, "passwordResetActionId", "String");
+    var protocolMapperConfig = new ProtocolMapperConfig(true, true, true,
+      true, null, "passwordResetActionId", "String");
     protocolMapper.setConfig(protocolMapperConfig.asMap());
 
     return protocolMapper;

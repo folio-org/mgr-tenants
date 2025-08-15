@@ -19,6 +19,7 @@ public class ProtocolMapperConfig {
   public static final String ID_TOKEN_CLAIM = "id.token.claim";
   public static final String ACCESS_TOKEN_CLAIM = "access.token.claim";
   public static final String USERINFO_TOKEN_CLAIM = "userinfo.token.claim";
+  public static final String ADD_TO_LIGHTWEIGHT_ACCESS_TOKEN = "add.to.lightweight.access.token";
   public static final String USER_ATTRIBUTE = "user.attribute";
   public static final String CLAIM_NAME = "claim.name";
   public static final String JSON_TYPE_LABEL = "jsonType.label";
@@ -32,6 +33,9 @@ public class ProtocolMapperConfig {
   @JsonProperty(USERINFO_TOKEN_CLAIM)
   private boolean userInfoTokenClaim;
 
+  @JsonProperty(ADD_TO_LIGHTWEIGHT_ACCESS_TOKEN)
+  private boolean addToLightweightAccessToken;
+
   @JsonProperty(USER_ATTRIBUTE)
   private String userAttribute;
 
@@ -42,7 +46,7 @@ public class ProtocolMapperConfig {
   private String jsonTypeLabel;
 
   public static ProtocolMapperConfig forUserAttribute(String userAttribute, String claimName) {
-    return new ProtocolMapperConfig(true, true, true, userAttribute, claimName, STRING_TYPE_LABEL);
+    return new ProtocolMapperConfig(true, true, true, true, userAttribute, claimName, STRING_TYPE_LABEL);
   }
 
   public Map<String, String> asMap() {
@@ -50,6 +54,7 @@ public class ProtocolMapperConfig {
     resultMap.put(ID_TOKEN_CLAIM, valueOf(idTokenClaim));
     resultMap.put(ACCESS_TOKEN_CLAIM, valueOf(accessTokenClaim));
     resultMap.put(USERINFO_TOKEN_CLAIM, valueOf(userInfoTokenClaim));
+    resultMap.put(ADD_TO_LIGHTWEIGHT_ACCESS_TOKEN, valueOf(addToLightweightAccessToken));
 
     applyIfNotNull(userAttribute, value -> resultMap.put(USER_ATTRIBUTE, value));
     applyIfNotNull(claimName, value -> resultMap.put(CLAIM_NAME, value));

@@ -103,7 +103,8 @@ public class LoginClientService extends AbstractKeycloakClientService {
     policyRepresentation.setDecisionStrategy(UNANIMOUS);
 
     var roleDefinitions = List.of(new RoleDefinition(roleName, false));
-    policyRepresentation.setConfig(Map.of("roles", jsonHelper.asJsonString(roleDefinitions)));
+    policyRepresentation.setConfig(Map.of("roles", jsonHelper.asJsonString(roleDefinitions),
+      "fetchRoles", "true"));
 
     return policyRepresentation;
   }
