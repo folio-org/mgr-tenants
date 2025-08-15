@@ -290,7 +290,7 @@ class PasswordResetClientServiceTest {
     keycloakClient.setFrontchannelLogout(true);
     keycloakClient.setAuthorizationServicesEnabled(false);
     keycloakClient.setClientAuthenticatorType("client-secret");
-    keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, 1000L, false).asMap());
+    keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, true, 1000L, false).asMap());
     keycloakClient.setProtocolMappers(List.of(passwordResetProtocolMapper()));
     keycloakClient.setServiceAccountsEnabled(true);
     keycloakClient.setDirectAccessGrantsEnabled(true);

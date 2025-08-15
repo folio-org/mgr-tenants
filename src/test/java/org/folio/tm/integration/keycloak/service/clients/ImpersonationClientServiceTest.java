@@ -338,7 +338,7 @@ class ImpersonationClientServiceTest {
     keycloakClient.setFrontchannelLogout(true);
     keycloakClient.setAuthorizationServicesEnabled(true);
     keycloakClient.setClientAuthenticatorType("client-secret");
-    keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, null, null).asMap());
+    keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, true, null, null).asMap());
     keycloakClient.setProtocolMappers(List.of(usernameProtocolMapper(), userIdProtocolMapper()));
     keycloakClient.setServiceAccountsEnabled(true);
     keycloakClient.setDirectAccessGrantsEnabled(true);

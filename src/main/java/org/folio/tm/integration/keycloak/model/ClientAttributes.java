@@ -25,6 +25,7 @@ public class ClientAttributes {
   public static final String BACKCHANNEL_LOGOUT_REVOKE_OFFLINE_TOKENS = "backchannel.logout.revoke.offline.tokens";
   public static final String ACCESS_TOKEN_LIFESPAN = "access.token.lifespan";
   public static final String USE_REFRESH_TOKENS = "use.refresh.tokens";
+  public static final String USE_LIGHTWEIGHT_ACCESS_TOKEN = "use.lightweight.access.token";
 
   @JsonProperty(OIDC_CIBA_GRANT_ENABLED)
   private boolean oidcCibaGrantEnabled;
@@ -41,6 +42,9 @@ public class ClientAttributes {
   @JsonProperty(BACKCHANNEL_LOGOUT_REVOKE_OFFLINE_TOKENS)
   private boolean backChannelLogoutRevokeOfflineTokens;
 
+  @JsonProperty(USE_LIGHTWEIGHT_ACCESS_TOKEN)
+  private Boolean useLightweightAccessToken;
+
   @JsonProperty(ACCESS_TOKEN_LIFESPAN)
   private Long accessTokenLifeSpan;
 
@@ -49,12 +53,13 @@ public class ClientAttributes {
 
   public static ClientAttributes defaultValue() {
     var secretTimestamp = Instant.now().getEpochSecond();
-    return new ClientAttributes(false, false, secretTimestamp, true, false, null, null);
+    return new ClientAttributes(false, false, secretTimestamp, true, false, true, null, null);
   }
 
   public static ClientAttributes of(Long accessTokenLifespan, Boolean useRefreshTokens) {
     var secretTimestamp = Instant.now().getEpochSecond();
-    return new ClientAttributes(false, false, secretTimestamp, true, false, accessTokenLifespan, useRefreshTokens);
+    return new ClientAttributes(false, false, secretTimestamp,
+      true, false, true,  accessTokenLifespan, useRefreshTokens);
   }
 
   public Map<String, String> asMap() {
@@ -64,6 +69,7 @@ public class ClientAttributes {
     clientAttributes.put(CLIENT_SECRET_CREATION_TIME, valueOf(clientSecretCreationTime));
     clientAttributes.put(BACKCHANNEL_LOGOUT_SESSION_REQUIRED, valueOf(backChannelLogoutSessionRequired));
     clientAttributes.put(BACKCHANNEL_LOGOUT_REVOKE_OFFLINE_TOKENS, valueOf(backChannelLogoutRevokeOfflineTokens));
+    clientAttributes.put(USE_LIGHTWEIGHT_ACCESS_TOKEN, valueOf(useLightweightAccessToken));
 
     applyIfNotNull(accessTokenLifeSpan, value -> clientAttributes.put(ACCESS_TOKEN_LIFESPAN, valueOf(value)));
     applyIfNotNull(useRefreshTokens, value -> clientAttributes.put(USE_REFRESH_TOKENS, valueOf(value)));
