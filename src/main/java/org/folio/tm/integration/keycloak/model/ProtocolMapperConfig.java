@@ -45,6 +45,10 @@ public class ProtocolMapperConfig {
   @JsonProperty(JSON_TYPE_LABEL)
   private String jsonTypeLabel;
 
+  public static ProtocolMapperConfig defaultValue() {
+    return new ProtocolMapperConfig(true, true, true, true, null, null, null);
+  }
+
   public static ProtocolMapperConfig forUserAttribute(String userAttribute, String claimName) {
     return new ProtocolMapperConfig(true, true, true, true, userAttribute, claimName, STRING_TYPE_LABEL);
   }

@@ -11,6 +11,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.common.utils.CollectionUtils.mapItems;
 import static org.folio.tm.support.TestConstants.TENANT_NAME;
+import static org.folio.tm.support.TestConstants.subjectProtocolMapper;
 import static org.folio.tm.support.TestConstants.userIdProtocolMapper;
 import static org.folio.tm.support.TestConstants.usernameProtocolMapper;
 import static org.folio.tm.support.TestUtils.OBJECT_MAPPER;
@@ -170,7 +171,8 @@ class LoginClientServiceTest {
     keycloakClient.setAuthorizationSettings(authorizationSettings());
     keycloakClient.setClientAuthenticatorType("client-secret");
     keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, true, null, null).asMap());
-    keycloakClient.setProtocolMappers(List.of(usernameProtocolMapper(), userIdProtocolMapper()));
+    keycloakClient.setProtocolMappers(List.of(usernameProtocolMapper(), userIdProtocolMapper(),
+      subjectProtocolMapper()));
     keycloakClient.setServiceAccountsEnabled(true);
     keycloakClient.setDirectAccessGrantsEnabled(true);
     keycloakClient.setRedirectUris(List.of("/*"));

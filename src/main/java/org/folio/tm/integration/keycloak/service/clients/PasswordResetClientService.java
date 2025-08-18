@@ -2,6 +2,7 @@ package org.folio.tm.integration.keycloak.service.clients;
 
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
 import static org.folio.tm.integration.keycloak.service.roles.PasswordResetRoleService.PASSWORD_RESET_ROLE_NAME;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.buildSubjectProtocolMapper;
 
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Collection;
@@ -65,7 +66,7 @@ public class PasswordResetClientService extends AbstractKeycloakClientService {
 
   @Override
   protected List<ProtocolMapperRepresentation> getProtocolMappers() {
-    return Optional.ofNullable(keycloakServerInfoService.getServerInfo())
+    var passwordResetProtocolMapper = Optional.ofNullable(keycloakServerInfoService.getServerInfo())
       .map(ServerInfoRepresentation::getProtocolMapperTypes)
       .map(protocolMapperTypes -> protocolMapperTypes.get(OPENID_CONNECT_PROTOCOL))
       .stream()
@@ -73,8 +74,8 @@ public class PasswordResetClientService extends AbstractKeycloakClientService {
       .filter(mapper -> mapper.getName().equals(PASSWORD_RESET_ACTION_MAPPER))
       .findFirst()
       .map(typeRepr -> toProtocolMapper(typeRepr, null, PASSWORD_RESET_ACTION_ID_CLAIM))
-      .map(List::of)
       .orElseThrow(() -> new EntityNotFoundException("Mapper is not found by name: " + PASSWORD_RESET_ACTION_MAPPER));
+    return List.of(passwordResetProtocolMapper, buildSubjectProtocolMapper());
   }
 
   public static ProtocolMapperRepresentation toProtocolMapper(ProtocolMapperTypeRepresentation mapperType,

@@ -4,11 +4,13 @@ import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROT
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.SUB_CLAIM;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_PROPERTY_MAPPER_TYPE;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_SESSION_SUB_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.forUserAttribute;
 
 import java.util.List;
 import java.util.function.Consumer;
 import lombok.experimental.UtilityClass;
+import org.folio.tm.integration.keycloak.model.ProtocolMapperConfig;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
 @UtilityClass
@@ -17,6 +19,7 @@ public class KeycloakClientUtils {
   private static final String USERNAME_PROPERTY = "username";
   private static final String USER_ID_PROPERTY = "user_id";
   private static final String USER_ID_MAPPER_NAME = "user_id mapper";
+  private static final String SUBJECT_MAPPER_NAME = "Subject (sub)";
 
   public static <T> void applyIfNotNull(T value, Consumer<T> valueConsumer) {
     if (value != null) {
@@ -25,7 +28,17 @@ public class KeycloakClientUtils {
   }
 
   public static List<ProtocolMapperRepresentation> getFolioUserTokenMappers() {
-    return List.of(buildUsernameProtocolMapper(), buildUserIdProtocolMapper());
+    return List.of(buildUsernameProtocolMapper(), buildUserIdProtocolMapper(), buildSubjectProtocolMapper());
+  }
+
+  public static ProtocolMapperRepresentation buildSubjectProtocolMapper() {
+    var subjectMapper = new ProtocolMapperRepresentation();
+    subjectMapper.setName(SUBJECT_MAPPER_NAME);
+    subjectMapper.setProtocolMapper(USER_SESSION_SUB_MAPPER_TYPE);
+    subjectMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
+    subjectMapper.setConfig(ProtocolMapperConfig.defaultValue().asMap());
+
+    return subjectMapper;
   }
 
   private static ProtocolMapperRepresentation buildUsernameProtocolMapper() {

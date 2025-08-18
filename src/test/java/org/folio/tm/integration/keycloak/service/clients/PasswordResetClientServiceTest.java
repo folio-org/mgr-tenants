@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.tm.support.TestConstants.TENANT_NAME;
+import static org.folio.tm.support.TestConstants.subjectProtocolMapper;
 import static org.folio.tm.support.TestUtils.assertEqualsUsingRecursiveComparison;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.atLeastOnce;
@@ -291,7 +292,7 @@ class PasswordResetClientServiceTest {
     keycloakClient.setAuthorizationServicesEnabled(false);
     keycloakClient.setClientAuthenticatorType("client-secret");
     keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, true, 1000L, false).asMap());
-    keycloakClient.setProtocolMappers(List.of(passwordResetProtocolMapper()));
+    keycloakClient.setProtocolMappers(List.of(passwordResetProtocolMapper(), subjectProtocolMapper()));
     keycloakClient.setServiceAccountsEnabled(true);
     keycloakClient.setDirectAccessGrantsEnabled(true);
     keycloakClient.setRedirectUris(List.of("/*"));
