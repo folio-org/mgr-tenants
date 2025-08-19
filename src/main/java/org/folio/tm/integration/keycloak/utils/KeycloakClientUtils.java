@@ -2,9 +2,9 @@ package org.folio.tm.integration.keycloak.utils;
 
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.SUB_CLAIM;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapper.SUB_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_PROPERTY_MAPPER_TYPE;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_SESSION_SUB_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.forUserAttribute;
 
 import java.util.List;
@@ -28,20 +28,20 @@ public class KeycloakClientUtils {
   }
 
   public static List<ProtocolMapperRepresentation> getFolioUserTokenMappers() {
-    return List.of(buildUsernameProtocolMapper(), buildUserIdProtocolMapper(), buildSubjectProtocolMapper());
+    return List.of(getUsernameProtocolMapper(), getUserIdProtocolMapper(), getSubjectProtocolMapper());
   }
 
-  public static ProtocolMapperRepresentation buildSubjectProtocolMapper() {
+  public static ProtocolMapperRepresentation getSubjectProtocolMapper() {
     var subjectMapper = new ProtocolMapperRepresentation();
     subjectMapper.setName(SUBJECT_MAPPER_NAME);
-    subjectMapper.setProtocolMapper(USER_SESSION_SUB_MAPPER_TYPE);
+    subjectMapper.setProtocolMapper(SUB_MAPPER_TYPE);
     subjectMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
     subjectMapper.setConfig(ProtocolMapperConfig.defaultValue().asMap());
 
     return subjectMapper;
   }
 
-  private static ProtocolMapperRepresentation buildUsernameProtocolMapper() {
+  private static ProtocolMapperRepresentation getUsernameProtocolMapper() {
     var usernameMapper = new ProtocolMapperRepresentation();
     usernameMapper.setProtocolMapper(USER_PROPERTY_MAPPER_TYPE);
     usernameMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
@@ -51,7 +51,7 @@ public class KeycloakClientUtils {
     return usernameMapper;
   }
 
-  private static ProtocolMapperRepresentation buildUserIdProtocolMapper() {
+  private static ProtocolMapperRepresentation getUserIdProtocolMapper() {
     var usernameMapper = new ProtocolMapperRepresentation();
     usernameMapper.setName(USER_ID_MAPPER_NAME);
     usernameMapper.setProtocolMapper(USER_ATTRIBUTE_MAPPER_TYPE);

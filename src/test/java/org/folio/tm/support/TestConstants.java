@@ -2,8 +2,8 @@ package org.folio.tm.support;
 
 import static org.folio.tm.domain.dto.TenantType.DEFAULT;
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapper.SUB_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_SESSION_SUB_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.forUserAttribute;
 
 import java.util.List;
@@ -73,7 +73,7 @@ public class TestConstants {
   public static ProtocolMapperRepresentation subjectProtocolMapper() {
     var subjectMapper = new ProtocolMapperRepresentation();
     subjectMapper.setName("Subject (sub)");
-    subjectMapper.setProtocolMapper(USER_SESSION_SUB_MAPPER_TYPE);
+    subjectMapper.setProtocolMapper(SUB_MAPPER_TYPE);
     subjectMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
     subjectMapper.setConfig(ProtocolMapperConfig.defaultValue().asMap());
 
