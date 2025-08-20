@@ -11,6 +11,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.common.utils.CollectionUtils.mapItems;
 import static org.folio.tm.support.TestConstants.TENANT_NAME;
+import static org.folio.tm.support.TestConstants.subjectProtocolMapper;
 import static org.folio.tm.support.TestConstants.userIdProtocolMapper;
 import static org.folio.tm.support.TestConstants.usernameProtocolMapper;
 import static org.folio.tm.support.TestUtils.OBJECT_MAPPER;
@@ -169,8 +170,9 @@ class LoginClientServiceTest {
     keycloakClient.setAuthorizationServicesEnabled(true);
     keycloakClient.setAuthorizationSettings(authorizationSettings());
     keycloakClient.setClientAuthenticatorType("client-secret");
-    keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, null, null).asMap());
-    keycloakClient.setProtocolMappers(List.of(usernameProtocolMapper(), userIdProtocolMapper()));
+    keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, true, null, null).asMap());
+    keycloakClient.setProtocolMappers(List.of(usernameProtocolMapper(), userIdProtocolMapper(),
+      subjectProtocolMapper()));
     keycloakClient.setServiceAccountsEnabled(true);
     keycloakClient.setDirectAccessGrantsEnabled(true);
     keycloakClient.setRedirectUris(List.of("/*"));
@@ -196,7 +198,8 @@ class LoginClientServiceTest {
     policyRepresentation.setName("System role policy");
     policyRepresentation.setLogic(POSITIVE);
     policyRepresentation.setDecisionStrategy(UNANIMOUS);
-    policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"System\",\"required\":false}]"));
+    policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"System\",\"required\":false}]",
+      "fetchRoles", "true"));
 
     return policyRepresentation;
   }
@@ -207,7 +210,8 @@ class LoginClientServiceTest {
     policyRepresentation.setName("Password Reset policy");
     policyRepresentation.setLogic(POSITIVE);
     policyRepresentation.setDecisionStrategy(UNANIMOUS);
-    policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"Password Reset\",\"required\":false}]"));
+    policyRepresentation.setConfig(Map.of("roles", "[{\"id\":\"Password Reset\",\"required\":false}]",
+      "fetchRoles", "true"));
 
     return policyRepresentation;
   }
