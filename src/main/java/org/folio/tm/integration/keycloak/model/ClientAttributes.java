@@ -44,7 +44,7 @@ public class ClientAttributes {
   private boolean backChannelLogoutRevokeOfflineTokens;
 
   @JsonProperty(CLIENT_USE_LIGHTWEIGHT_ACCESS_TOKEN_ENABLED)
-  private Boolean clientUseLightweightAccessTokenEnabled;
+  private boolean clientUseLightweightAccessTokenEnabled;
 
   @JsonProperty(ACCESS_TOKEN_LIFESPAN)
   private Long accessTokenLifeSpan;
