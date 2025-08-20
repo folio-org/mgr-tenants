@@ -4,6 +4,7 @@ import static jakarta.ws.rs.core.HttpHeaders.LOCATION;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.getSubjectProtocolMapper;
 import static org.folio.tm.support.TestConstants.TENANT_NAME;
 import static org.folio.tm.support.TestUtils.assertEqualsUsingRecursiveComparison;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
@@ -252,7 +253,8 @@ class ModuleClientServiceTest {
     keycloakClient.setFrontchannelLogout(true);
     keycloakClient.setAuthorizationServicesEnabled(true);
     keycloakClient.setClientAuthenticatorType("client-secret");
-    keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, null, null).asMap());
+    keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, true, null, null).asMap());
+    keycloakClient.setProtocolMappers(List.of(getSubjectProtocolMapper()));
     keycloakClient.setServiceAccountsEnabled(true);
     keycloakClient.setDirectAccessGrantsEnabled(true);
     keycloakClient.setRedirectUris(List.of("/*"));

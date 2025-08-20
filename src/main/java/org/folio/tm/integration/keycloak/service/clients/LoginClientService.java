@@ -8,13 +8,9 @@ import static jakarta.ws.rs.HttpMethod.POST;
 import static jakarta.ws.rs.HttpMethod.PUT;
 import static java.util.Map.entry;
 import static org.folio.common.utils.CollectionUtils.mapItems;
-import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.SUB_CLAIM;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_PROPERTY_MAPPER_TYPE;
-import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.forUserAttribute;
 import static org.folio.tm.integration.keycloak.service.roles.PasswordResetRoleService.PASSWORD_RESET_ROLE_NAME;
 import static org.folio.tm.integration.keycloak.service.roles.SystemRoleService.SYSTEM_ROLE_NAME;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.getFolioUserTokenMappers;
 import static org.keycloak.representations.idm.authorization.DecisionStrategy.AFFIRMATIVE;
 import static org.keycloak.representations.idm.authorization.DecisionStrategy.UNANIMOUS;
 import static org.keycloak.representations.idm.authorization.Logic.POSITIVE;
@@ -103,7 +99,8 @@ public class LoginClientService extends AbstractKeycloakClientService {
     policyRepresentation.setDecisionStrategy(UNANIMOUS);
 
     var roleDefinitions = List.of(new RoleDefinition(roleName, false));
-    policyRepresentation.setConfig(Map.of("roles", jsonHelper.asJsonString(roleDefinitions)));
+    policyRepresentation.setConfig(Map.of("roles", jsonHelper.asJsonString(roleDefinitions),
+      "fetchRoles", "true"));
 
     return policyRepresentation;
   }
@@ -122,27 +119,7 @@ public class LoginClientService extends AbstractKeycloakClientService {
 
   @Override
   protected List<ProtocolMapperRepresentation> getProtocolMappers() {
-    return List.of(getUsernameProtocolMapper(), getUserIdProtocolMapper());
-  }
-
-  private static ProtocolMapperRepresentation getUsernameProtocolMapper() {
-    var usernameMapper = new ProtocolMapperRepresentation();
-    usernameMapper.setProtocolMapper(USER_PROPERTY_MAPPER_TYPE);
-    usernameMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
-    usernameMapper.setName(USERNAME_PROPERTY);
-    usernameMapper.setConfig(forUserAttribute(USERNAME_PROPERTY, SUB_CLAIM).asMap());
-
-    return usernameMapper;
-  }
-
-  private static ProtocolMapperRepresentation getUserIdProtocolMapper() {
-    var usernameMapper = new ProtocolMapperRepresentation();
-    usernameMapper.setName(USER_ID_MAPPER_NAME);
-    usernameMapper.setProtocolMapper(USER_ATTRIBUTE_MAPPER_TYPE);
-    usernameMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
-    usernameMapper.setConfig(forUserAttribute(USER_ID_PROPERTY, USER_ID_PROPERTY).asMap());
-
-    return usernameMapper;
+    return getFolioUserTokenMappers();
   }
 
   private static ScopeRepresentation createScope(String name) {

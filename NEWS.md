@@ -3,6 +3,7 @@
 * Introduce configuration for FSSP (APPPOCTOOL-59)
 * Delete Kafka topics during tenant deletion (MGRTENANT-59)
 * Enable security by default (MGRTENANT-50)
+* Ensure that lightweight tokens are enabled for all clients when a new tenant is created (MGRTENANT-62)
 
 ## Version `v3.0.0` (11.03.2025)
 * Upgrade Java to version 21. (MGRTENANT-49)

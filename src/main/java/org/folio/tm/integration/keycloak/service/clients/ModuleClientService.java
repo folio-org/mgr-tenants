@@ -1,13 +1,16 @@
 package org.folio.tm.integration.keycloak.service.clients;
 
 import static org.folio.tm.integration.keycloak.service.roles.SystemRoleService.SYSTEM_ROLE_NAME;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.getSubjectProtocolMapper;
 
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
 import org.folio.tm.integration.keycloak.model.ClientAttributes;
 import org.keycloak.representations.idm.ClientRepresentation;
+import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -25,6 +28,11 @@ public class ModuleClientService extends AbstractKeycloakClientService {
   @Override
   protected Map<String, String> getAttributes() {
     return ClientAttributes.defaultValue().asMap();
+  }
+
+  @Override
+  protected List<ProtocolMapperRepresentation> getProtocolMappers() {
+    return List.of(getSubjectProtocolMapper());
   }
 
   @Override

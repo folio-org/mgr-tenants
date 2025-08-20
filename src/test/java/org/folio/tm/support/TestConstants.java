@@ -2,6 +2,7 @@ package org.folio.tm.support;
 
 import static org.folio.tm.domain.dto.TenantType.DEFAULT;
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapper.SUB_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.forUserAttribute;
 
@@ -67,6 +68,16 @@ public class TestConstants {
     usernameMapper.setConfig(forUserAttribute("user_id", "user_id").asMap());
 
     return usernameMapper;
+  }
+
+  public static ProtocolMapperRepresentation subjectProtocolMapper() {
+    var subjectMapper = new ProtocolMapperRepresentation();
+    subjectMapper.setName("Subject (sub)");
+    subjectMapper.setProtocolMapper(SUB_MAPPER_TYPE);
+    subjectMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
+    subjectMapper.setConfig(ProtocolMapperConfig.defaultValue().asMap());
+
+    return subjectMapper;
   }
 
   public static ProtocolMapperRepresentation protocolMapper(String mapperType,
