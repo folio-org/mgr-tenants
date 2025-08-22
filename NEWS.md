@@ -1,6 +1,10 @@
+## Version `v3.0.2` (22.08.2025)
+* Ensure that lightweight tokens are enabled for all clients when a new tenant is created (MGRTENANT-62)
+
+---
+
 ## Version `v3.0.1` (07.07.2025)
 * Enable security by default (MGRTENANT-50)
-* Ensure that lightweight tokens are enabled for all clients when a new tenant is created (MGRTENANT-62)
 
 ---
 
