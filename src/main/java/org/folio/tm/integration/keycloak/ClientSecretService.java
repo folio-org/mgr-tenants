@@ -1,9 +1,9 @@
 package org.folio.tm.integration.keycloak;
 
+import static org.folio.security.integration.keycloak.utils.KeycloakSecretUtils.tenantStoreKey;
 import static org.folio.tools.store.utils.SecretGenerator.generateSecret;
 
 import lombok.RequiredArgsConstructor;
-import org.folio.security.integration.keycloak.service.KeycloakStoreKeyProvider;
 import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
 import org.folio.tools.store.SecureStore;
 
@@ -11,11 +11,10 @@ import org.folio.tools.store.SecureStore;
 public class ClientSecretService {
 
   private final SecureStore secureStore;
-  private final KeycloakStoreKeyProvider keycloakStoreKeyProvider;
   private final KeycloakRealmSetupProperties setupProperties;
 
   public String getOrCreateClientSecret(String realm, String clientId) {
-    var key = keycloakStoreKeyProvider.tenantStoreKey(realm, clientId);
+    var key = tenantStoreKey(realm, clientId);
     return secureStore.lookup(key)
       .orElseGet(() -> generateAndSaveSecret(key));
   }

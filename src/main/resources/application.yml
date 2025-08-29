@@ -115,7 +115,6 @@ application:
     url: ${OKAPI_URL:${okapi.url:}}
     mod-authtoken-url: ${MOD_AUTHTOKEN_URL}
   secret-store:
-    environment: ${SECURE_STORE_ENV:${ENV:folio}}
     type: ${SECRET_STORE_TYPE:}
     aws-ssm:
       region: ${SECRET_STORE_AWS_SSM_REGION:}
