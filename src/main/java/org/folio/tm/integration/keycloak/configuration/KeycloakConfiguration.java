@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.OkHttpClient;
 import org.folio.security.integration.keycloak.configuration.properties.KeycloakProperties;
-import org.folio.security.integration.keycloak.service.KeycloakStoreKeyProvider;
+import org.folio.security.integration.keycloak.utils.KeycloakSecretUtils;
 import org.folio.tm.integration.keycloak.ClientSecretService;
 import org.folio.tm.integration.keycloak.KeycloakClient;
 import org.folio.tm.integration.keycloak.KeycloakRealmService;
@@ -45,7 +45,6 @@ import org.springframework.context.annotation.Import;
 public class KeycloakConfiguration {
 
   private final SecureStore secureStore;
-  private final KeycloakStoreKeyProvider keycloakStoreKeyProvider;
   private final KeycloakProperties properties;
 
   @Bean
@@ -72,10 +71,8 @@ public class KeycloakConfiguration {
   }
 
   @Bean
-  public ClientSecretService clientSecretService(SecureStore secureStore,
-      KeycloakStoreKeyProvider keycloakStoreKeyProvider, KeycloakRealmSetupProperties properties) {
-
-    return new ClientSecretService(secureStore, keycloakStoreKeyProvider, properties);
+  public ClientSecretService clientSecretService(SecureStore secureStore, KeycloakRealmSetupProperties properties) {
+    return new ClientSecretService(secureStore, properties);
   }
 
   @Bean
@@ -141,7 +138,7 @@ public class KeycloakConfiguration {
 
   private String getKeycloakClientSecret(String clientId) {
     try {
-      return secureStore.get(keycloakStoreKeyProvider.globalStoreKey(clientId));
+      return secureStore.get(KeycloakSecretUtils.globalStoreKey(clientId));
     } catch (SecretNotFoundException e) {
       log.debug("Secret for 'admin' client is not defined in the secret store: clientId = {}", clientId);
       return null;
