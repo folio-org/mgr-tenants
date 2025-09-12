@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import org.folio.security.integration.keycloak.service.KeycloakStoreKeyProvider;
+import org.folio.security.integration.keycloak.service.SecureStoreKeyProvider;
 import org.folio.test.types.UnitTest;
 import org.folio.tm.integration.keycloak.ClientSecretService;
 import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ClientSecretServiceTest {
 
-  @Mock private KeycloakStoreKeyProvider keycloakStoreKeyProvider;
+  @Mock private SecureStoreKeyProvider secureStoreKeyProvider;
   @Mock private SecureStore secureStore;
   @Mock private KeycloakRealmSetupProperties keycloakRealmSetupProperties;
 
@@ -34,7 +34,7 @@ class ClientSecretServiceTest {
 
   @Test
   void createClientSecret_positive() {
-    when(keycloakStoreKeyProvider.tenantStoreKey(REALM_NAME, CLIENT_ID)).thenReturn("x_y_z");
+    when(secureStoreKeyProvider.tenantStoreKey(REALM_NAME, CLIENT_ID)).thenReturn("x_y_z");
     var secretCaptor = ArgumentCaptor.forClass(String.class);
     when(secureStore.lookup("x_y_z")).thenReturn(Optional.empty());
     var secret = clientSecretService.getOrCreateClientSecret(REALM_NAME, CLIENT_ID);
@@ -46,7 +46,7 @@ class ClientSecretServiceTest {
 
   @Test
   void getClientSecret_positive() {
-    when(keycloakStoreKeyProvider.tenantStoreKey(REALM_NAME, CLIENT_ID)).thenReturn("x_y_z");
+    when(secureStoreKeyProvider.tenantStoreKey(REALM_NAME, CLIENT_ID)).thenReturn("x_y_z");
     when(secureStore.lookup("x_y_z")).thenReturn(Optional.of(SECRET));
     var secret = clientSecretService.getOrCreateClientSecret(REALM_NAME, CLIENT_ID);
     assertEquals(SECRET, secret);
