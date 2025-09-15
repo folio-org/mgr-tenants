@@ -1,6 +1,5 @@
 package org.folio.tm.service;
 
-import static org.folio.security.integration.keycloak.utils.KeycloakSecretUtils.tenantStoreKey;
 import static org.folio.tm.support.TestConstants.CLIENT_ID;
 import static org.folio.tm.support.TestConstants.REALM_NAME;
 import static org.folio.tm.support.TestConstants.SECRET;
@@ -11,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import org.folio.security.integration.keycloak.service.SecureStoreKeyProvider;
 import org.folio.test.types.UnitTest;
 import org.folio.tm.integration.keycloak.ClientSecretService;
 import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ClientSecretServiceTest {
 
+  @Mock private SecureStoreKeyProvider secureStoreKeyProvider;
   @Mock private SecureStore secureStore;
   @Mock private KeycloakRealmSetupProperties keycloakRealmSetupProperties;
 
@@ -33,17 +34,20 @@ class ClientSecretServiceTest {
 
   @Test
   void createClientSecret_positive() {
+    when(secureStoreKeyProvider.tenantStoreKey(REALM_NAME, CLIENT_ID)).thenReturn("x_y_z");
     var secretCaptor = ArgumentCaptor.forClass(String.class);
-    when(secureStore.lookup(tenantStoreKey(REALM_NAME, CLIENT_ID))).thenReturn(Optional.empty());
+    when(secureStore.lookup("x_y_z")).thenReturn(Optional.empty());
     var secret = clientSecretService.getOrCreateClientSecret(REALM_NAME, CLIENT_ID);
 
-    verify(secureStore).set(eq(tenantStoreKey(REALM_NAME, CLIENT_ID)), secretCaptor.capture());
+    verify(secureStore).set(eq("x_y_z"), secretCaptor.capture());
     assertNotNull(secret);
+    assertEquals(secret, secretCaptor.getValue());
   }
 
   @Test
   void getClientSecret_positive() {
-    when(secureStore.lookup(tenantStoreKey(REALM_NAME, CLIENT_ID))).thenReturn(Optional.of(SECRET));
+    when(secureStoreKeyProvider.tenantStoreKey(REALM_NAME, CLIENT_ID)).thenReturn("x_y_z");
+    when(secureStore.lookup("x_y_z")).thenReturn(Optional.of(SECRET));
     var secret = clientSecretService.getOrCreateClientSecret(REALM_NAME, CLIENT_ID);
     assertEquals(SECRET, secret);
   }
