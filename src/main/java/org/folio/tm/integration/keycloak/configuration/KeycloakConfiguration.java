@@ -27,7 +27,7 @@ import org.folio.tm.integration.keycloak.service.roles.PasswordResetRoleService;
 import org.folio.tm.integration.keycloak.service.roles.SystemRoleService;
 import org.folio.tm.utils.JsonHelper;
 import org.folio.tools.store.SecureStore;
-import org.folio.tools.store.exception.NotFoundException;
+import org.folio.tools.store.exception.SecretNotFoundException;
 import org.keycloak.admin.client.Keycloak;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -142,7 +142,7 @@ public class KeycloakConfiguration {
   private String getKeycloakClientSecret(String clientId) {
     try {
       return secureStore.get(secureStoreKeyProvider.globalStoreKey(clientId));
-    } catch (NotFoundException e) {
+    } catch (SecretNotFoundException e) {
       log.debug("Secret for 'admin' client is not defined in the secret store: clientId = {}", clientId);
       return null;
     }

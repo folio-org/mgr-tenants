@@ -1,3 +1,8 @@
+## Version `v3.0.4` (15.10.2025)
+* Add support for custom Keycloak base URL for JWKS endpoint, new ENV variable `KC_JWKS_BASE_URL` (MODSIDECAR-148)
+* bump up applications-poc-tools dependencies to 3.0.8
+---
+
 ## Version `v3.0.3` (25.09.2025)
 * Use SECURE\_STORE\_ENV, not ENV, for secure store key (MGRTENANT-64)
 
