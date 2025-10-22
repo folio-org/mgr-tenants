@@ -1,0 +1,36 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/entitlements",
+    "queryParameters": {
+      "limit": {
+        "equalTo": "1"
+      },
+      "query": {
+        "equalTo": "tenantId==4b83457f-5309-4648-a89a-62917ac3c63d"
+      }
+    },
+    "headers": {
+      "X-Okapi-Token": {
+        "matches": ".+"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "entitlements": [
+        {
+          "applicationId": "app-platform-minimal-1.0.0",
+          "tenantId": "4b83457f-5309-4648-a89a-62917ac3c63d",
+          "modules": [ ]
+        }
+      ],
+      "totalRecords": 1
+    }
+  }
+}

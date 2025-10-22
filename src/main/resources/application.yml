@@ -115,6 +115,13 @@ application:
     enabled: ${OKAPI_INTEGRATION_ENABLED:false}
     url: ${OKAPI_URL:${okapi.url:}}
     mod-authtoken-url: ${MOD_AUTHTOKEN_URL}
+  mte:
+    url: ${MTE_URL:http://mgr-tenant-entitlements:8081}
+    tls:
+      enabled: ${MTE_TLS_ENABLED:false}
+      trust-store-path: ${MTE_TLS_TRUSTSTORE_PATH:}
+      trust-store-password: ${MTE_TLS_TRUSTSTORE_PASSWORD:}
+      trust-store-type: ${MTE_TLS_TRUSTSTORE_TYPE:}
   secret-store:
     environment: ${SECURE_STORE_ENV:${ENV:folio}}
     type: ${SECRET_STORE_TYPE:}

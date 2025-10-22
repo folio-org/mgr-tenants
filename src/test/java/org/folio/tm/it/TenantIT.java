@@ -239,7 +239,8 @@ class TenantIT extends BaseIntegrationTest {
   @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/delete-tenant.json",
-    "/wiremock/stubs/okapi/get-tenant-exist.json"
+    "/wiremock/stubs/okapi/get-tenant-exist.json",
+    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json"
   })
   void deleteTenant_positive() throws Exception {
     var tenantId = TENANT_ID.toString();
@@ -257,7 +258,8 @@ class TenantIT extends BaseIntegrationTest {
   @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/get-tenant5-exist.json",
-    "/wiremock/stubs/okapi/delete-tenant.json"
+    "/wiremock/stubs/okapi/delete-tenant.json",
+    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json"
   })
   void deleteTenantWithAttributes_positive() throws Exception {
     var tenantId = "42e36904-d009-4884-8338-3df14a18dfef";

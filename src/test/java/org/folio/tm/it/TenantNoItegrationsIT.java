@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.UUID;
+import org.folio.test.extensions.WireMockStub;
 import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.domain.dto.Tenant;
@@ -102,6 +103,7 @@ class TenantNoItegrationsIT extends BaseIntegrationTest {
   }
 
   @Test
+  @WireMockStub("/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json")
   void deleteTenant_positive() throws Exception {
     var existing = repository.findById(TestConstants.TENANT_ID);
     assertTrue(existing.isPresent());

@@ -28,6 +28,7 @@ import org.folio.test.extensions.EnableKeycloakDataImport;
 import org.folio.test.extensions.EnableKeycloakSecurity;
 import org.folio.test.extensions.EnableKeycloakTlsMode;
 import org.folio.test.extensions.KeycloakRealms;
+import org.folio.test.extensions.WireMockStub;
 import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.domain.dto.Tenant;
@@ -177,6 +178,7 @@ class TenantKeycloakIT extends BaseIntegrationTest {
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
   @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  @WireMockStub("/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json")
   void deleteTenant_positive() throws Exception {
     var existing = repository.findById(TENANT_ID);
     assertTrue(existing.isPresent());
@@ -187,6 +189,26 @@ class TenantKeycloakIT extends BaseIntegrationTest {
 
     repository.findById(TENANT_ID)
       .ifPresent(tenantEntity -> Assertions.fail("Tenant is not deleted: " + TENANT_ID));
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  @WireMockStub("/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-with-apps.json")
+  void deleteTenant_negative_tenantHasApplicationsInstalled() throws Exception {
+    var existing = repository.findById(TENANT_ID);
+    assertTrue(existing.isPresent());
+
+    mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TENANT_ID)
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin()))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.errors[0].message", containsString("Cannot delete tenant with active entitlements")))
+      .andExpect(jsonPath("$.errors[0].code", is("validation_error")))
+      .andExpect(jsonPath("$.errors[0].type", is("RequestValidationException")))
+      .andExpect(jsonPath("$.total_records", is(1)));
+
+    var stillExists = repository.findById(TENANT_ID);
+    assertTrue(stillExists.isPresent());
   }
 
   private static Tenant copyFrom() {

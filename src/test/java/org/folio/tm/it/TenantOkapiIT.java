@@ -119,6 +119,7 @@ class TenantOkapiIT extends BaseIntegrationTest {
     "/wiremock/stubs/okapi/delete-tenant.json",
     "/wiremock/stubs/okapi/get-tenant-exist.json",
     "/wiremock/stubs/okapi/get-tenant-no-token.json",
+    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json"
   })
   void delete_tenant_positive() throws Exception {
     var existing = repository.findById(TestConstants.TENANT_ID);

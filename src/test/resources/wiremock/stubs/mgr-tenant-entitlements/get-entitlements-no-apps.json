@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/entitlements",
+    "queryParameters": {
+      "limit": {
+        "matches": ".*"
+      },
+      "query": {
+        "matches": ".*"
+      }
+    },
+    "headers": {
+      "X-Okapi-Token": {
+        "matches": ".+"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "entitlements": [],
+      "totalRecords": 0
+    }
+  }
+}

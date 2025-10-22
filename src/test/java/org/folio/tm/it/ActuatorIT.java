@@ -3,10 +3,12 @@ package org.folio.tm.it;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+import org.folio.test.extensions.EnableKeycloakSecurity;
 import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 
+@EnableKeycloakSecurity
 @IntegrationTest
 class ActuatorIT extends BaseIntegrationTest {
 
