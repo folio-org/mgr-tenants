@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import feign.FeignException;
 import feign.Request;
 import feign.RequestTemplate;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -17,11 +16,15 @@ import org.folio.tm.integration.entitlements.model.Entitlement;
 import org.folio.tm.integration.entitlements.model.EntitlementsResponse;
 import org.folio.tm.support.TestUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -29,10 +32,18 @@ class TenantEntitlementsServiceTest {
 
   @InjectMocks private TenantEntitlementsService service;
   @Mock private TenantEntitlementsClient client;
-  @Mock private HttpServletRequest request;
+
+  private MockHttpServletRequest mockRequest;
+
+  @BeforeEach
+  void setUp() {
+    mockRequest = new MockHttpServletRequest();
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(mockRequest));
+  }
 
   @AfterEach
   void tearDown() {
+    RequestContextHolder.resetRequestAttributes();
     TestUtils.verifyNoMoreInteractions(this);
   }
 
@@ -44,7 +55,7 @@ class TenantEntitlementsServiceTest {
     var entitlement = new Entitlement("app-1", tenantId.toString(), List.of("mod-test-1.0.0"));
     var response = new EntitlementsResponse(List.of(entitlement), 1);
 
-    when(request.getHeader(TOKEN)).thenReturn(token);
+    mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token)).thenReturn(response);
 
     var result = service.hasTenantEntitlements(tenantName, tenantId);
@@ -59,7 +70,7 @@ class TenantEntitlementsServiceTest {
     var token = "test-token";
     var response = new EntitlementsResponse(Collections.emptyList(), 0);
 
-    when(request.getHeader(TOKEN)).thenReturn(token);
+    mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token)).thenReturn(response);
 
     var result = service.hasTenantEntitlements(tenantName, tenantId);
@@ -73,7 +84,7 @@ class TenantEntitlementsServiceTest {
     var tenantId = UUID.randomUUID();
     var token = "test-token";
 
-    when(request.getHeader(TOKEN)).thenReturn(token);
+    mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token)).thenReturn(null);
 
     var result = service.hasTenantEntitlements(tenantName, tenantId);
@@ -89,7 +100,7 @@ class TenantEntitlementsServiceTest {
     var feignRequest = Request.create(Request.HttpMethod.GET, "/test", Collections.emptyMap(),
       null, new RequestTemplate());
 
-    when(request.getHeader(TOKEN)).thenReturn(token);
+    mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token))
       .thenThrow(new FeignException.NotFound("Not found", feignRequest, null, null));
 
@@ -106,7 +117,7 @@ class TenantEntitlementsServiceTest {
     var feignRequest = Request.create(Request.HttpMethod.GET, "/test", Collections.emptyMap(),
       null, new RequestTemplate());
 
-    when(request.getHeader(TOKEN)).thenReturn(token);
+    mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token))
       .thenThrow(new FeignException.ServiceUnavailable("Service unavailable", feignRequest, null, null));
 
@@ -121,7 +132,7 @@ class TenantEntitlementsServiceTest {
     var tenantId = UUID.randomUUID();
     var token = "test-token";
 
-    when(request.getHeader(TOKEN)).thenReturn(token);
+    mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token))
       .thenThrow(new RuntimeException("Unexpected error"));
 
@@ -144,7 +155,7 @@ class TenantEntitlementsServiceTest {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
 
-    when(request.getHeader(TOKEN)).thenReturn(null);
+    // Don't add token to mockRequest - it will be null
 
     var result = service.hasTenantEntitlements(tenantName, tenantId);
 
@@ -156,7 +167,20 @@ class TenantEntitlementsServiceTest {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
 
-    when(request.getHeader(TOKEN)).thenReturn("");
+    mockRequest.addHeader(TOKEN, "");
+
+    var result = service.hasTenantEntitlements(tenantName, tenantId);
+
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  void hasTenantEntitlements_negative_noRequestContext() {
+    var tenantName = "test-tenant";
+    var tenantId = UUID.randomUUID();
+
+    // Clear the request context to simulate no request context available
+    RequestContextHolder.resetRequestAttributes();
 
     var result = service.hasTenantEntitlements(tenantName, tenantId);
 

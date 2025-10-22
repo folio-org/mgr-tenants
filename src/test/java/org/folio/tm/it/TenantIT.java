@@ -289,6 +289,29 @@ class TenantIT extends BaseIntegrationTest {
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
+    "/wiremock/stubs/okapi/get-tenant-exist.json",
+    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-with-apps.json"
+  })
+  void deleteTenant_negative_hasActiveEntitlements() throws Exception {
+    var tenantId = TENANT_ID.toString();
+    doGet("/tenants/{id}", tenantId).andExpect(jsonPath("$.id", is(tenantId)));
+
+    mockMvc.perform(delete("/tenants/{id}", tenantId)
+        .header(TOKEN, AUTH_TOKEN))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.errors[0].message",
+        is("Cannot delete tenant with active entitlements. Please uninstall all applications before deleting.")))
+      .andExpect(jsonPath("$.errors[0].type", is("RequestValidationException")));
+
+    // Verify tenant still exists
+    doGet("/tenants/{id}", tenantId)
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.id", is(tenantId)));
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/create-tenant.json",
     "/wiremock/stubs/okapi/get-tenant-not-found.json"
   })
