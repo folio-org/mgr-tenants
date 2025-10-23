@@ -9,7 +9,6 @@ import static org.folio.tm.support.TestConstants.tenant;
 import static org.folio.tm.support.TestConstants.tenantAttributes;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -214,25 +213,6 @@ class TenantServiceTest {
   void delete_positive() {
     var entity = tenantEntity();
     when(repository.findById(TENANT_ID)).thenReturn(Optional.of(entity));
-
-    // checkTenantCanBeDeleted doesn't throw = tenant can be deleted
-    doNothing().when(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
-
-    tenantService.deleteTenantById(TENANT_ID, null);
-
-    verify(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
-    verify(repository).delete(entity);
-    verify(tenantEventsPublisher).onTenantDelete(TENANT_NAME);
-    verify(kafkaService).deleteTopics(entity.getName(), null);
-  }
-
-  @Test
-  void delete_positive_withoutEntitlementsIntegration() {
-    var entity = tenantEntity();
-    when(repository.findById(TENANT_ID)).thenReturn(Optional.of(entity));
-
-    // checkTenantCanBeDeleted doesn't throw = tenant can be deleted
-    doNothing().when(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
 
     tenantService.deleteTenantById(TENANT_ID, null);
 
