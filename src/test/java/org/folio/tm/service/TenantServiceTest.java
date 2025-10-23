@@ -9,6 +9,7 @@ import static org.folio.tm.support.TestConstants.tenant;
 import static org.folio.tm.support.TestConstants.tenantAttributes;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -214,11 +215,12 @@ class TenantServiceTest {
     var entity = tenantEntity();
     when(repository.findById(TENANT_ID)).thenReturn(Optional.of(entity));
 
-    when(tenantEntitlementsService.hasTenantEntitlements(TENANT_NAME, TENANT_ID)).thenReturn(false);
+    // checkTenantCanBeDeleted doesn't throw = tenant can be deleted
+    doNothing().when(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
 
     tenantService.deleteTenantById(TENANT_ID, null);
 
-    verify(tenantEntitlementsService).hasTenantEntitlements(TENANT_NAME, TENANT_ID);
+    verify(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
     verify(repository).delete(entity);
     verify(tenantEventsPublisher).onTenantDelete(TENANT_NAME);
     verify(kafkaService).deleteTopics(entity.getName(), null);
@@ -229,9 +231,12 @@ class TenantServiceTest {
     var entity = tenantEntity();
     when(repository.findById(TENANT_ID)).thenReturn(Optional.of(entity));
 
+    // checkTenantCanBeDeleted doesn't throw = tenant can be deleted
+    doNothing().when(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
+
     tenantService.deleteTenantById(TENANT_ID, null);
 
-    verify(tenantEntitlementsService).hasTenantEntitlements(TENANT_NAME, TENANT_ID);
+    verify(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
     verify(repository).delete(entity);
     verify(tenantEventsPublisher).onTenantDelete(TENANT_NAME);
     verify(kafkaService).deleteTopics(entity.getName(), null);
@@ -242,13 +247,15 @@ class TenantServiceTest {
     var entity = tenantEntity();
     when(repository.findById(TENANT_ID)).thenReturn(Optional.of(entity));
 
-    when(tenantEntitlementsService.hasTenantEntitlements(TENANT_NAME, TENANT_ID)).thenReturn(true);
+    // Simulate tenant has entitlements
+    doThrow(new RequestValidationException("Cannot delete tenant"))
+      .when(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
 
     assertThatThrownBy(() -> tenantService.deleteTenantById(TENANT_ID, null))
       .isInstanceOf(RequestValidationException.class)
-      .hasMessageContaining("Cannot delete tenant with active entitlements");
+      .hasMessage("Cannot delete tenant");
 
-    verify(tenantEntitlementsService).hasTenantEntitlements(TENANT_NAME, TENANT_ID);
+    verify(tenantEntitlementsService).checkTenantCanBeDeleted(TENANT_NAME, TENANT_ID);
     verify(repository, never()).delete(entity);
     verify(tenantEventsPublisher, never()).onTenantDelete(anyString());
   }

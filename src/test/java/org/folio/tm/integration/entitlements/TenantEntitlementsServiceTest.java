@@ -1,6 +1,7 @@
 package org.folio.tm.integration.entitlements;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.tm.integration.okapi.OkapiHeaders.TOKEN;
 import static org.mockito.Mockito.when;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.folio.test.types.UnitTest;
+import org.folio.tm.exception.RequestValidationException;
 import org.folio.tm.integration.entitlements.model.Entitlement;
 import org.folio.tm.integration.entitlements.model.EntitlementsResponse;
 import org.folio.tm.support.TestUtils;
@@ -48,7 +50,7 @@ class TenantEntitlementsServiceTest {
   }
 
   @Test
-  void hasTenantEntitlements_positive() {
+  void checkTenantCanBeDeleted_negative_hasEntitlements() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
     var token = "test-token";
@@ -58,13 +60,21 @@ class TenantEntitlementsServiceTest {
     mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token)).thenReturn(response);
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isTrue();
+    assertThatThrownBy(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .isInstanceOf(RequestValidationException.class)
+      .hasMessage("Cannot delete tenant")
+      .satisfies(ex -> {
+        var exception = (RequestValidationException) ex;
+        assertThat(exception.getErrorParameters()).hasSize(1);
+        assertThat(exception.getErrorParameters().getFirst().getKey())
+          .isEqualTo("cause");
+        assertThat(exception.getErrorParameters().getFirst().getValue())
+          .isEqualTo("Please uninstall applications first");
+      });
   }
 
   @Test
-  void hasTenantEntitlements_positive_noEntitlements() {
+  void checkTenantCanBeDeleted_positive_noEntitlements() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
     var token = "test-token";
@@ -73,13 +83,12 @@ class TenantEntitlementsServiceTest {
     mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token)).thenReturn(response);
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isFalse();
+    assertThatCode(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .doesNotThrowAnyException();
   }
 
   @Test
-  void hasTenantEntitlements_positive_nullResponse() {
+  void checkTenantCanBeDeleted_positive_nullResponse() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
     var token = "test-token";
@@ -87,13 +96,12 @@ class TenantEntitlementsServiceTest {
     mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token)).thenReturn(null);
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isFalse();
+    assertThatCode(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .doesNotThrowAnyException();
   }
 
   @Test
-  void hasTenantEntitlements_positive_notFound() {
+  void checkTenantCanBeDeleted_positive_notFound() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
     var token = "test-token";
@@ -104,13 +112,12 @@ class TenantEntitlementsServiceTest {
     when(client.getEntitlements(1, "tenantId==" + tenantId, token))
       .thenThrow(new FeignException.NotFound("Not found", feignRequest, null, null));
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isFalse();
+    assertThatCode(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .doesNotThrowAnyException();
   }
 
   @Test
-  void hasTenantEntitlements_negative_serviceUnavailable() {
+  void checkTenantCanBeDeleted_negative_serviceUnavailable() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
     var token = "test-token";
@@ -121,13 +128,21 @@ class TenantEntitlementsServiceTest {
     when(client.getEntitlements(1, "tenantId==" + tenantId, token))
       .thenThrow(new FeignException.ServiceUnavailable("Service unavailable", feignRequest, null, null));
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isTrue();
+    assertThatThrownBy(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .isInstanceOf(RequestValidationException.class)
+      .hasMessage("Cannot delete tenant")
+      .satisfies(ex -> {
+        var exception = (RequestValidationException) ex;
+        assertThat(exception.getErrorParameters()).hasSize(1);
+        assertThat(exception.getErrorParameters().getFirst().getKey())
+          .isEqualTo("cause");
+        assertThat(exception.getErrorParameters().getFirst().getValue())
+          .isEqualTo("Unable to verify tenant's entitlements state, try again");
+      });
   }
 
   @Test
-  void hasTenantEntitlements_negative_unexpectedError() {
+  void checkTenantCanBeDeleted_negative_unexpectedError() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
     var token = "test-token";
@@ -136,54 +151,86 @@ class TenantEntitlementsServiceTest {
     when(client.getEntitlements(1, "tenantId==" + tenantId, token))
       .thenThrow(new RuntimeException("Unexpected error"));
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isTrue();
+    assertThatThrownBy(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .isInstanceOf(RequestValidationException.class)
+      .hasMessage("Cannot delete tenant")
+      .satisfies(ex -> {
+        var exception = (RequestValidationException) ex;
+        assertThat(exception.getErrorParameters()).hasSize(1);
+        assertThat(exception.getErrorParameters().getFirst().getKey())
+          .isEqualTo("cause");
+        assertThat(exception.getErrorParameters().getFirst().getValue())
+          .isEqualTo("Unable to verify tenant's entitlements state, try again");
+      });
   }
 
   @Test
-  void hasTenantEntitlements_negative_nullTenantId() {
+  void checkTenantCanBeDeleted_negative_nullTenantId() {
     var tenantName = "test-tenant";
 
-    assertThatThrownBy(() -> service.hasTenantEntitlements(tenantName, null))
+    assertThatThrownBy(() -> service.checkTenantCanBeDeleted(tenantName, null))
       .isInstanceOf(NullPointerException.class)
       .hasMessageContaining("tenantId cannot be null");
   }
 
   @Test
-  void hasTenantEntitlements_negative_missingToken() {
+  void checkTenantCanBeDeleted_negative_missingToken() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
 
     // Don't add token to mockRequest - it will be null
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isTrue();
+    assertThatThrownBy(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .isInstanceOf(RequestValidationException.class)
+      .hasMessage("Cannot delete tenant")
+      .satisfies(ex -> {
+        var exception = (RequestValidationException) ex;
+        assertThat(exception.getErrorParameters()).hasSize(1);
+        assertThat(exception.getErrorParameters().getFirst().getKey())
+          .isEqualTo("cause");
+        assertThat(exception.getErrorParameters().getFirst().getValue())
+          .isEqualTo("Unable to verify tenant's entitlements state, try again");
+      });
   }
 
   @Test
-  void hasTenantEntitlements_negative_emptyToken() {
+  void checkTenantCanBeDeleted_negative_emptyToken() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
 
     mockRequest.addHeader(TOKEN, "");
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isTrue();
+    assertThatThrownBy(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .isInstanceOf(RequestValidationException.class)
+      .hasMessage("Cannot delete tenant")
+      .satisfies(ex -> {
+        var exception = (RequestValidationException) ex;
+        assertThat(exception.getErrorParameters()).hasSize(1);
+        assertThat(exception.getErrorParameters().getFirst().getKey())
+          .isEqualTo("cause");
+        assertThat(exception.getErrorParameters().getFirst().getValue())
+          .isEqualTo("Unable to verify tenant's entitlements state, try again");
+      });
   }
 
   @Test
-  void hasTenantEntitlements_negative_noRequestContext() {
+  void checkTenantCanBeDeleted_negative_noRequestContext() {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
 
     // Clear the request context to simulate no request context available
     RequestContextHolder.resetRequestAttributes();
 
-    var result = service.hasTenantEntitlements(tenantName, tenantId);
-
-    assertThat(result).isTrue();
+    assertThatThrownBy(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
+      .isInstanceOf(RequestValidationException.class)
+      .hasMessage("Cannot delete tenant")
+      .satisfies(ex -> {
+        var exception = (RequestValidationException) ex;
+        assertThat(exception.getErrorParameters()).hasSize(1);
+        assertThat(exception.getErrorParameters().getFirst().getKey())
+          .isEqualTo("cause");
+        assertThat(exception.getErrorParameters().getFirst().getValue())
+          .isEqualTo("Unable to verify tenant's entitlements state, try again");
+      });
   }
 }

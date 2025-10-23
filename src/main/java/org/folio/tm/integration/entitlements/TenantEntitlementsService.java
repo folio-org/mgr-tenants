@@ -7,6 +7,7 @@ import feign.FeignException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.folio.tm.exception.RequestValidationException;
 import org.folio.tm.integration.entitlements.model.EntitlementsResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -28,37 +29,59 @@ public class TenantEntitlementsService {
   private final TenantEntitlementsClient client;
 
   /**
-   * Checks if tenant has any entitlements.
+   * Checks if tenant can be deleted by verifying it has no active entitlements.
    *
    * <p>
    * This method implements fail-close strategy: if mgr-tenant-entitlements service is unavailable or returns an error,
-   * it will return {@code true} to not allow tenant deletion.
+   * it will throw an exception to prevent tenant deletion.
    * </p>
    *
    * @param tenantName - tenant name for logging purposes
    * @param tenantId - tenant UUID from database
-   * @return {@code true} if tenant has at least one entitlement, {@code false} otherwise
+   * @throws RequestValidationException if tenant has entitlements or entitlements check failed
    */
-  public boolean hasTenantEntitlements(String tenantName, UUID tenantId) {
+  public void checkTenantCanBeDeleted(String tenantName, UUID tenantId) {
     requireNonNull(tenantId, "tenantId cannot be null");
     try {
-      log.debug("Checking entitlements for tenant '{}' [id: {}]", tenantName, tenantId);
-      var token = getTokenFromRequest();
-
-      var query = "tenantId==" + tenantId;
-      var response = client.getEntitlements(1, query, token);
-
-      return hasEntitlements(response);
+      verifyNoActiveEntitlements(tenantName, tenantId);
     } catch (FeignException.NotFound e) {
       log.debug("No entitlements found for tenant '{}': {}", tenantName, e.getMessage());
-      return false;
+    } catch (RequestValidationException e) {
+      throw e;
     } catch (FeignException e) {
-      logServiceUnavailable(tenantName, e);
-      return true;
+      handleServiceError(tenantName, e);
     } catch (Exception e) {
-      logUnexpectedError(tenantName, e);
-      return true;
+      handleUnexpectedError(tenantName, e);
     }
+  }
+
+  private void verifyNoActiveEntitlements(String tenantName, UUID tenantId) {
+    log.debug("Checking entitlements for tenant '{}' [id: {}]", tenantName, tenantId);
+    var token = getTokenFromRequest();
+    var query = "tenantId==" + tenantId;
+    var response = client.getEntitlements(1, query, token);
+
+    if (hasEntitlements(response)) {
+      log.warn("Cannot delete tenant '{}': tenant has active entitlements", tenantName);
+      throw createValidationException("Please uninstall applications first");
+    }
+
+    log.debug("Tenant '{}' has no entitlements, deletion allowed", tenantName);
+  }
+
+  private void handleServiceError(String tenantName, FeignException e) {
+    log.warn("Failed to check entitlements for tenant '{}' [status: {}, message: {}]. Deletion not allowed.",
+      tenantName, e.status(), e.getMessage());
+    throw createValidationException("Unable to verify tenant's entitlements state, try again");
+  }
+
+  private void handleUnexpectedError(String tenantName, Exception e) {
+    log.warn("Unexpected error checking entitlements for tenant '{}'. Deletion not allowed.", tenantName, e);
+    throw createValidationException("Unable to verify tenant's entitlements state, try again");
+  }
+
+  private static RequestValidationException createValidationException(String cause) {
+    return new RequestValidationException("Cannot delete tenant", "cause", cause);
   }
 
   /**
@@ -88,14 +111,5 @@ public class TenantEntitlementsService {
 
   private static boolean hasEntitlements(EntitlementsResponse response) {
     return response != null && response.getEntitlements() != null && !response.getEntitlements().isEmpty();
-  }
-
-  private static void logServiceUnavailable(String tenantName, FeignException e) {
-    log.warn("Failed to check entitlements for tenant '{}' [status: {}, message: {}]. Deletion not allowed.",
-      tenantName, e.status(), e.getMessage());
-  }
-
-  private static void logUnexpectedError(String tenantName, Exception e) {
-    log.warn("Unexpected error checking entitlements for tenant '{}'. Deletion not allowed.", tenantName, e);
   }
 }

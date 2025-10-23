@@ -13,10 +13,12 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.SqlMergeMode.MergeMode.MERGE;
+import static org.springframework.test.json.JsonCompareMode.LENIENT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -299,9 +301,23 @@ class TenantIT extends BaseIntegrationTest {
     mockMvc.perform(delete("/tenants/{id}", tenantId)
         .header(TOKEN, AUTH_TOKEN))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.errors[0].message",
-        is("Cannot delete tenant with active entitlements. Please uninstall all applications before deleting.")))
-      .andExpect(jsonPath("$.errors[0].type", is("RequestValidationException")));
+      .andExpect(content().json("""
+        {
+            "errors": [
+                {
+                    "message": "Cannot delete tenant",
+                    "type": "RequestValidationException",
+                    "code": "validation_error",
+                    "parameters": [
+                        {
+                            "key": "cause",
+                            "value": "Please uninstall applications first"
+                        }
+                    ]
+                }
+            ]
+        }
+        """, LENIENT));
 
     // Verify tenant still exists
     doGet("/tenants/{id}", tenantId)

@@ -15,8 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.SqlMergeMode.MergeMode.MERGE;
+import static org.springframework.test.json.JsonCompareMode.LENIENT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -201,11 +203,23 @@ class TenantKeycloakIT extends BaseIntegrationTest {
 
     mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TENANT_ID)
         .header(TOKEN, keycloakTestClient.loginAsFolioAdmin()))
-      .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.errors[0].message", containsString("Cannot delete tenant with active entitlements")))
-      .andExpect(jsonPath("$.errors[0].code", is("validation_error")))
-      .andExpect(jsonPath("$.errors[0].type", is("RequestValidationException")))
-      .andExpect(jsonPath("$.total_records", is(1)));
+      .andExpect(content().json("""
+        {
+            "errors": [
+                {
+                    "message": "Cannot delete tenant",
+                    "type": "RequestValidationException",
+                    "code": "validation_error",
+                    "parameters": [
+                        {
+                            "key": "cause",
+                            "value": "Please uninstall applications first"
+                        }
+                    ]
+                }
+            ]
+        }
+        """, LENIENT));
 
     var stillExists = repository.findById(TENANT_ID);
     assertTrue(stillExists.isPresent());

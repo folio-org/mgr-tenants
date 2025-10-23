@@ -103,11 +103,7 @@ public class TenantService {
 
   private void checkEntitlementsBeforeDeletion(String tenantName, UUID tenantId) {
     log.debug("Checking for active entitlements before deleting tenant: {}", tenantName);
-    if (tenantEntitlementsService.hasTenantEntitlements(tenantName, tenantId)) {
-      log.warn("Cannot delete tenant '{}': tenant has active entitlements", tenantName);
-      throw new RequestValidationException(
-        "Cannot delete tenant with active entitlements. Please uninstall all applications before deleting.");
-    }
+    tenantEntitlementsService.checkTenantCanBeDeleted(tenantName, tenantId);
   }
 
   private void performDeletion(TenantEntity entity, Boolean purgeKafkaTopics) {
