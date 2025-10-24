@@ -6,6 +6,9 @@
 * Ensure that lightweight tokens are enabled for all clients when a new tenant is created (MGRTENANT-62)
 * Use SECURE\_STORE\_ENV, not ENV, for secure store key (MGRTENANT-64)
 * Add support for custom Keycloak base URL for JWKS endpoint, new ENV variable `KC_JWKS_BASE_URL` (MODSIDECAR-148)
+* Prevent deletion of tenants with active entitlements (MGRTENANT-17)
+
+---
 
 ## Version `v3.0.0` (11.03.2025)
 * Upgrade Java to version 21. (MGRTENANT-49)

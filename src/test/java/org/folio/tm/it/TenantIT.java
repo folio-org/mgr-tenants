@@ -13,10 +13,12 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.SqlMergeMode.MergeMode.MERGE;
+import static org.springframework.test.json.JsonCompareMode.LENIENT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -239,7 +241,8 @@ class TenantIT extends BaseIntegrationTest {
   @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/delete-tenant.json",
-    "/wiremock/stubs/okapi/get-tenant-exist.json"
+    "/wiremock/stubs/okapi/get-tenant-exist.json",
+    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json"
   })
   void deleteTenant_positive() throws Exception {
     var tenantId = TENANT_ID.toString();
@@ -257,7 +260,8 @@ class TenantIT extends BaseIntegrationTest {
   @Sql("classpath:/sql/populate_tenants.sql")
   @WireMockStub(scripts = {
     "/wiremock/stubs/okapi/get-tenant5-exist.json",
-    "/wiremock/stubs/okapi/delete-tenant.json"
+    "/wiremock/stubs/okapi/delete-tenant.json",
+    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json"
   })
   void deleteTenantWithAttributes_positive() throws Exception {
     var tenantId = "42e36904-d009-4884-8338-3df14a18dfef";
@@ -282,6 +286,43 @@ class TenantIT extends BaseIntegrationTest {
     mockMvc.perform(delete("/tenants/{id}", TENANT4.getId())
         .header(TOKEN, AUTH_TOKEN))
       .andExpect(status().isNoContent());
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @WireMockStub(scripts = {
+    "/wiremock/stubs/okapi/get-tenant-exist.json",
+    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-with-apps.json"
+  })
+  void deleteTenant_negative_hasActiveEntitlements() throws Exception {
+    var tenantId = TENANT_ID.toString();
+    doGet("/tenants/{id}", tenantId).andExpect(jsonPath("$.id", is(tenantId)));
+
+    mockMvc.perform(delete("/tenants/{id}", tenantId)
+        .header(TOKEN, AUTH_TOKEN))
+      .andExpect(status().isBadRequest())
+      .andExpect(content().json("""
+        {
+            "errors": [
+                {
+                    "message": "Cannot delete tenant",
+                    "type": "RequestValidationException",
+                    "code": "validation_error",
+                    "parameters": [
+                        {
+                            "key": "cause",
+                            "value": "Please uninstall applications first"
+                        }
+                    ]
+                }
+            ]
+        }
+        """, LENIENT));
+
+    // Verify tenant still exists
+    doGet("/tenants/{id}", tenantId)
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.id", is(tenantId)));
   }
 
   @Test

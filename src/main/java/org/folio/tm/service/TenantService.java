@@ -9,12 +9,14 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.folio.common.domain.model.OffsetRequest;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.domain.dto.TenantAttributes;
 import org.folio.tm.domain.dto.Tenants;
 import org.folio.tm.domain.entity.TenantEntity;
 import org.folio.tm.exception.RequestValidationException;
+import org.folio.tm.integration.entitlements.TenantEntitlementsService;
 import org.folio.tm.integration.kafka.KafkaService;
 import org.folio.tm.mapper.TenantMapper;
 import org.folio.tm.repository.TenantRepository;
@@ -22,6 +24,7 @@ import org.folio.tm.service.listeners.TenantEventsPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -32,6 +35,7 @@ public class TenantService {
   private final TenantAttributeService tenantAttributeService;
   private final TenantEventsPublisher tenantEventsPublisher;
   private final KafkaService kafkaService;
+  private final TenantEntitlementsService tenantEntitlementsService;
 
   public Tenant createTenant(Tenant tenant) {
     var name = tenant.getName();
@@ -92,10 +96,22 @@ public class TenantService {
 
   public void deleteTenantById(UUID id, Boolean purgeKafkaTopics) {
     repository.findById(id).ifPresent(entity -> {
-      repository.delete(entity);
-      tenantEventsPublisher.onTenantDelete(entity.getName());
-      kafkaService.deleteTopics(entity.getName(), purgeKafkaTopics);
+      checkEntitlementsBeforeDeletion(entity.getName(), entity.getId());
+      performDeletion(entity, purgeKafkaTopics);
     });
+  }
+
+  private void checkEntitlementsBeforeDeletion(String tenantName, UUID tenantId) {
+    log.debug("Checking for active entitlements before deleting tenant: {}", tenantName);
+    tenantEntitlementsService.checkTenantCanBeDeleted(tenantName, tenantId);
+  }
+
+  private void performDeletion(TenantEntity entity, Boolean purgeKafkaTopics) {
+    var tenantName = entity.getName();
+    log.info("Deleting tenant: {}", tenantName);
+    repository.delete(entity);
+    tenantEventsPublisher.onTenantDelete(tenantName);
+    kafkaService.deleteTopics(tenantName, purgeKafkaTopics);
   }
 
   private TenantEntity getOne(UUID id) {

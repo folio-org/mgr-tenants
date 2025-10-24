@@ -2,7 +2,7 @@ package org.folio.tm.it;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.folio.test.extensions.EnableOkapiSecurity;
+import org.folio.test.extensions.EnableKeycloakSecurity;
 import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.extension.EnableKongGateway;
@@ -13,7 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 
 @IntegrationTest
 @EnableKongGateway
-@EnableOkapiSecurity
+@EnableKeycloakSecurity
 @TestPropertySource(properties = {
   "application.keycloak.enabled=false",
   "application.okapi.enabled=false",

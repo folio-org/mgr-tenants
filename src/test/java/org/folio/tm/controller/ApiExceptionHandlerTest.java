@@ -32,6 +32,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @UnitTest
+@TestPropertySource(properties = {
+  "application.keycloak.enabled=false",
+  "application.security.enabled=false",
+  "application.secret-store.environment=folio",
+  "application.mte.url=http://localhost:9999"
+})
 @WebMvcTest(TestController.class)
 @Import({ControllerTestConfiguration.class, TestController.class})
 class ApiExceptionHandlerTest {

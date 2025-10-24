@@ -15,8 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.SqlMergeMode.MergeMode.MERGE;
+import static org.springframework.test.json.JsonCompareMode.LENIENT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,6 +30,7 @@ import org.folio.test.extensions.EnableKeycloakDataImport;
 import org.folio.test.extensions.EnableKeycloakSecurity;
 import org.folio.test.extensions.EnableKeycloakTlsMode;
 import org.folio.test.extensions.KeycloakRealms;
+import org.folio.test.extensions.WireMockStub;
 import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.domain.dto.Tenant;
@@ -177,6 +180,7 @@ class TenantKeycloakIT extends BaseIntegrationTest {
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
   @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  @WireMockStub("/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json")
   void deleteTenant_positive() throws Exception {
     var existing = repository.findById(TENANT_ID);
     assertTrue(existing.isPresent());
@@ -187,6 +191,38 @@ class TenantKeycloakIT extends BaseIntegrationTest {
 
     repository.findById(TENANT_ID)
       .ifPresent(tenantEntity -> Assertions.fail("Tenant is not deleted: " + TENANT_ID));
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  @WireMockStub("/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-with-apps.json")
+  void deleteTenant_negative_tenantHasApplicationsInstalled() throws Exception {
+    var existing = repository.findById(TENANT_ID);
+    assertTrue(existing.isPresent());
+
+    mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TENANT_ID)
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin()))
+      .andExpect(content().json("""
+        {
+            "errors": [
+                {
+                    "message": "Cannot delete tenant",
+                    "type": "RequestValidationException",
+                    "code": "validation_error",
+                    "parameters": [
+                        {
+                            "key": "cause",
+                            "value": "Please uninstall applications first"
+                        }
+                    ]
+                }
+            ]
+        }
+        """, LENIENT));
+
+    var stillExists = repository.findById(TENANT_ID);
+    assertTrue(stillExists.isPresent());
   }
 
   private static Tenant copyFrom() {
