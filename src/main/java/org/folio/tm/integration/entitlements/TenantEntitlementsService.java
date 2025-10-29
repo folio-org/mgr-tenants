@@ -1,9 +1,13 @@
 package org.folio.tm.integration.entitlements;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.removeStartIgnoreCase;
 import static org.folio.tm.integration.okapi.OkapiHeaders.TOKEN;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -88,25 +92,61 @@ public class TenantEntitlementsService {
    * Retrieves authentication token from the HTTP request in a thread-safe manner.
    *
    * <p>
-   * Uses RequestContextHolder to safely access the current request context across threads. This method implements
-   * fail-close behavior: if the token is missing, it throws an exception which will be caught by the caller and result
-   * in blocking the deletion operation.
+   * Uses RequestContextHolder to safely access the current request context across threads. Returns null if token is not
+   * present, allowing the service to work in environments where security is disabled. The mgr-tenant-entitlements
+   * client accepts null tokens (required = false).
    * </p>
    *
-   * @return authentication token
-   * @throws IllegalStateException if token is missing, empty, or request context is unavailable
+   * @return authentication token, or null if not present or request context unavailable
    */
   private String getTokenFromRequest() {
     var requestAttributes = RequestContextHolder.getRequestAttributes();
-    requireNonNull(requestAttributes, "No request context available - cannot retrieve authentication token");
+    if (requestAttributes == null) {
+      log.debug("No request context available - cannot retrieve authentication token");
+      return null;
+    }
 
     var httpRequest = ((ServletRequestAttributes) requestAttributes).getRequest();
-    var token = httpRequest.getHeader(TOKEN);
+    return extractToken(httpRequest);
+  }
 
-    if (token == null || token.isEmpty()) {
-      throw new IllegalStateException("Missing authentication token in request header: " + TOKEN);
+  /**
+   * Extracts authentication token from HTTP request headers.
+   *
+   * <p>
+   * Checks the following headers in order:
+   * <ol>
+   *   <li>X-Okapi-Token - FOLIO token header</li>
+   *   <li>Authorization - Standard Bearer token (strips "Bearer " prefix)</li>
+   * </ol>
+   * </p>
+   *
+   * @param request - HTTP request
+   * @return authentication token, or null if not found
+   */
+  private static String extractToken(HttpServletRequest request) {
+    var okapiToken = request.getHeader(TOKEN);
+    if (isNotBlank(okapiToken)) {
+      return okapiToken;
     }
-    return token;
+
+    var authHeader = request.getHeader(AUTHORIZATION);
+    if (isNotBlank(authHeader)) {
+      return trimTokenBearer(authHeader);
+    }
+
+    log.debug("No authentication token found in request headers");
+    return null;
+  }
+
+  /**
+   * Removes "Bearer " prefix from authorization header token (case-insensitive).
+   *
+   * @param token - authorization header value
+   * @return token without Bearer prefix
+   */
+  private static String trimTokenBearer(String token) {
+    return removeStartIgnoreCase(token, "Bearer ");
   }
 
   private static boolean hasEntitlements(EntitlementsResponse response) {

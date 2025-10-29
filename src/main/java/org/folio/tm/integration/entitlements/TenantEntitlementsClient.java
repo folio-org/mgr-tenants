@@ -21,6 +21,6 @@ public interface TenantEntitlementsClient {
   EntitlementsResponse getEntitlements(
     @RequestParam(value = "limit", defaultValue = "1") Integer limit,
     @RequestParam(value = "query") String query,
-    @RequestHeader(TOKEN) String token
+    @RequestHeader(value = TOKEN, required = false) String token
   );
 }
