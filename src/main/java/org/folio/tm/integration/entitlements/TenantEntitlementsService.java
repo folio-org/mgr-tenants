@@ -11,10 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.tm.exception.RequestValidationException;
 import org.folio.tm.integration.entitlements.model.EntitlementsResponse;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -94,8 +92,8 @@ public class TenantEntitlementsService {
    * Retrieves authentication token from the HTTP request in a thread-safe manner.
    *
    * <p>
-   * Uses RequestContextHolder to safely access the current request context across threads. Returns null if token is
-   * not present, allowing the service to work in environments where security is disabled. The mgr-tenant-entitlements
+   * Uses RequestContextHolder to safely access the current request context across threads. Returns null if token is not
+   * present, allowing the service to work in environments where security is disabled. The mgr-tenant-entitlements
    * client accepts null tokens (required = false).
    * </p>
    *
