@@ -43,7 +43,7 @@ public class OkapiService implements TenantServiceListener {
       if (isTenantExist(tenant.getName())) {
         return toTenantDescriptor(tenant);
       }
-      log.info("Creating tenant descriptor [id: {}]", tenant.getName());
+      log.debug("Creating tenant descriptor [id: {}]", tenant.getName());
       return okapiClient.createTenant(toTenantDescriptor(tenant), getOkapiToken());
     } catch (Exception e) {
       throw new OkapiRequestException("Failed to create tenant", e);
@@ -53,7 +53,7 @@ public class OkapiService implements TenantServiceListener {
   public TenantDescriptor updateTenantById(Tenant tenant) {
     var okapiTenantId = tenant.getName();
     try {
-      log.info("Updating tenant descriptor [id: {}]", okapiTenantId);
+      log.debug("Updating tenant descriptor [id: {}]", okapiTenantId);
       return okapiClient.updateTenant(okapiTenantId, toTenantDescriptor(tenant), getOkapiToken());
     } catch (Exception e) {
       throw new OkapiRequestException("Failed to update tenant: " + okapiTenantId, e);
@@ -63,10 +63,10 @@ public class OkapiService implements TenantServiceListener {
   public void deleteTenantById(String name) {
     try {
       if (isTenantExist(name)) {
-        log.info("Deleting tenant descriptor [id: {}]", name);
+        log.debug("Deleting tenant descriptor [id: {}]", name);
         okapiClient.deleteTenant(name, getOkapiToken());
       }
-      log.info("Tenant already deleted in okapi [id: {}]", name);
+      log.debug("Tenant already deleted in okapi [id: {}]", name);
     } catch (Exception e) {
       throw new OkapiRequestException("Failed to delete tenant by id: " + name, e);
     }
@@ -90,12 +90,12 @@ public class OkapiService implements TenantServiceListener {
 
   private boolean isTenantExist(String tenantId) {
     try {
-      log.info("Check existence of tenant [id: {}]", tenantId);
+      log.debug("Check existence of tenant [id: {}]", tenantId);
       var getResponse = okapiClient.getTenantById(tenantId, getOkapiToken());
-      log.info("Tenant exists in Okapi [id: {}]", tenantId);
+      log.debug("Tenant exists in Okapi [id: {}]", tenantId);
       return Objects.nonNull(getResponse);
     } catch (FeignException.NotFound e) {
-      log.info("Tenant was not found in Okapi [id: {}]", tenantId);
+      log.warn("Tenant was not found in Okapi [id: {}]", tenantId);
       return false;
     }
   }
