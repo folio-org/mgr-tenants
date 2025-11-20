@@ -7,6 +7,7 @@
 * Use SECURE\_STORE\_ENV, not ENV, for secure store key (MGRTENANT-64)
 * Add support for custom Keycloak base URL for JWKS endpoint, new ENV variable `KC_JWKS_BASE_URL` (MODSIDECAR-148)
 * Prevent deletion of tenants with active entitlements (MGRTENANT-17)
+* Review and clean up logs in mgr-tenants (MGRTENANT-74)
 
 ---
 

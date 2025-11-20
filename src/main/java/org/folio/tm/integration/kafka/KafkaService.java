@@ -35,7 +35,7 @@ public class KafkaService {
         log.info("No topics to delete for tenant: tenant = {}", tenant);
         return;
       }
-      log.info("Deleting topics for tenant: tenant = {}, topics = {}", tenant, topicsToDelete);
+      log.debug("Deleting topics for tenant: tenant = {}, topics = {}", tenant, topicsToDelete);
       adminClient.deleteTopics(topicsToDelete).all().get(TIMEOUT_SECONDS, SECONDS);
       log.info("Deleted topics successfully: tenant = {}", tenant);
     } catch (InterruptedException e) {
