@@ -188,7 +188,7 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     var realm = keycloakTestClient.getRealm(tenantName);
     assertThat(realm.getRealm()).isEqualTo(tenantName);
     // Verify that the following properties are not changed during tenant update
-    assertThat(realm.getRevokeRefreshToken()).isEqualTo(false);
+    assertThat(realm.getRevokeRefreshToken()).isFalse();
     assertThat(realm.getRefreshTokenMaxReuse()).isEqualTo(1);
     assertThat(realm.getAccessTokenLifespan()).isEqualTo(1261);
     assertThat(realm.getSsoSessionIdleTimeout()).isEqualTo(1262);
