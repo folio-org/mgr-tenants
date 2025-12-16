@@ -35,6 +35,7 @@ import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.domain.dto.TenantType;
+import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
 import org.folio.tm.repository.TenantRepository;
 import org.folio.tm.support.KeycloakTestClientConfiguration;
 import org.folio.tm.support.KeycloakTestClientConfiguration.KeycloakTestClient;
@@ -78,6 +79,7 @@ class TenantKeycloakIT extends BaseIntegrationTest {
 
   @Autowired private TenantRepository repository;
   @Autowired private KeycloakTestClient keycloakTestClient;
+  @Autowired private KeycloakRealmSetupProperties keycloakRealmProps;
 
   @BeforeAll
   static void beforeAll(@Autowired ApplicationContext applicationContext) {
@@ -111,7 +113,17 @@ class TenantKeycloakIT extends BaseIntegrationTest {
 
     var tenantName = TENANT4.getName();
     var realm = keycloakTestClient.getRealm(tenantName);
+    System.out.println(TestUtils.asJsonString(realm));
+
     assertThat(realm.getRealm()).isEqualTo(tenantName);
+    assertThat(realm.getRevokeRefreshToken()).isEqualTo(keycloakRealmProps.getRefreshToken().getRevokeEnabled());
+    assertThat(realm.getRefreshTokenMaxReuse()).isEqualTo(keycloakRealmProps.getRefreshToken().getMaxReuse());
+    assertThat(realm.getAccessTokenLifespan()).isEqualTo(keycloakRealmProps.getAccessTokenLifespan());
+    assertThat(realm.getSsoSessionIdleTimeout()).isEqualTo(keycloakRealmProps.getSsoSession().getIdleTimeout());
+    assertThat(realm.getSsoSessionMaxLifespan()).isEqualTo(keycloakRealmProps.getSsoSession().getMaxLifespan());
+    assertThat(realm.getClientSessionIdleTimeout()).isEqualTo(keycloakRealmProps.getClientSession().getIdleTimeout());
+    assertThat(realm.getClientSessionMaxLifespan()).isEqualTo(keycloakRealmProps.getClientSession().getMaxLifespan());
+
     checkImpersonationClient(tenantName);
   }
 
@@ -175,6 +187,14 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     var tenantName = tenant.getName();
     var realm = keycloakTestClient.getRealm(tenantName);
     assertThat(realm.getRealm()).isEqualTo(tenantName);
+    // Verify that the following properties are not changed during tenant update
+    assertThat(realm.getRevokeRefreshToken()).isEqualTo(false);
+    assertThat(realm.getRefreshTokenMaxReuse()).isEqualTo(1);
+    assertThat(realm.getAccessTokenLifespan()).isEqualTo(1261);
+    assertThat(realm.getSsoSessionIdleTimeout()).isEqualTo(1262);
+    assertThat(realm.getSsoSessionMaxLifespan()).isEqualTo(1263);
+    assertThat(realm.getClientSessionIdleTimeout()).isEqualTo(1264);
+    assertThat(realm.getClientSessionMaxLifespan()).isEqualTo(1265);
   }
 
   @Test
