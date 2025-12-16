@@ -64,11 +64,13 @@ public class KeycloakRealmService {
    * @param tenant - tenant descriptor as {@link Tenant} object
    */
   public RealmRepresentation updateRealm(Tenant tenant) {
-    var realmRepresentation = toRealmRepresentation(tenant);
     try {
       keycloak.tokenManager().grantToken();
       var realmResource = keycloak.realm(tenant.getName());
+
+      var realmRepresentation = updateRealmRepresentation(realmResource.toRepresentation(), tenant);
       realmResource.update(realmRepresentation);
+
       return realmRepresentation;
     } catch (WebApplicationException exception) {
       throw new KeycloakException("Failed to update realm for tenant: " + tenant.getName(), exception);
@@ -116,13 +118,9 @@ public class KeycloakRealmService {
   }
 
   @SuppressWarnings("checkstyle:MethodLength")
-  private RealmRepresentation toRealmRepresentation(Tenant tenant) {
-    Assert.notNull(tenant.getId(), "Tenant identifier must not be null");
-    var realmName = tenant.getName();
+  private RealmRepresentation newRealmRepresentation(Tenant tenant) {
+    var realm = updateRealmRepresentation(new RealmRepresentation(), tenant);
 
-    var realm = new RealmRepresentation();
-    realm.setId(tenant.getId().toString());
-    realm.setRealm(realmName);
     realm.setEnabled(true);
     realm.setDuplicateEmailsAllowed(TRUE);
     realm.setLoginWithEmailAllowed(FALSE);
@@ -138,6 +136,8 @@ public class KeycloakRealmService {
         realm.getAttributes().put("parRequestUriLifespan", parRequestUriLifespan.toString());
       });
 
+    realm.setRevokeRefreshToken(keycloakRealmSetupProperties.getRefreshToken().getRevokeEnabled());
+    realm.setRefreshTokenMaxReuse(keycloakRealmSetupProperties.getRefreshToken().getMaxReuse());
     realm.setAccessTokenLifespan(keycloakRealmSetupProperties.getAccessTokenLifespan());
     realm.setSsoSessionIdleTimeout(keycloakRealmSetupProperties.getSsoSession().getIdleTimeout());
     realm.setSsoSessionMaxLifespan(keycloakRealmSetupProperties.getSsoSession().getMaxLifespan());
@@ -147,9 +147,18 @@ public class KeycloakRealmService {
     return realm;
   }
 
+  private RealmRepresentation updateRealmRepresentation(RealmRepresentation realm, Tenant tenant) {
+    Assert.notNull(tenant.getId(), "Tenant identifier must not be null");
+    var realmName = tenant.getName();
+
+    realm.setId(tenant.getId().toString());
+    realm.setRealm(realmName);
+    return realm;
+  }
+
   private RealmRepresentation createRealmInternal(Tenant tenant) {
     var realmResource = keycloak.realms();
-    var realm = toRealmRepresentation(tenant);
+    var realm = newRealmRepresentation(tenant);
     realmResource.create(realm);
 
     keycloak.tokenManager().grantToken();
