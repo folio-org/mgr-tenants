@@ -8,6 +8,7 @@
 * Add support for custom Keycloak base URL for JWKS endpoint, new ENV variable `KC_JWKS_BASE_URL` (MODSIDECAR-148)
 * Prevent deletion of tenants with active entitlements (MGRTENANT-17)
 * Review and clean up logs in mgr-tenants (MGRTENANT-74)
+* Setup RTR (default) configuration automatically during tenant creation (MGRTENANT-76)
 
 ---
 
