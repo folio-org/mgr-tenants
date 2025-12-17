@@ -25,6 +25,8 @@ import org.apache.commons.lang3.SerializationException;
 import org.folio.test.types.UnitTest;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
+import org.folio.tm.integration.keycloak.configuration.KeycloakRefreshTokenProperties;
+import org.folio.tm.integration.keycloak.configuration.KeycloakSessionProperties;
 import org.folio.tm.integration.keycloak.exception.KeycloakException;
 import org.folio.tm.integration.keycloak.service.clients.KeycloakClientService;
 import org.folio.tm.integration.keycloak.service.roles.KeycloakRealmRoleService;
@@ -52,8 +54,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @UnitTest
 @ExtendWith(MockitoExtension.class)
 class KeycloakRealmServiceTest {
-  private static final Integer ACCESS_CODE_LIFESPAN_VALUE = 600;
-  private static final Integer PAR_REQUEST_LIFESPAN_VALUE = 600;
+  private static final int ACCESS_CODE_LIFESPAN_VALUE = 600;
+  private static final int PAR_REQUEST_LIFESPAN_VALUE = 600;
+  private static final int REFRESH_TOKEN_MAX_REUSE = 0;
+  private static final boolean REFRESH_TOKEN_REVOKE_ENABLED = true;
+  private static final int SESSION_IDLE_TIMEOUT = 1800;
+  private static final int SESSION_MAX_LIFESPAN = 36000;
+  private static final int ACCESS_TOKEN_LIFESPAN = 600;
 
   private KeycloakRealmService keycloakRealmService;
 
@@ -69,12 +76,30 @@ class KeycloakRealmServiceTest {
 
   @BeforeEach
   void setUp() {
-    var keycloakRealmSetupProperties = new KeycloakRealmSetupProperties();
-    keycloakRealmSetupProperties.setAccessCodeLifespan(ACCESS_CODE_LIFESPAN_VALUE);
-    keycloakRealmSetupProperties.setParRequestUriLifespan(PAR_REQUEST_LIFESPAN_VALUE);
+    var props = new KeycloakRealmSetupProperties();
+    props.setAccessCodeLifespan(ACCESS_CODE_LIFESPAN_VALUE);
+    props.setParRequestUriLifespan(PAR_REQUEST_LIFESPAN_VALUE);
+
+    props.setAccessTokenLifespan(ACCESS_TOKEN_LIFESPAN);
+
+    var refreshTokenProps = new KeycloakRefreshTokenProperties();
+    refreshTokenProps.setMaxReuse(REFRESH_TOKEN_MAX_REUSE);
+    refreshTokenProps.setRevokeEnabled(REFRESH_TOKEN_REVOKE_ENABLED);
+    props.setRefreshToken(refreshTokenProps);
+
+    var ssoSessionProps = new KeycloakSessionProperties();
+    ssoSessionProps.setIdleTimeout(SESSION_IDLE_TIMEOUT);
+    ssoSessionProps.setMaxLifespan(SESSION_MAX_LIFESPAN);
+    props.setSsoSession(ssoSessionProps);
+
+    var clientSessionProps = new KeycloakSessionProperties();
+    clientSessionProps.setIdleTimeout(SESSION_IDLE_TIMEOUT);
+    clientSessionProps.setMaxLifespan(SESSION_MAX_LIFESPAN);
+    props.setClientSession(clientSessionProps);
+
     keycloakRealmService = new KeycloakRealmService(
       keycloak, jsonHelper, List.of(keycloakClientService), List.of(keycloakRealmRoleService),
-      keycloakRealmSetupProperties);
+      props);
   }
 
   @AfterEach
@@ -83,18 +108,26 @@ class KeycloakRealmServiceTest {
   }
 
   private static RealmRepresentation keycloakRealm() {
-    var realmRepresentation = new RealmRepresentation();
-    realmRepresentation.setRealm(TENANT_NAME);
-    realmRepresentation.setDuplicateEmailsAllowed(true);
-    realmRepresentation.setLoginWithEmailAllowed(false);
-    realmRepresentation.setEditUsernameAllowed(true);
-    realmRepresentation.setEnabled(true);
-    realmRepresentation.setRequiredActions(requiredActions());
-    realmRepresentation.setComponents(realmComponents());
-    realmRepresentation.setAccessCodeLifespan(ACCESS_CODE_LIFESPAN_VALUE);
-    realmRepresentation.setAttributes(new HashMap<>());
-    realmRepresentation.getAttributes().put("parRequestUriLifespan", PAR_REQUEST_LIFESPAN_VALUE.toString());
-    return realmRepresentation;
+    var rm = new RealmRepresentation();
+    rm.setRealm(TENANT_NAME);
+    rm.setDuplicateEmailsAllowed(REFRESH_TOKEN_REVOKE_ENABLED);
+    rm.setLoginWithEmailAllowed(false);
+    rm.setEditUsernameAllowed(REFRESH_TOKEN_REVOKE_ENABLED);
+    rm.setEnabled(REFRESH_TOKEN_REVOKE_ENABLED);
+    rm.setRequiredActions(requiredActions());
+    rm.setComponents(realmComponents());
+    rm.setAccessCodeLifespan(ACCESS_CODE_LIFESPAN_VALUE);
+    rm.setAttributes(new HashMap<>());
+    rm.getAttributes().put("parRequestUriLifespan", String.valueOf(PAR_REQUEST_LIFESPAN_VALUE));
+    rm.setRevokeRefreshToken(REFRESH_TOKEN_REVOKE_ENABLED);
+    rm.setRefreshTokenMaxReuse(REFRESH_TOKEN_MAX_REUSE);
+    rm.setAccessTokenLifespan(ACCESS_TOKEN_LIFESPAN);
+    rm.setSsoSessionIdleTimeout(SESSION_IDLE_TIMEOUT);
+    rm.setSsoSessionMaxLifespan(SESSION_MAX_LIFESPAN);
+    rm.setClientSessionIdleTimeout(SESSION_IDLE_TIMEOUT);
+    rm.setClientSessionMaxLifespan(SESSION_MAX_LIFESPAN);
+
+    return rm;
   }
 
   @SneakyThrows
@@ -276,8 +309,16 @@ class KeycloakRealmServiceTest {
     @Test
     void positive() {
       var keycloakRealm = keycloakRealm();
+      keycloakRealm.setRevokeRefreshToken(!REFRESH_TOKEN_REVOKE_ENABLED);
+      keycloakRealm.setRefreshTokenMaxReuse(REFRESH_TOKEN_MAX_REUSE + 1);
+      keycloakRealm.setAccessTokenLifespan(ACCESS_TOKEN_LIFESPAN + 1);
+      keycloakRealm.setSsoSessionIdleTimeout(SESSION_IDLE_TIMEOUT + 1);
+      keycloakRealm.setSsoSessionMaxLifespan(SESSION_MAX_LIFESPAN + 1);
+      keycloakRealm.setClientSessionIdleTimeout(SESSION_IDLE_TIMEOUT + 1);
+      keycloakRealm.setClientSessionMaxLifespan(SESSION_MAX_LIFESPAN + 1);
 
       when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
+      when(realmResource.toRepresentation()).thenReturn(keycloakRealm);
       when(keycloak.tokenManager()).thenReturn(tokenManager);
       when(tokenManager.grantToken()).thenReturn(accessTokenResponse);
 
@@ -290,10 +331,6 @@ class KeycloakRealmServiceTest {
         .isEqualTo(keycloakRealm);
 
       verify(realmResource).update(any(RealmRepresentation.class));
-
-      //noinspection unchecked
-      verify(jsonHelper).parse(any(InputStream.class), any(TypeReference.class));
-      verify(jsonHelper).parse(any(InputStream.class));
     }
 
     @Test
@@ -307,10 +344,6 @@ class KeycloakRealmServiceTest {
         .isInstanceOf(KeycloakException.class)
         .hasMessage("Failed to update realm for tenant: " + TENANT_NAME)
         .hasCauseInstanceOf(InternalServerErrorException.class);
-
-      //noinspection unchecked
-      verify(jsonHelper).parse(any(InputStream.class), any(TypeReference.class));
-      verify(jsonHelper).parse(any(InputStream.class));
     }
   }
 

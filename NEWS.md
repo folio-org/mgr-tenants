@@ -1,5 +1,6 @@
 ## Version `v3.0.6` (21.01.2026)
 * Setup default keycloak realm session timeouts (MGRTENANT-55)
+* Setup RTR (default) configuration automatically during tenant creation (MGRTENANT-76)
 ---
 
 ## Version `v3.0.5` (12.12.2025)

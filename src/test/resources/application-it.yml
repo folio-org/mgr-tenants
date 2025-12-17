@@ -28,6 +28,9 @@ application:
       trust-store-password: secretpassword
       trust-store-type: JKS
     realm-setup:
+      refresh-token:
+        revoke-enabled: true
+        max-reuse: 0
       access-token-lifespan: 261
       sso-session:
         idle-timeout: 262
