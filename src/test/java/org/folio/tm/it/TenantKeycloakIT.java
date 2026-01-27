@@ -193,8 +193,30 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     assertThat(realm.getAccessTokenLifespan()).isEqualTo(1261);
     assertThat(realm.getSsoSessionIdleTimeout()).isEqualTo(1262);
     assertThat(realm.getSsoSessionMaxLifespan()).isEqualTo(1263);
-    assertThat(realm.getClientSessionIdleTimeout()).isEqualTo(1264);
-    assertThat(realm.getClientSessionMaxLifespan()).isEqualTo(1265);
+    assertThat(realm.getClientSessionIdleTimeout()).isEqualTo(1262);
+    assertThat(realm.getClientSessionMaxLifespan()).isEqualTo(1263);
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant-invalid-timeouts.json")
+  void updateTenant_positive_fixesInvalidSessionTimeouts() throws Exception {
+    // realm with client session timeouts exceeding SSO timeouts (9999 > 1262/1263)
+    var tenantName = TENANT1.getName();
+
+    var tenant = copyFrom().description("fixed timeouts").type(VIRTUAL);
+    mockMvc.perform(put("/tenants/{id}", tenant.getId())
+        .contentType(APPLICATION_JSON)
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin())
+        .content(TestUtils.asJsonString(tenant)))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.description", is(tenant.getDescription())));
+
+    var realmAfter = keycloakTestClient.getRealm(tenantName);
+    assertThat(realmAfter.getSsoSessionIdleTimeout()).isEqualTo(1262);
+    assertThat(realmAfter.getSsoSessionMaxLifespan()).isEqualTo(1263);
+    assertThat(realmAfter.getClientSessionIdleTimeout()).isEqualTo(1262); // Fixed from 9999
+    assertThat(realmAfter.getClientSessionMaxLifespan()).isEqualTo(1263); // Fixed from 9999
   }
 
   @Test
