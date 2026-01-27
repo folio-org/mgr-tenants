@@ -9,6 +9,7 @@
 * Prevent deletion of tenants with active entitlements (MGRTENANT-17)
 * Review and clean up logs in mgr-tenants (MGRTENANT-74)
 * Setup RTR (default) configuration automatically during tenant creation (MGRTENANT-76)
+* Automatically fix invalid realm session timeouts to comply with Keycloak 26.5+ validation rules (KEYCLOAK-95)
 
 ---
 
