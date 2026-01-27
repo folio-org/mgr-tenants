@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.tm.domain.dto.Tenant;
@@ -226,7 +226,7 @@ public class KeycloakRealmService {
   }
 
   private static boolean fixTimeoutIfExceeds(Integer clientTimeout, Integer ssoLimit, String timeoutName,
-    String realmName, Consumer<Integer> setter) {
+    String realmName, IntConsumer setter) {
     if (clientTimeout != null && ssoLimit != null && clientTimeout > ssoLimit) {
       log.warn("{} {} exceeds SSO limit {}. Fixing for realm: {}", timeoutName, clientTimeout, ssoLimit, realmName);
       setter.accept(ssoLimit);
