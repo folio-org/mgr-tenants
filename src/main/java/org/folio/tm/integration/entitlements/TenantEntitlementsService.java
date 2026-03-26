@@ -2,7 +2,6 @@ package org.folio.tm.integration.entitlements;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.removeStartIgnoreCase;
 import static org.folio.tm.integration.okapi.OkapiHeaders.TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -10,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.Strings;
 import org.folio.tm.exception.RequestValidationException;
 import org.folio.tm.integration.entitlements.model.EntitlementsResponse;
 import org.springframework.stereotype.Service;
@@ -147,7 +147,7 @@ public class TenantEntitlementsService {
    * @return token without Bearer prefix
    */
   private static String trimTokenBearer(String token) {
-    return removeStartIgnoreCase(token, "Bearer ");
+    return Strings.CI.removeStart(token, "Bearer ");
   }
 
   private static boolean hasEntitlements(EntitlementsResponse response) {

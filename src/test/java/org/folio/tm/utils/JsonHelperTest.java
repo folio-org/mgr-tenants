@@ -60,7 +60,7 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_stringInputStreamTree() throws IOException {
+    void positive_stringInputStreamTree() {
       var tree = new ObjectNode(OBJECT_MAPPER.getNodeFactory(), Map.of(
         "name", new StringNode("test"),
         "surname", new StringNode("user")));
@@ -123,7 +123,7 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_inputStream() throws IOException {
+    void positive_inputStream() {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       when(mapper.readValue(inputStream, User.class)).thenReturn(TEST_USER);
       var actual = helper.parse(inputStream, User.class);
@@ -131,7 +131,7 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_inputStreamWithTypeReference() throws IOException {
+    void positive_inputStreamWithTypeReference() {
       var typeReference = new TypeReference<User>() {};
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       when(mapper.readValue(inputStream, typeReference)).thenReturn(TEST_USER);
@@ -159,7 +159,7 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_inputStreamMapperException() throws IOException {
+    void positive_inputStreamMapperException() {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       when(mapper.readValue(inputStream, User.class)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.parse(inputStream, User.class))

@@ -22,7 +22,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.folio.security.integration.keycloak.configuration.properties.KeycloakProperties;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.ClientRepresentation;
@@ -67,7 +67,7 @@ public class KeycloakTestClientConfiguration {
 
     @SneakyThrows
     public String login(String tenant, Map<String, String> tokenRequestBody) {
-      var keycloakBaseUrl = StringUtils.removeEnd(keycloakConfiguration.getUrl(), "/");
+      var keycloakBaseUrl = Strings.CS.removeEnd(keycloakConfiguration.getUrl(), "/");
       var uri = URI.create(String.format("%s/realms/%s/protocol/openid-connect/token", keycloakBaseUrl, tenant));
       var request = HttpRequest.newBuilder(uri)
         .method("POST", ofString(toFormUrlencodedValue(tokenRequestBody), UTF_8))
@@ -77,12 +77,12 @@ public class KeycloakTestClientConfiguration {
       var response = HTTP_CLIENT_DUMMY_SSL.send(request, BodyHandlers.ofString(UTF_8));
       assertThat(response.statusCode()).isLessThan(400);
       var keycloakTokenJson = OBJECT_MAPPER.readTree(response.body());
-      return keycloakTokenJson.path("access_token").asText();
+      return keycloakTokenJson.path("access_token").asString();
     }
 
     @SneakyThrows
     public HttpStatus verifyToken(String tenant, String token, String audience) {
-      var keycloakBaseUrl = StringUtils.removeEnd(keycloakConfiguration.getUrl(), "/");
+      var keycloakBaseUrl = Strings.CS.removeEnd(keycloakConfiguration.getUrl(), "/");
       var uri = URI.create(String.format("%s/realms/%s/protocol/openid-connect/token", keycloakBaseUrl, tenant));
       var requestBody = Map.of(
         "grant_type", "urn:ietf:params:oauth:grant-type:uma-ticket",
@@ -101,7 +101,7 @@ public class KeycloakTestClientConfiguration {
 
     @SneakyThrows
     public String impersonateUser(String tenant, String username, ClientCredentials impersonationClientCredentials) {
-      var keycloakBaseUrl = StringUtils.removeEnd(keycloakConfiguration.getUrl(), "/");
+      var keycloakBaseUrl = Strings.CS.removeEnd(keycloakConfiguration.getUrl(), "/");
       var uri = URI.create(String.format("%s/realms/%s/protocol/openid-connect/token", keycloakBaseUrl, tenant));
       var requestBody = Map.of(
         "grant_type", "urn:ietf:params:oauth:grant-type:token-exchange",
@@ -117,7 +117,7 @@ public class KeycloakTestClientConfiguration {
       var response = HTTP_CLIENT_DUMMY_SSL.send(request, BodyHandlers.ofString(UTF_8));
       assertThat(response.statusCode()).isLessThan(400);
       var keycloakTokenJson = OBJECT_MAPPER.readTree(response.body());
-      return keycloakTokenJson.path("access_token").asText();
+      return keycloakTokenJson.path("access_token").asString();
     }
 
     private static String toFormUrlencodedValue(Map<String, String> params) {
