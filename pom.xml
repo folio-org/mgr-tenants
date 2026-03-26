@@ -51,7 +51,7 @@
     <maven-release-plugin.version>3.3.1</maven-release-plugin.version>
     <openapi-generator.version>7.20.0</openapi-generator.version>
 
-    <sonar.exclusions>
+    <sonar.coverage.exclusions>
       src/main/java/**/domain/**/*,
       src/main/java/**/configuration/**/*,
       src/main/java/**/config/**/*,
@@ -59,7 +59,7 @@
       src/main/java/**/rest/resource/**/*,
       src/main/java/**/mapper/**/*,
       src/main/java/**/*Application.java
-    </sonar.exclusions>
+    </sonar.coverage.exclusions>
   </properties>
 
   <dependencies>
