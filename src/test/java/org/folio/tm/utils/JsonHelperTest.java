@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import org.apache.commons.lang3.SerializationException;
@@ -168,7 +167,7 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_inputStreamTypeRefMapperException() throws IOException {
+    void positive_inputStreamTypeRefMapperException() {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       var typeReference = new TypeReference<User>() {};
       when(mapper.readValue(inputStream, typeReference)).thenThrow(new TestJacksonException("Failed"));
@@ -178,7 +177,7 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_inputStreamSingleArgumentMapperException() throws IOException {
+    void positive_inputStreamSingleArgumentMapperException() {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       when(mapper.readTree(inputStream)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.parse(inputStream))
