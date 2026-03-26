@@ -1,4 +1,4 @@
-package org.folio.tm.config;
+package org.folio.tm.configuration;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 

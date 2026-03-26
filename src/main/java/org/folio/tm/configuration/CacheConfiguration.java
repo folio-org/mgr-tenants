@@ -1,4 +1,4 @@
-package org.folio.tm.config;
+package org.folio.tm.configuration;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.List;

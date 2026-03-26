@@ -1,4 +1,4 @@
-package org.folio.tm.config;
+package org.folio.tm.configuration;
 
 import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
