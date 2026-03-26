@@ -1,0 +1,13 @@
+{
+  "realm": "testunknownfields",
+  "enabled": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": true,
+  "customUnknownField": "This field is intentionally added to test JacksonProvider configuration",
+  "anotherUnknownField": {
+    "nested": "This nested object should be ignored by Jackson",
+    "value": 12345
+  },
+  "unknownArrayField": ["item1", "item2", "item3"]
+}

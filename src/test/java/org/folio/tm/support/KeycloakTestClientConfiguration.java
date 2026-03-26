@@ -1,6 +1,5 @@
 package org.folio.tm.support;
 
-import static feign.Request.HttpMethod.POST;
 import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static java.net.URLEncoder.encode;
@@ -71,7 +70,7 @@ public class KeycloakTestClientConfiguration {
       var keycloakBaseUrl = StringUtils.removeEnd(keycloakConfiguration.getUrl(), "/");
       var uri = URI.create(String.format("%s/realms/%s/protocol/openid-connect/token", keycloakBaseUrl, tenant));
       var request = HttpRequest.newBuilder(uri)
-        .method(POST.name(), ofString(toFormUrlencodedValue(tokenRequestBody), UTF_8))
+        .method("POST", ofString(toFormUrlencodedValue(tokenRequestBody), UTF_8))
         .header("Content-Type", APPLICATION_FORM_URLENCODED_VALUE)
         .build();
 
@@ -91,7 +90,7 @@ public class KeycloakTestClientConfiguration {
         "permission", audience);
 
       var request = HttpRequest.newBuilder(uri)
-        .method(POST.name(), ofString(toFormUrlencodedValue(requestBody), UTF_8))
+        .method("POST", ofString(toFormUrlencodedValue(requestBody), UTF_8))
         .header(CONTENT_TYPE, APPLICATION_FORM_URLENCODED_VALUE)
         .header(AUTHORIZATION, "Bearer " + token)
         .build();
@@ -111,7 +110,7 @@ public class KeycloakTestClientConfiguration {
         "requested_subject", username);
 
       var request = HttpRequest.newBuilder(uri)
-        .method(POST.name(), ofString(toFormUrlencodedValue(requestBody), UTF_8))
+        .method("POST", ofString(toFormUrlencodedValue(requestBody), UTF_8))
         .header(CONTENT_TYPE, APPLICATION_FORM_URLENCODED_VALUE)
         .build();
 

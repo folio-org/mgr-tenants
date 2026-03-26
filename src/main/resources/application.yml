@@ -17,14 +17,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  cache:
-    cache-names: token
-    caffeine:
-      spec: maximumSize=100,expireAfterWrite=${CACHE_EXPIRATION_TTL:60s}
-  cloud:
-    openfeign:
-      okhttp:
-        enabled: true
   kafka:
     bootstrap-servers: ${KAFKA_HOST:kafka}:${KAFKA_PORT:9092}
     security:
@@ -148,6 +140,10 @@ application:
       trust-store-path: ${SECRET_STORE_FSSP_TRUSTSTORE_PATH:}
       trust-store-file-type: ${SECRET_STORE_FSSP_TRUSTSTORE_FILE_TYPE:}
       trust-store-password: ${SECRET_STORE_FSSP_TRUSTSTORE_PASSWORD:}
+  cache:
+    token:
+      ttl: ${CACHE_EXPIRATION_TTL:60s}
+      maximum-size: 100
 
 management:
   endpoints.web:

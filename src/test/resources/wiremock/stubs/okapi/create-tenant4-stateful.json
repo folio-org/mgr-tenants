@@ -1,0 +1,37 @@
+{
+  "scenarioName": "tenant4-create-flow",
+  "requiredScenarioState": "Started",
+  "newScenarioState": "tenant-created",
+  "request": {
+    "method": "POST",
+    "url": "/_/proxy/tenants",
+    "headers": {
+      "content-type": {
+        "equalTo": "application/json"
+      },
+      "X-Okapi-Token": {
+        "matches": ".+"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "id": "tenant4",
+          "name": "tenant4",
+          "description": "test tenant4"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "id": "tenant4",
+      "name": "tenant4",
+      "description": "test tenant4"
+    }
+  }
+}

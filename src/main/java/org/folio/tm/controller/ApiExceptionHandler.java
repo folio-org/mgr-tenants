@@ -18,7 +18,6 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NOT_IMPLEMENTED;
 
-import feign.FeignException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -46,6 +45,7 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Log4j2
@@ -164,12 +164,13 @@ public class ApiExceptionHandler {
   }
 
   /**
-   * Catches and handles all exceptions for type {@link EntityNotFoundException}, {@link FeignException.NotFound}.
+   * Catches and handles all exceptions for type {@link EntityNotFoundException},
+   * {@link HttpClientErrorException.NotFound}.
    *
-   * @param exception {@link EntityNotFoundException}, {@link FeignException.NotFound} object
+   * @param exception {@link EntityNotFoundException}, {@link HttpClientErrorException.NotFound} object
    * @return {@link ResponseEntity} with {@link ErrorResponse} body.
    */
-  @ExceptionHandler({EntityNotFoundException.class, FeignException.NotFound.class})
+  @ExceptionHandler({EntityNotFoundException.class, HttpClientErrorException.NotFound.class})
   public ResponseEntity<ErrorResponse> handleEntityNotFoundException(Exception exception) {
     logException(DEBUG, exception);
     return buildResponseEntity(exception, NOT_FOUND, NOT_FOUND_ERROR);

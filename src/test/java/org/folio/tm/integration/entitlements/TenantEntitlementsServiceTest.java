@@ -7,10 +7,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.tm.integration.okapi.OkapiHeaders.TOKEN;
 import static org.mockito.Mockito.when;
 
-import feign.FeignException;
-import feign.Request;
-import feign.RequestTemplate;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.folio.test.types.UnitTest;
@@ -26,7 +22,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -107,12 +106,11 @@ class TenantEntitlementsServiceTest {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
     var token = "test-token";
-    var feignRequest = Request.create(Request.HttpMethod.GET, "/test", Collections.emptyMap(),
-      null, new RequestTemplate());
 
     mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token))
-      .thenThrow(new FeignException.NotFound("Not found", feignRequest, null, null));
+      .thenThrow(HttpClientErrorException.NotFound.create("Not found",
+        HttpStatus.NOT_FOUND, "Not found", HttpHeaders.EMPTY, null, null));
 
     assertThatCode(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
       .doesNotThrowAnyException();
@@ -123,12 +121,11 @@ class TenantEntitlementsServiceTest {
     var tenantName = "test-tenant";
     var tenantId = UUID.randomUUID();
     var token = "test-token";
-    var feignRequest = Request.create(Request.HttpMethod.GET, "/test", Collections.emptyMap(),
-      null, new RequestTemplate());
 
     mockRequest.addHeader(TOKEN, token);
     when(client.getEntitlements(1, "tenantId==" + tenantId, token))
-      .thenThrow(new FeignException.ServiceUnavailable("Service unavailable", feignRequest, null, null));
+      .thenThrow(HttpServerErrorException.ServiceUnavailable.create("Service unavailable",
+        HttpStatus.SERVICE_UNAVAILABLE, "Service unavailable", HttpHeaders.EMPTY, null, null));
 
     assertThatThrownBy(() -> service.checkTenantCanBeDeleted(tenantName, tenantId))
       .isInstanceOf(RequestValidationException.class)

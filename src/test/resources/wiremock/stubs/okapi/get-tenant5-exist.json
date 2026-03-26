@@ -3,10 +3,7 @@
     "method": "GET",
     "url": "/_/proxy/tenants/tenant5",
     "headers": {
-      "content-type": {
-        "equalTo": "application/json"
-      },
-      "x-okapi-token": {
+      "X-Okapi-Token": {
         "matches": ".+"
       }
     }

@@ -1,6 +1,5 @@
 package org.folio.tm.integration.okapi;
 
-import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,7 @@ import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.integration.okapi.exception.OkapiRequestException;
 import org.folio.tm.integration.okapi.model.TenantDescriptor;
 import org.folio.tm.service.listeners.TenantServiceListener;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -94,7 +94,7 @@ public class OkapiService implements TenantServiceListener {
       var getResponse = okapiClient.getTenantById(tenantId, getOkapiToken());
       log.debug("Tenant exists in Okapi [id: {}]", tenantId);
       return Objects.nonNull(getResponse);
-    } catch (FeignException.NotFound e) {
+    } catch (HttpClientErrorException.NotFound e) {
       log.warn("Tenant was not found in Okapi [id: {}]", tenantId);
       return false;
     }

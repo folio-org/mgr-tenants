@@ -14,7 +14,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +37,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -117,10 +118,11 @@ class TenantServiceTest {
     when(mapper.toEntity(expectedTenant)).thenReturn(entity);
     when(repository.saveAndFlush(entity)).thenReturn(entity);
     when(tenantAttributeService.upsertAll(TENANT_ID, tenantAttributes())).thenReturn(tenantAttributes());
-    doThrow(FeignException.Conflict.class).when(tenantEventsPublisher).onTenantCreate(expectedTenant);
+    doThrow(new HttpClientErrorException(HttpStatus.CONFLICT, "Conflict")).when(tenantEventsPublisher)
+      .onTenantCreate(expectedTenant);
 
     assertThatThrownBy(() -> tenantService.createTenant(expectedTenant))
-      .isInstanceOf(FeignException.Conflict.class);
+      .isInstanceOf(HttpClientErrorException.class);
   }
 
   @Test
@@ -132,10 +134,11 @@ class TenantServiceTest {
     when(repository.existsByName(TestConstants.TENANT_NAME)).thenReturn(false);
     when(repository.saveAndFlush(entity)).thenReturn(entity);
     when(tenantAttributeService.upsertAll(TENANT_ID, tenantAttributes())).thenReturn(tenantAttributes());
-    doThrow(FeignException.Conflict.class).when(tenantEventsPublisher).onTenantCreate(expectedTenant);
+    doThrow(new HttpClientErrorException(HttpStatus.CONFLICT, "Conflict")).when(tenantEventsPublisher)
+      .onTenantCreate(expectedTenant);
 
     assertThatThrownBy(() -> tenantService.createTenant(expectedTenant))
-      .isInstanceOf(FeignException.Conflict.class);
+      .isInstanceOf(HttpClientErrorException.class);
   }
 
   @Test

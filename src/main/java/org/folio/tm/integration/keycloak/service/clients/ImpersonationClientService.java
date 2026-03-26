@@ -5,7 +5,6 @@ import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.getFolioUserTokenMappers;
 
-import feign.FeignException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
@@ -23,6 +22,7 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.authorization.ClientPolicyRepresentation;
 import org.keycloak.representations.idm.authorization.ScopePermissionRepresentation;
+import org.springframework.web.client.HttpStatusCodeException;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -86,7 +86,7 @@ public class ImpersonationClientService extends AbstractKeycloakClientService {
     var authorizationHeader = "Bearer " + keycloak.tokenManager().getAccessTokenString();
     try {
       return keycloakClient.updateRealmUserManagementPermission(realm, userManagementPermission, authorizationHeader);
-    } catch (FeignException exception) {
+    } catch (HttpStatusCodeException exception) {
       throw new KeycloakException("Failed to enable user management in Keycloak for realm: " + realm, exception);
     }
   }
