@@ -52,10 +52,13 @@
     <openapi-generator.version>7.20.0</openapi-generator.version>
 
     <sonar.exclusions>
-      src/main/java/org/folio/tm/cql/**,
-      src/main/java/org/folio/tm/domain/**,
-      src/main/java/org/folio/tm/rest/resource/**,
-      src/main/java/org/folio/tm/integration/**/model/**,
+      src/main/java/**/domain/**/*,
+      src/main/java/**/configuration/**/*,
+      src/main/java/**/config/**/*,
+      src/main/java/**/model/**/*,
+      src/main/java/**/rest/resource/**/*,
+      src/main/java/**/mapper/**/*,
+      src/main/java/**/*Application.java
     </sonar.exclusions>
   </properties>
 
