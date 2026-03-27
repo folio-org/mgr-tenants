@@ -2,18 +2,19 @@ package org.folio.tm.integration.entitlements;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.removeStartIgnoreCase;
 import static org.folio.tm.integration.okapi.OkapiHeaders.TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.Strings;
 import org.folio.tm.exception.RequestValidationException;
 import org.folio.tm.integration.entitlements.model.EntitlementsResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -48,11 +49,11 @@ public class TenantEntitlementsService {
     requireNonNull(tenantId, "tenantId cannot be null");
     try {
       verifyNoActiveEntitlements(tenantName, tenantId);
-    } catch (FeignException.NotFound e) {
+    } catch (HttpClientErrorException.NotFound e) {
       log.debug("No entitlements found for tenant '{}': {}", tenantName, e.getMessage());
     } catch (RequestValidationException e) {
       throw e;
-    } catch (FeignException e) {
+    } catch (HttpStatusCodeException e) {
       handleServiceError(tenantName, e);
     } catch (Exception e) {
       handleUnexpectedError(tenantName, e);
@@ -73,9 +74,9 @@ public class TenantEntitlementsService {
     log.debug("Tenant '{}' has no entitlements, deletion allowed", tenantName);
   }
 
-  private void handleServiceError(String tenantName, FeignException e) {
+  private void handleServiceError(String tenantName, HttpStatusCodeException e) {
     log.warn("Failed to check entitlements for tenant '{}' [status: {}, message: {}]. Deletion not allowed.",
-      tenantName, e.status(), e.getMessage());
+      tenantName, e.getStatusCode().value(), e.getMessage());
     throw createValidationException("Unable to verify tenant's entitlements state, try again");
   }
 
@@ -146,7 +147,7 @@ public class TenantEntitlementsService {
    * @return token without Bearer prefix
    */
   private static String trimTokenBearer(String token) {
-    return removeStartIgnoreCase(token, "Bearer ");
+    return Strings.CI.removeStart(token, "Bearer ");
   }
 
   private static boolean hasEntitlements(EntitlementsResponse response) {

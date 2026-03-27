@@ -7,7 +7,7 @@
       "type": "virtual",
       "attributes": [ ],
       "metadata": {
-        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdDate": "2022-01-01T00:00:00.000Z",
         "createdBy": "00000000-0000-0000-0000-000000000000"
       }
     },
@@ -18,7 +18,7 @@
       "type": "default",
       "attributes": [ { "id": "0f281df4-d528-4013-b076-a2771066ab68", "key": "key1", "value": "value1" } ],
       "metadata": {
-        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdDate": "2022-01-01T00:00:00.000Z",
         "createdBy": "00000000-0000-0000-0000-000000000000"
       }
     },
@@ -29,9 +29,9 @@
       "type": "default",
       "attributes": [ ],
       "metadata": {
-        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdDate": "2022-01-01T00:00:00.000Z",
         "createdBy": "00000000-0000-0000-0000-000000000000",
-        "modifiedDate": "2022-01-01T00:00:00.000+00:00",
+        "modifiedDate": "2022-01-01T00:00:00.000Z",
         "modifiedBy": "00000000-0000-0000-0000-000000000000"
       }
     },
@@ -42,7 +42,7 @@
       "type": "default",
       "attributes": [ ],
       "metadata": {
-        "createdDate": "2022-01-01T00:00:00.000+00:00",
+        "createdDate": "2022-01-01T00:00:00.000Z",
         "createdBy": "00000000-0000-0000-0000-000000000000"
       }
     }

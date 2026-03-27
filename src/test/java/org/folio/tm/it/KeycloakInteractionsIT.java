@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.ws.rs.core.Response;
 import java.util.Base64;
 import java.util.List;
@@ -55,6 +54,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlMergeMode;
+import tools.jackson.databind.JsonNode;
 
 @IntegrationTest
 @SqlMergeMode(MERGE)
@@ -62,7 +62,9 @@ import org.springframework.test.context.jdbc.SqlMergeMode;
 @EnableKeycloakSecurity
 @EnableKeycloakDataImport
 @Import(KeycloakTestClientConfiguration.class)
-@TestPropertySource(properties = "application.okapi.enabled=false")
+@TestPropertySource(properties = {
+  "application.okapi.enabled=false"
+})
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class KeycloakInteractionsIT extends BaseIntegrationTest {
 

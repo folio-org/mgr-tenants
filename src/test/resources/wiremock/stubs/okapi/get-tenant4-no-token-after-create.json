@@ -1,4 +1,6 @@
 {
+  "scenarioName": "tenant4-create-flow",
+  "requiredScenarioState": "tenant-created",
   "request": {
     "method": "GET",
     "url": "/_/proxy/tenants/tenant4"

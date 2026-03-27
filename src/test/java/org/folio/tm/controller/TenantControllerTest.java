@@ -1,12 +1,10 @@
 package org.folio.tm.controller;
 
-import static feign.Request.HttpMethod.GET;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.tm.integration.okapi.OkapiHeaders.TOKEN;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -16,10 +14,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import feign.FeignException.Forbidden;
-import feign.FeignException.NotFound;
-import feign.Request;
-import feign.RequestTemplate;
 import java.util.List;
 import java.util.UUID;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -34,13 +28,16 @@ import org.folio.tm.service.TenantService;
 import org.folio.tm.support.TestConstants;
 import org.folio.tm.support.TestUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.client.HttpClientErrorException;
 
 @UnitTest
 @EnableKeycloakSecurity
@@ -53,10 +50,10 @@ class TenantControllerTest {
   private static final String TOKEN_SUB = UUID.randomUUID().toString();
 
   @Autowired private MockMvc mockMvc;
-  @Mock private JsonWebToken jsonWebToken;
-  @MockBean private JsonWebTokenParser jsonWebTokenParser;
-  @MockBean private TenantService tenantService;
-  @MockBean private KeycloakAuthClient authClient;
+  private final JsonWebToken jsonWebToken = Mockito.mock(JsonWebToken.class);
+  @MockitoBean private JsonWebTokenParser jsonWebTokenParser;
+  @MockitoBean private TenantService tenantService;
+  @MockitoBean private KeycloakAuthClient authClient;
 
   @Test
   void getById_positive() throws Exception {
@@ -76,30 +73,28 @@ class TenantControllerTest {
   @Test
   void getById_negative() throws Exception {
     var errorMessage = "Tenant not found by id: " + TestConstants.TENANT_ID;
-    var request = Request.create(GET, "/tenants/" + TestConstants.TENANT_ID, emptyMap(), null, (RequestTemplate) null);
-    var error = new NotFound(errorMessage, request, null, emptyMap());
+    var error = HttpClientErrorException.create(HttpStatus.NOT_FOUND, errorMessage, HttpHeaders.EMPTY, null, null);
 
     when(tenantService.getTenantById(TestConstants.TENANT_ID)).thenThrow(error);
     mockMvc.perform(MockMvcRequestBuilders.get("/tenants/{id}", TestConstants.TENANT_ID)
         .contentType(APPLICATION_JSON)
         .header(TOKEN, AUTH_TOKEN))
       .andExpect(status().isNotFound())
-      .andExpect(jsonPath("$.errors[0].message", is(errorMessage)))
+      .andExpect(jsonPath("$.errors[0].message", is("404 " + errorMessage)))
       .andExpect(jsonPath("$.errors[0].type", is("NotFound")))
       .andExpect(jsonPath("$.errors[0].code", is("not_found_error")));
   }
 
   @Test
   void getById_negative_forbidden() throws Exception {
-    var request = Request.create(GET, "/tenants/" + TestConstants.TENANT_ID, emptyMap(), null, (RequestTemplate) null);
-    var error = new Forbidden("Forbidden", request, null, emptyMap());
+    var error = HttpClientErrorException.create(HttpStatus.FORBIDDEN, "Forbidden", HttpHeaders.EMPTY, null, null);
 
     when(tenantService.getTenantById(TestConstants.TENANT_ID)).thenThrow(error);
     mockMvc.perform(MockMvcRequestBuilders.get("/tenants/{id}", TestConstants.TENANT_ID)
         .contentType(APPLICATION_JSON)
         .header(TOKEN, AUTH_TOKEN))
       .andExpect(status().isInternalServerError())
-      .andExpect(jsonPath("$.errors[0].message", is("Forbidden")))
+      .andExpect(jsonPath("$.errors[0].message", is("403 Forbidden")))
       .andExpect(jsonPath("$.errors[0].type", is("Forbidden")))
       .andExpect(jsonPath("$.errors[0].code", is("unknown_error")));
   }
@@ -211,7 +206,7 @@ class TenantControllerTest {
   @Test
   void delete_negative_unauthorized() throws Exception {
     doNothing().when(tenantService).deleteTenantById(TestConstants.TENANT_ID, null);
-    when(authClient.evaluatePermissions(anyMap(), anyString())).thenThrow(new NotAuthorizedException("test"));
+    when(authClient.evaluatePermissions(any(), anyString())).thenThrow(new NotAuthorizedException("test"));
 
     mockMvc.perform(MockMvcRequestBuilders.delete("/tenants/{id}", TestConstants.TENANT_ID)
         .contentType(APPLICATION_JSON)

@@ -66,9 +66,9 @@ class TenantOkapiIT extends BaseIntegrationTest {
   @Test
   @WireMockStub(scripts = {
     "/wiremock/stubs/mod-authtoken/verify-token-create-tenant.json",
-    "/wiremock/stubs/okapi/create-tenant.json",
-    "/wiremock/stubs/okapi/get-tenant-no-token.json",
-    "/wiremock/stubs/okapi/get-tenant-not-found.json"
+    "/wiremock/stubs/okapi/create-tenant4-stateful.json",
+    "/wiremock/stubs/okapi/get-tenant4-no-token-after-create.json",
+    "/wiremock/stubs/okapi/get-tenant4-not-found-before-create.json"
   })
   void create_tenant_positive() throws Exception {
     var tenant = TENANT4;

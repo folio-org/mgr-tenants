@@ -8,13 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import org.apache.commons.lang3.SerializationException;
@@ -26,6 +20,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -42,17 +41,17 @@ class JsonHelperTest {
   class Parse {
 
     @Test
-    void positive_stringInput() throws JsonProcessingException {
+    void positive_stringInput() throws JacksonException {
       when(mapper.readValue(TEST_USER_JSON, User.class)).thenReturn(TEST_USER);
       var actual = helper.parse(TEST_USER_JSON, User.class);
       assertThat(actual).isEqualTo(TEST_USER);
     }
 
     @Test
-    void positive_stringInputTree() throws JsonProcessingException {
+    void positive_stringInputTree() throws JacksonException {
       var tree = new ObjectNode(OBJECT_MAPPER.getNodeFactory(), Map.of(
-        "name", new TextNode("test"),
-        "surname", new TextNode("user")));
+        "name", new StringNode("test"),
+        "surname", new StringNode("user")));
 
       when(mapper.readTree(TEST_USER_JSON)).thenReturn(tree);
       var actual = helper.parse(TEST_USER_JSON);
@@ -60,10 +59,10 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_stringInputStreamTree() throws IOException {
+    void positive_stringInputStreamTree() {
       var tree = new ObjectNode(OBJECT_MAPPER.getNodeFactory(), Map.of(
-        "name", new TextNode("test"),
-        "surname", new TextNode("user")));
+        "name", new StringNode("test"),
+        "surname", new StringNode("user")));
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       when(mapper.readTree(inputStream)).thenReturn(tree);
       var actual = helper.parse(inputStream);
@@ -90,23 +89,23 @@ class JsonHelperTest {
     }
 
     @Test
-    void negative_stringInputMapperException() throws JsonProcessingException {
-      when(mapper.readValue(TEST_USER_JSON, User.class)).thenThrow(new TestJsonProcessingException("Failed"));
+    void negative_stringInputMapperException() throws JacksonException {
+      when(mapper.readValue(TEST_USER_JSON, User.class)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.parse(TEST_USER_JSON, User.class))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to deserialize: value = %s, message = Failed", TEST_USER_JSON);
     }
 
     @Test
-    void negative_stringInputSingleArgumentMapperException() throws JsonProcessingException {
-      when(mapper.readTree(TEST_USER_JSON)).thenThrow(new TestJsonProcessingException("Failed"));
+    void negative_stringInputSingleArgumentMapperException() throws JacksonException {
+      when(mapper.readTree(TEST_USER_JSON)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.parse(TEST_USER_JSON))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to deserialize: value = %s, message = Failed", TEST_USER_JSON);
     }
 
     @Test
-    void positive_stringInputTypeReference() throws JsonProcessingException {
+    void positive_stringInputTypeReference() throws JacksonException {
       var typeReference = new TypeReference<User>() {};
       when(mapper.readValue(TEST_USER_JSON, typeReference)).thenReturn(TEST_USER);
       var actual = helper.parse(TEST_USER_JSON, typeReference);
@@ -114,16 +113,16 @@ class JsonHelperTest {
     }
 
     @Test
-    void negative_stringInputTypeRefMapperException() throws JsonProcessingException {
+    void negative_stringInputTypeRefMapperException() throws JacksonException {
       var typeReference = new TypeReference<User>() {};
-      when(mapper.readValue(TEST_USER_JSON, typeReference)).thenThrow(new TestJsonProcessingException("Failed"));
+      when(mapper.readValue(TEST_USER_JSON, typeReference)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.parse(TEST_USER_JSON, typeReference))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to deserialize: value = %s, message = Failed", TEST_USER_JSON);
     }
 
     @Test
-    void positive_inputStream() throws IOException {
+    void positive_inputStream() {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       when(mapper.readValue(inputStream, User.class)).thenReturn(TEST_USER);
       var actual = helper.parse(inputStream, User.class);
@@ -131,7 +130,7 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_inputStreamWithTypeReference() throws IOException {
+    void positive_inputStreamWithTypeReference() {
       var typeReference = new TypeReference<User>() {};
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       when(mapper.readValue(inputStream, typeReference)).thenReturn(TEST_USER);
@@ -159,28 +158,28 @@ class JsonHelperTest {
     }
 
     @Test
-    void positive_inputStreamMapperException() throws IOException {
+    void positive_inputStreamMapperException() {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
-      when(mapper.readValue(inputStream, User.class)).thenThrow(new TestJsonProcessingException("Failed"));
+      when(mapper.readValue(inputStream, User.class)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.parse(inputStream, User.class))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to deserialize: value = %s, message = Failed", inputStream);
     }
 
     @Test
-    void positive_inputStreamTypeRefMapperException() throws IOException {
+    void positive_inputStreamTypeRefMapperException() {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
       var typeReference = new TypeReference<User>() {};
-      when(mapper.readValue(inputStream, typeReference)).thenThrow(new TestJsonProcessingException("Failed"));
+      when(mapper.readValue(inputStream, typeReference)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.parse(inputStream, typeReference))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to deserialize: value = %s, message = Failed", inputStream);
     }
 
     @Test
-    void positive_inputStreamSingleArgumentMapperException() throws IOException {
+    void positive_inputStreamSingleArgumentMapperException() {
       var inputStream = new ByteArrayInputStream(TEST_USER_JSON.getBytes(UTF_8));
-      when(mapper.readTree(inputStream)).thenThrow(new TestJsonProcessingException("Failed"));
+      when(mapper.readTree(inputStream)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.parse(inputStream))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to deserialize: value = %s, message = Failed", inputStream);
@@ -192,15 +191,15 @@ class JsonHelperTest {
   class AsJsonStringSafe {
 
     @Test
-    void positive() throws JsonProcessingException {
+    void positive() throws JacksonException {
       when(mapper.writeValueAsString(TEST_USER)).thenReturn(TEST_USER_JSON);
       var actual = helper.asJsonStringSafe(TEST_USER);
       assertEquals(TEST_USER_JSON, actual);
     }
 
     @Test
-    void positive_mapperException() throws JsonProcessingException {
-      when(mapper.writeValueAsString(TEST_USER)).thenThrow(new TestJsonProcessingException("Failed"));
+    void positive_mapperException() throws JacksonException {
+      when(mapper.writeValueAsString(TEST_USER)).thenThrow(new TestJacksonException("Failed"));
       var actual = helper.asJsonStringSafe(TEST_USER);
       assertThat(actual).isEmpty();
     }
@@ -211,7 +210,7 @@ class JsonHelperTest {
   class AsJsonString {
 
     @Test
-    void positive() throws JsonProcessingException {
+    void positive() throws JacksonException {
       when(mapper.writeValueAsString(TEST_USER)).thenReturn(TEST_USER_JSON);
 
       var actual = helper.asJsonString(TEST_USER);
@@ -227,8 +226,8 @@ class JsonHelperTest {
     }
 
     @Test
-    void asJsonString_negative_mapperException() throws JsonProcessingException {
-      when(mapper.writeValueAsString(TEST_USER)).thenThrow(new TestJsonProcessingException("Failed"));
+    void asJsonString_negative_mapperException() throws JacksonException {
+      when(mapper.writeValueAsString(TEST_USER)).thenThrow(new TestJacksonException("Failed"));
       assertThatThrownBy(() -> helper.asJsonString(TEST_USER))
         .isInstanceOf(SerializationException.class)
         .hasMessage("Failed to serialize value: message = Failed");
@@ -237,9 +236,9 @@ class JsonHelperTest {
 
   private record User(String name, String surname) {}
 
-  private static final class TestJsonProcessingException extends JsonProcessingException {
+  private static final class TestJacksonException extends JacksonException {
 
-    TestJsonProcessingException(String msg) {
+    TestJacksonException(String msg) {
       super(msg);
     }
   }
