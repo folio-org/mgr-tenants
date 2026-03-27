@@ -11,6 +11,7 @@
 * Setup RTR (default) configuration automatically during tenant creation (MGRTENANT-76)
 * Automatically fix invalid realm session timeouts to comply with Keycloak 26.5+ validation rules (KEYCLOAK-95)
 * Migrate CI from Jenkins to GitHub Actions Maven central workflow (MGRTENANT-83)
+* Migrate spring-boot to version 4.0.4 (MGRTENANT-72)
 
 ---
 
