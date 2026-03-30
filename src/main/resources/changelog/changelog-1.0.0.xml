@@ -7,4 +7,5 @@
   <include file="changes/v1.0.0/create-tenant-table.xml" relativeToChangelogFile="true"/>
   <include file="changes/v1.0.0/create-tenant-attr-table.xml" relativeToChangelogFile="true"/>
   <include file="changes/v1.0.0/add-secure-column.xml" relativeToChangelogFile="true"/>
+  <include file="changes/v1.0.0/add-unaccent-extension.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
