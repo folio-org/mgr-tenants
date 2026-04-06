@@ -5,7 +5,6 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import java.io.InputStream;
@@ -27,6 +26,7 @@ import org.keycloak.representations.idm.ComponentExportRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
 import org.springframework.util.Assert;
+import tools.jackson.core.type.TypeReference;
 
 @Log4j2
 @RequiredArgsConstructor

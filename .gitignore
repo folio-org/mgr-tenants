@@ -36,3 +36,9 @@ build/
 ### OS ###
 .DS_Store
 **/.DS_Store
+
+# AI tools
+.codemie/
+.claude/
+.opencode/
+.agents/

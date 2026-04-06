@@ -16,7 +16,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import feign.FeignException.InternalServerError;
 import jakarta.ws.rs.InternalServerErrorException;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +48,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpServerErrorException;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -124,12 +125,12 @@ class ImpersonationClientServiceTest {
 
     when(keycloak.tokenManager().getAccessTokenString()).thenReturn(AUTH_TOKEN);
     when(keycloakClient.updateRealmUserManagementPermission(TENANT_NAME, userMgmtPermission, "Bearer " + AUTH_TOKEN))
-      .thenThrow(InternalServerError.class);
+      .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error"));
 
     assertThatThrownBy(() -> impersonationClientService.setupClient(TENANT_NAME))
       .isInstanceOf(KeycloakException.class)
       .hasMessage("Failed to enable user management in Keycloak for realm: %s", TENANT_NAME)
-      .hasCauseInstanceOf(InternalServerError.class);
+      .hasCauseInstanceOf(HttpServerErrorException.class);
 
     verify(keycloak, atLeastOnce()).tokenManager();
   }

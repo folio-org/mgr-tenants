@@ -1,15 +1,11 @@
 package org.folio.tm.integration.keycloak.configuration;
 
-import static org.folio.common.utils.tls.FeignClientTlsUtils.buildTargetFeignClient;
 import static org.folio.security.integration.keycloak.utils.ClientBuildUtils.buildKeycloakAdminClient;
 
-import feign.Contract;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import okhttp3.OkHttpClient;
+import org.folio.common.utils.tls.HttpClientTlsUtils;
 import org.folio.security.integration.keycloak.configuration.properties.KeycloakProperties;
 import org.folio.security.integration.keycloak.service.SecureStoreKeyProvider;
 import org.folio.tm.integration.keycloak.ClientSecretService;
@@ -31,15 +27,13 @@ import org.folio.tools.store.exception.SecretNotFoundException;
 import org.keycloak.admin.client.Keycloak;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.web.client.RestClient;
 
 @Log4j2
 @Configuration
 @RequiredArgsConstructor
-@Import(FeignClientsConfiguration.class)
 @ConditionalOnProperty("application.keycloak.enabled")
 @EnableConfigurationProperties({KeycloakProperties.class, KeycloakRealmSetupProperties.class})
 public class KeycloakConfiguration {
@@ -57,9 +51,9 @@ public class KeycloakConfiguration {
   }
 
   @Bean
-  public KeycloakClient keycloakClient(OkHttpClient okHttpClient, Contract contract, Encoder encoder, Decoder decoder) {
-    return buildTargetFeignClient(okHttpClient, contract, encoder, decoder, properties.getTls(), properties.getUrl(),
-      KeycloakClient.class);
+  public KeycloakClient keycloakClient() {
+    return HttpClientTlsUtils.buildHttpServiceClient(
+      RestClient.builder(), properties.getTls(), properties.getUrl(), KeycloakClient.class);
   }
 
   @Bean

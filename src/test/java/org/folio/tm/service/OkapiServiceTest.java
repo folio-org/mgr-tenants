@@ -10,7 +10,6 @@ import static org.folio.tm.support.TestConstants.tenantDescriptor;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.folio.test.types.UnitTest;
@@ -23,6 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 @UnitTest
 @ExtendWith(MockitoExtension.class)
@@ -58,7 +59,8 @@ class OkapiServiceTest {
   void create_positive() {
     var expected = tenantDescriptor();
     when(okapiClient.createTenant(expected, OKAPI_AUTH_TOKEN)).thenReturn(expected);
-    when(okapiClient.getTenantById(expected.getName(), OKAPI_AUTH_TOKEN)).thenThrow(FeignException.NotFound.class);
+    when(okapiClient.getTenantById(expected.getName(), OKAPI_AUTH_TOKEN))
+      .thenThrow(HttpClientErrorException.NotFound.class);
     when(httpServletRequest.getHeader(TOKEN)).thenReturn(OKAPI_AUTH_TOKEN);
 
     var result = okapiService.createTenant(tenant());
@@ -69,14 +71,14 @@ class OkapiServiceTest {
   @Test
   void create_negative() {
     var expected = tenantDescriptor();
-    when(okapiClient.createTenant(expected, OKAPI_AUTH_TOKEN)).thenThrow(FeignException.class);
+    when(okapiClient.createTenant(expected, OKAPI_AUTH_TOKEN)).thenThrow(HttpClientErrorException.class);
     when(httpServletRequest.getHeader(TOKEN)).thenReturn(OKAPI_AUTH_TOKEN);
 
     var tenant = tenant();
     assertThatThrownBy(() -> okapiService.createTenant(tenant))
       .isInstanceOf(OkapiRequestException.class)
       .hasMessage("Failed to create tenant")
-      .hasCauseInstanceOf(FeignException.class);
+      .hasCauseInstanceOf(HttpStatusCodeException.class);
   }
 
   @Test
@@ -94,13 +96,13 @@ class OkapiServiceTest {
   void update_negative() {
     var expected = tenantDescriptor();
     when(httpServletRequest.getHeader(TOKEN)).thenReturn(null);
-    when(okapiClient.updateTenant(TENANT_NAME, expected, null)).thenThrow(FeignException.class);
+    when(okapiClient.updateTenant(TENANT_NAME, expected, null)).thenThrow(HttpClientErrorException.class);
 
     var tenant = tenant();
     assertThatThrownBy(() -> okapiService.updateTenantById(tenant))
       .isInstanceOf(OkapiRequestException.class)
       .hasMessage("Failed to update tenant: " + TENANT_NAME)
-      .hasCauseInstanceOf(FeignException.class);
+      .hasCauseInstanceOf(HttpStatusCodeException.class);
   }
 
   @Test
@@ -113,10 +115,10 @@ class OkapiServiceTest {
 
   @Test
   void delete_negative() {
-    when(httpServletRequest.getHeader(TOKEN)).thenThrow(FeignException.class);
+    when(httpServletRequest.getHeader(TOKEN)).thenThrow(HttpClientErrorException.class);
     assertThatThrownBy(() -> okapiService.deleteTenantById(TENANT_NAME))
       .isInstanceOf(OkapiRequestException.class)
       .hasMessage("Failed to delete tenant by id: " + TENANT_NAME)
-      .hasCauseInstanceOf(FeignException.class);
+      .hasCauseInstanceOf(HttpStatusCodeException.class);
   }
 }
