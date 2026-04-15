@@ -1,4 +1,4 @@
-## Version `v3.1.0` (in progress)
+## Version `v4.0.0` (15.04.2026)
 * Setup default keycloak realm session timeouts (MGRTENANT-55)
 * Introduce configuration for FSSP (APPPOCTOOL-59)
 * Delete Kafka topics during tenant deletion (MGRTENANT-59)
