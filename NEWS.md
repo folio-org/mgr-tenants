@@ -1,3 +1,6 @@
+## Version `v3.0.7` (In Progress)
+* Automatically fix invalid realm session timeouts to comply with Keycloak 26.5+ validation rules (KEYCLOAK-95)
+
 ## Version `v3.0.6` (21.01.2026)
 * Setup default keycloak realm session timeouts (MGRTENANT-55)
 * Setup RTR (default) configuration automatically during tenant creation (MGRTENANT-76)
