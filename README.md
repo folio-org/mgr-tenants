@@ -203,3 +203,5 @@ curl -XDELETE \
 -H "Authorization: Bearer $token" \
 "$keycloakUrl/admin/realms/$tenantId"
 ```
+## AI Documentation
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/folio-org/mgr-tenants)
