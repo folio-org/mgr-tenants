@@ -1,5 +1,5 @@
-## Version `v3.0.7` (In Progress)
-* Automatically fix invalid realm session timeouts to comply with Keycloak 26.5+ validation rules (KEYCLOAK-95 / MGRAPPS-111)
+## Version `v3.0.7` (03.06.2026)
+* Automatically fix invalid realm session timeouts to comply with Keycloak 26.5+ validation rules (KEYCLOAK-95 / MGRTENANT-92)
 
 ## Version `v3.0.6` (21.01.2026)
 * Setup default keycloak realm session timeouts (MGRTENANT-55)
