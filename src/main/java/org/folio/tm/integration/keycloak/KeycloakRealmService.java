@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.IntConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.folio.tm.domain.dto.Tenant;
@@ -69,6 +70,9 @@ public class KeycloakRealmService {
       var realmResource = keycloak.realm(tenant.getName());
 
       var realmRepresentation = updateRealmRepresentation(realmResource.toRepresentation(), tenant);
+
+      validateAndFixSessionTimeouts(realmRepresentation);
+
       realmResource.update(realmRepresentation);
 
       return realmRepresentation;
@@ -203,5 +207,31 @@ public class KeycloakRealmService {
 
   private static InputStream getResourceFileInputStream(String userProfileFileLocation) {
     return KeycloakRealmService.class.getClassLoader().getResourceAsStream(userProfileFileLocation);
+  }
+
+  private static void validateAndFixSessionTimeouts(RealmRepresentation realm) {
+    var ssoIdle = realm.getSsoSessionIdleTimeout();
+    var ssoMax = realm.getSsoSessionMaxLifespan();
+    var clientIdle = realm.getClientSessionIdleTimeout();
+    var clientMax = realm.getClientSessionMaxLifespan();
+
+    boolean fixedIdle = fixTimeoutIfExceeds(clientIdle, ssoIdle, "Client idle timeout", realm.getRealm(),
+      realm::setClientSessionIdleTimeout);
+    boolean fixedMax = fixTimeoutIfExceeds(clientMax, ssoMax, "Client max lifespan", realm.getRealm(),
+      realm::setClientSessionMaxLifespan);
+
+    if (fixedIdle || fixedMax) {
+      log.info("Session timeouts fixed for realm: {}", realm.getRealm());
+    }
+  }
+
+  private static boolean fixTimeoutIfExceeds(Integer clientTimeout, Integer ssoLimit, String timeoutName,
+    String realmName, IntConsumer setter) {
+    if (clientTimeout != null && ssoLimit != null && clientTimeout > ssoLimit) {
+      log.warn("{} {} exceeds SSO limit {}. Fixing for realm: {}", timeoutName, clientTimeout, ssoLimit, realmName);
+      setter.accept(ssoLimit);
+      return true;
+    }
+    return false;
   }
 }
