@@ -1,3 +1,8 @@
+## Version `v4.1.0` (In Progress)
+* Upgrade dependencies for Kafka 4.2 compatibility in mgr-tenants (MGRTENANT-91)
+
+---
+
 ## Version `v4.0.0` (15.04.2026)
 * Setup default keycloak realm session timeouts (MGRTENANT-55)
 * Introduce configuration for FSSP (APPPOCTOOL-59)

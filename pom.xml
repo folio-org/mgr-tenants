@@ -42,6 +42,9 @@
 
     <mgr-tenants.yaml-file>${project.basedir}/src/main/resources/swagger.api/mgr-tenants.yaml</mgr-tenants.yaml-file>
 
+    <!-- overrides Spring Boot BOM default; can be removed once Spring Boot ships this version -->
+    <kafka.version>4.2.0</kafka.version>
+
     <!-- Test dependencies versions -->
     <testcontainer.version>2.0.5</testcontainer.version>
 
