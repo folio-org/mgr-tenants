@@ -16,6 +16,7 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
     * [Folio Secure Store Proxy (FSSP)](#folio-secure-store-proxy-fssp)
     * [Kafka](#kafka)
 * [Keycloak Integration](#keycloak-integration)
+* [Integration Testing](#integration-testing)
 
 ## Introduction
 
@@ -203,5 +204,17 @@ curl -XDELETE \
 -H "Authorization: Bearer $token" \
 "$keycloakUrl/admin/realms/$tenantId"
 ```
+## Integration Testing
+
+Integration tests use Testcontainers for PostgreSQL and Kong. The following environment variables
+let you redirect containers to a private registry or adjust startup behaviour without changing
+source code.
+
+| Environment variable                     | Default                         | Description                          |
+|:-----------------------------------------|:--------------------------------|:-------------------------------------|
+| `TESTCONTAINERS_POSTGRES_IMAGE`          | `postgres:16-alpine`            | PostgreSQL container image           |
+| `TESTCONTAINERS_KONG_IMAGE`              | `folioci/folio-kong:latest`     | Kong container image                 |
+| `TESTCONTAINERS_KONG_READINESS_TIMEOUT`  | `120`                           | Seconds to wait for Kong startup     |
+
 ## AI Documentation
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/folio-org/mgr-tenants)
