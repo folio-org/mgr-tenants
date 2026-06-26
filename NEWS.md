@@ -1,5 +1,6 @@
 ## Version `v4.1.0` (In Progress)
 * Upgrade dependencies for Kafka 4.2 compatibility in mgr-tenants (MGRTENANT-91)
+* Switch Kong integration test container to folioci/folio-kong image (APPPOCTOOL-37)
 
 ---
 
