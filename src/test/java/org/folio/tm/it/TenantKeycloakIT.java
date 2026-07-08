@@ -7,6 +7,7 @@ import static org.folio.tm.domain.dto.TenantType.VIRTUAL;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_PROPERTY_MAPPER_TYPE;
 import static org.folio.tm.support.TestConstants.TENANT_ID;
+import static org.folio.tm.support.TestConstants.audienceProtocolMapper;
 import static org.folio.tm.support.TestConstants.protocolMapper;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -125,6 +126,7 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     assertThat(realm.getClientSessionMaxLifespan()).isEqualTo(keycloakRealmProps.getClientSession().getMaxLifespan());
 
     checkImpersonationClient(tenantName);
+    checkLoginClient(tenantName);
   }
 
   @Test
@@ -145,6 +147,7 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     var realm = keycloakTestClient.getRealm(tenantName);
     assertThat(realm.getRealm()).isEqualTo(tenantName);
     checkImpersonationClient(tenantName);
+    checkLoginClient(tenantName);
     assertThat(realm.getAccessTokenLifespan()).isEqualTo(261);
     assertThat(realm.getSsoSessionIdleTimeout()).isEqualTo(262);
     assertThat(realm.getSsoSessionMaxLifespan()).isEqualTo(263);
@@ -302,5 +305,22 @@ class TenantKeycloakIT extends BaseIntegrationTest {
       .usingRecursiveComparison()
       .ignoringFields("id")
       .isEqualTo(protocolMapper(USER_ATTRIBUTE_MAPPER_TYPE, "user_id mapper", "user_id", "user_id"));
+
+    assertThat(getMapperByName(mappers, "audience mapper"))
+      .usingRecursiveComparison()
+      .ignoringFields("id")
+      .isEqualTo(audienceProtocolMapper(keycloakRealmProps.getLoginClientId(tenantName)));
+  }
+
+  private void checkLoginClient(String tenantName) {
+    var loginClientId = keycloakRealmProps.getLoginClientId(tenantName);
+    var client = keycloakTestClient.findClientByClientId(tenantName, loginClientId);
+    assertThat(client).isPresent();
+
+    var mappers = client.get().getProtocolMappers();
+    assertThat(getMapperByName(mappers, "audience mapper"))
+      .usingRecursiveComparison()
+      .ignoringFields("id")
+      .isEqualTo(audienceProtocolMapper(loginClientId));
   }
 }

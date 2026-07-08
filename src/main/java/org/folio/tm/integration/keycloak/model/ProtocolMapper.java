@@ -17,6 +17,7 @@ public class ProtocolMapper implements Serializable {
   public static final String USER_PROPERTY_MAPPER_TYPE = "oidc-usermodel-property-mapper";
   public static final String USER_ATTRIBUTE_MAPPER_TYPE = "oidc-usermodel-attribute-mapper";
   public static final String SUB_MAPPER_TYPE = "oidc-sub-mapper";
+  public static final String AUDIENCE_MAPPER_TYPE = "oidc-audience-mapper";
   public static final String STRING_TYPE_LABEL = "String";
   public static final String SUB_CLAIM = "sub";
 

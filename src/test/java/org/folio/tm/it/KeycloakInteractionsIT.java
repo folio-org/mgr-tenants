@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.StreamSupport;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.folio.test.extensions.EnableKeycloakDataImport;
@@ -109,13 +110,15 @@ class KeycloakInteractionsIT extends BaseIntegrationTest {
 
   @Test
   void userAuthorizationCheck() {
-    var clientCredentials = ClientCredentials.of(TENANT + "-login-application", "supersecret");
+    var loginClientId = TENANT + "-login-application";
+    var clientCredentials = ClientCredentials.of(loginClientId, "supersecret");
     var loginCredentials = UserCredentials.of("test_user", "test_user-password");
     var accessToken = kcTestClient.login(TENANT, loginCredentials.asTokenRequestBody(clientCredentials));
 
     var parsedTokenTree = parseToken(accessToken);
     assertThat(parsedTokenTree.path("sub").asText()).isEqualTo("test_user");
     assertThat(parsedTokenTree.path("user_id").asText()).isEqualTo(FOLIO_USER_ID);
+    assertThat(audienceClaim(parsedTokenTree)).contains(loginClientId);
 
     assertThat(kcTestClient.verifyToken(TENANT, accessToken, "/bar/entities#GET")).isEqualTo(FORBIDDEN);
     assertThat(kcTestClient.verifyToken(TENANT, accessToken, "/foo/entities#GET")).isEqualTo(OK);
@@ -132,12 +135,39 @@ class KeycloakInteractionsIT extends BaseIntegrationTest {
     var parsedTokenTree = parseToken(accessToken);
     assertThat(parsedTokenTree.path("sub").asText()).isEqualTo("test_user");
     assertThat(parsedTokenTree.path("user_id").asText()).isEqualTo(FOLIO_USER_ID);
+    assertThat(audienceClaim(parsedTokenTree)).contains(TENANT + "-login-application");
 
     assertThat(kcTestClient.verifyToken(TENANT, accessToken, "/bar/entities#GET")).isEqualTo(FORBIDDEN);
     assertThat(kcTestClient.verifyToken(TENANT, accessToken, "/foo/entities#GET")).isEqualTo(OK);
     assertThat(kcTestClient.verifyToken(TENANT, accessToken, "/foo/entities/{id}#GET")).isEqualTo(FORBIDDEN);
     assertThat(kcTestClient.verifyToken(TENANT, accessToken, "/foo/entities/{id}#PUT")).isEqualTo(FORBIDDEN);
     assertThat(kcTestClient.verifyToken(TENANT, accessToken, "/foo/entities/{id}#DELETE")).isEqualTo(FORBIDDEN);
+  }
+
+  @Test
+  void loginClientCanIntrospectUserToken() {
+    var loginClientId = TENANT + "-login-application";
+    var clientCredentials = ClientCredentials.of(loginClientId, "supersecret");
+    var loginCredentials = UserCredentials.of("test_user", "test_user-password");
+    var accessToken = kcTestClient.login(TENANT, loginCredentials.asTokenRequestBody(clientCredentials));
+
+    var introspectionResult = kcTestClient.introspectToken(TENANT, clientCredentials, accessToken);
+
+    assertThat(introspectionResult.path("active").asBoolean()).isTrue();
+    assertThat(audienceClaim(introspectionResult)).contains(loginClientId);
+  }
+
+  @Test
+  void loginClientCanIntrospectImpersonatedToken() {
+    var loginClientId = TENANT + "-login-application";
+    var impersonationClientCredentials = ClientCredentials.of("impersonation-client", "supersecret");
+    var accessToken = kcTestClient.impersonateUser(TENANT, "test_user", impersonationClientCredentials);
+
+    var loginClientCredentials = ClientCredentials.of(loginClientId, "supersecret");
+    var introspectionResult = kcTestClient.introspectToken(TENANT, loginClientCredentials, accessToken);
+
+    assertThat(introspectionResult.path("active").asBoolean()).isTrue();
+    assertThat(audienceClaim(introspectionResult)).contains(loginClientId);
   }
 
   @Test
@@ -249,5 +279,14 @@ class KeycloakInteractionsIT extends BaseIntegrationTest {
     var parts = accessToken.split("\\.");
     assertThat(parts).hasSize(3);
     return OBJECT_MAPPER.readTree(Base64.getDecoder().decode(parts[1]));
+  }
+
+  private static List<String> audienceClaim(JsonNode token) {
+    var audience = token.path("aud");
+    if (audience.isArray()) {
+      return StreamSupport.stream(audience.spliterator(), false).map(JsonNode::asText).toList();
+    }
+
+    return List.of(audience.asText());
   }
 }

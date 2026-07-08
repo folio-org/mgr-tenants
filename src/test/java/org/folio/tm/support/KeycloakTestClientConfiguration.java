@@ -30,6 +30,7 @@ import org.keycloak.representations.idm.RealmRepresentation;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
+import tools.jackson.databind.JsonNode;
 
 @Log4j2
 @TestConfiguration
@@ -97,6 +98,26 @@ public class KeycloakTestClientConfiguration {
 
       var response = HTTP_CLIENT_DUMMY_SSL.send(request, BodyHandlers.ofString(UTF_8));
       return HttpStatus.resolve(response.statusCode());
+    }
+
+    @SneakyThrows
+    public JsonNode introspectToken(String tenant, ClientCredentials clientCredentials, String token) {
+      var keycloakBaseUrl = Strings.CS.removeEnd(keycloakConfiguration.getUrl(), "/");
+      var uri = URI.create(
+        String.format("%s/realms/%s/protocol/openid-connect/token/introspect", keycloakBaseUrl, tenant));
+      var requestBody = Map.of(
+        "client_id", clientCredentials.getClientId(),
+        "client_secret", clientCredentials.getClientSecret(),
+        "token", token);
+
+      var request = HttpRequest.newBuilder(uri)
+        .method("POST", ofString(toFormUrlencodedValue(requestBody), UTF_8))
+        .header(CONTENT_TYPE, APPLICATION_FORM_URLENCODED_VALUE)
+        .build();
+
+      var response = HTTP_CLIENT_DUMMY_SSL.send(request, BodyHandlers.ofString(UTF_8));
+      assertThat(response.statusCode()).isLessThan(400);
+      return OBJECT_MAPPER.readTree(response.body());
     }
 
     @SneakyThrows

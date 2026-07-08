@@ -3,10 +3,12 @@ package org.folio.tm.integration.keycloak.service.clients;
 import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.getAudienceProtocolMapper;
 import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.getFolioUserTokenMappers;
 
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,8 +59,10 @@ public class ImpersonationClientService extends AbstractKeycloakClientService {
   }
 
   @Override
-  protected List<ProtocolMapperRepresentation> getProtocolMappers() {
-    return getFolioUserTokenMappers();
+  protected List<ProtocolMapperRepresentation> getProtocolMappers(String realm, String clientId) {
+    var protocolMappers = new ArrayList<>(getFolioUserTokenMappers());
+    protocolMappers.add(getAudienceProtocolMapper(keycloakRealmSetupProperties.getLoginClientId(realm)));
+    return protocolMappers;
   }
 
   @Override

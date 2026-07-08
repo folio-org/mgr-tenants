@@ -2,11 +2,19 @@ package org.folio.tm.support;
 
 import static org.folio.tm.domain.dto.TenantType.DEFAULT;
 import static org.folio.tm.integration.keycloak.model.Client.OPENID_CONNECT_PROTOCOL;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapper.AUDIENCE_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.SUB_MAPPER_TYPE;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapper.USER_ATTRIBUTE_MAPPER_TYPE;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.ACCESS_TOKEN_CLAIM;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.ID_TOKEN_CLAIM;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.INCLUDED_CLIENT_AUDIENCE;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.INTROSPECTION_TOKEN_CLAIM;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.LIGHTWEIGHT_CLAIM;
+import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.USERINFO_TOKEN_CLAIM;
 import static org.folio.tm.integration.keycloak.model.ProtocolMapperConfig.forUserAttribute;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -78,6 +86,22 @@ public class TestConstants {
     subjectMapper.setConfig(ProtocolMapperConfig.defaultValue().asMap());
 
     return subjectMapper;
+  }
+
+  public static ProtocolMapperRepresentation audienceProtocolMapper(String clientId) {
+    var audienceMapper = new ProtocolMapperRepresentation();
+    audienceMapper.setName("audience mapper");
+    audienceMapper.setProtocolMapper(AUDIENCE_MAPPER_TYPE);
+    audienceMapper.setProtocol(OPENID_CONNECT_PROTOCOL);
+    audienceMapper.setConfig(Map.of(
+      INCLUDED_CLIENT_AUDIENCE, clientId,
+      ID_TOKEN_CLAIM, "false",
+      ACCESS_TOKEN_CLAIM, "true",
+      USERINFO_TOKEN_CLAIM, "false",
+      LIGHTWEIGHT_CLAIM, "true",
+      INTROSPECTION_TOKEN_CLAIM, "true"));
+
+    return audienceMapper;
   }
 
   public static ProtocolMapperRepresentation protocolMapper(String mapperType,

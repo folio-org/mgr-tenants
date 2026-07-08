@@ -10,12 +10,14 @@ import static java.util.Map.entry;
 import static org.folio.common.utils.CollectionUtils.mapItems;
 import static org.folio.tm.integration.keycloak.service.roles.PasswordResetRoleService.PASSWORD_RESET_ROLE_NAME;
 import static org.folio.tm.integration.keycloak.service.roles.SystemRoleService.SYSTEM_ROLE_NAME;
+import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.getAudienceProtocolMapper;
 import static org.folio.tm.integration.keycloak.utils.KeycloakClientUtils.getFolioUserTokenMappers;
 import static org.keycloak.representations.idm.authorization.DecisionStrategy.AFFIRMATIVE;
 import static org.keycloak.representations.idm.authorization.DecisionStrategy.UNANIMOUS;
 import static org.keycloak.representations.idm.authorization.Logic.POSITIVE;
 import static org.keycloak.representations.idm.authorization.PolicyEnforcementMode.ENFORCING;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -51,9 +53,7 @@ public class LoginClientService extends AbstractKeycloakClientService {
 
   @Override
   protected String getClientId(String realm) {
-    var loginClientConfiguration = keycloakRealmSetupProperties.getLoginClient();
-    var loginClientSuffix = loginClientConfiguration.getClientId();
-    return realm + loginClientSuffix;
+    return keycloakRealmSetupProperties.getLoginClientId(realm);
   }
 
   @Override
@@ -118,8 +118,10 @@ public class LoginClientService extends AbstractKeycloakClientService {
   }
 
   @Override
-  protected List<ProtocolMapperRepresentation> getProtocolMappers() {
-    return getFolioUserTokenMappers();
+  protected List<ProtocolMapperRepresentation> getProtocolMappers(String realm, String clientId) {
+    var protocolMappers = new ArrayList<>(getFolioUserTokenMappers());
+    protocolMappers.add(getAudienceProtocolMapper(clientId));
+    return protocolMappers;
   }
 
   private static ScopeRepresentation createScope(String name) {
