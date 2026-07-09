@@ -63,7 +63,7 @@ public class PasswordResetClientService extends AbstractKeycloakClientService {
   }
 
   @Override
-  protected List<ProtocolMapperRepresentation> getProtocolMappers() {
+  protected List<ProtocolMapperRepresentation> getProtocolMappers(String realm, String clientId) {
     return List.of(getPasswordResetProtocolMapper(), getSubjectProtocolMapper());
   }
 
