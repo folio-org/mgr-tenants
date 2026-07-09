@@ -154,6 +154,8 @@ The feature is controlled by two env variables `SECURITY_ENABLED` and `KC_INTEGR
 | KC_ADMIN_USERNAME                 | -                            | conditional | Keycloak admin username. Required only if admin secret is not set.                                                                                      |
 | KC_ADMIN_PASSWORD                 | -                            | conditional | Keycloak admin password. Required only if admin secret is not set.                                                                                      |
 | KC_ADMIN_GRANT_TYPE               | client_credentials           |    false    | Keycloak admin grant type. Should be set to `password` if username/password are used instead of client secret.                                          |
+| KC_ADMIN_CONNECT_TIMEOUT          | 10s                           |    false    | Keycloak admin client connect timeout (Spring `Duration` syntax, e.g. `10s`, `500ms`).                                                                   |
+| KC_ADMIN_READ_TIMEOUT             | 60s                           |    false    | Keycloak admin client read/socket timeout (Spring `Duration` syntax, e.g. `60s`, `2m`).                                                                  |
 | KC_CLIENT_ID                      | mgr-tenants                  |    false    | client id to be imported to Keycloak.                                                                                                                   |
 | KC_CLIENT_SECRET                  | -                            |    true     | client secret to be imported to Keycloak.                                                                                                               |
 | KC_SERVICE_CLIENT_ID              | sidecar-module-access-client |    false    | Tenant specific client id for authenticating module-to-module requests.                                                                                 |
@@ -168,6 +170,10 @@ The feature is controlled by two env variables `SECURITY_ENABLED` and `KC_INTEGR
 | KC_CLIENT_TLS_TRUSTSTORE_PASSWORD | -                            |    false    | Truststore password for keycloak clients.                                                                                                               |
 | KC_CLIENT_TLS_TRUSTSTORE_TYPE     | -                            |    false    | Truststore file type for keycloak clients.                                                                                                              |
 | KC_JWKS_BASE_URL                  |                              |    false    | Custom base URL for JWKS endpoint. If specified, will be used instead of issuer URL from token's iss claim (e.g., http://keycloak:8080).                |
+
+When an admin client call exceeds `KC_ADMIN_CONNECT_TIMEOUT` or `KC_ADMIN_READ_TIMEOUT`, it fails with a
+`jakarta.ws.rs.ProcessingException` (wrapping a `ConnectTimeoutException` / `SocketTimeoutException`),
+releasing the caller thread so existing retry logic can observe it.
 
 
 ### Interaction with Keycloak
