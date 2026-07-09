@@ -11,6 +11,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.common.utils.CollectionUtils.mapItems;
 import static org.folio.tm.support.TestConstants.TENANT_NAME;
+import static org.folio.tm.support.TestConstants.audienceProtocolMapper;
 import static org.folio.tm.support.TestConstants.subjectProtocolMapper;
 import static org.folio.tm.support.TestConstants.userIdProtocolMapper;
 import static org.folio.tm.support.TestConstants.usernameProtocolMapper;
@@ -31,7 +32,6 @@ import jakarta.ws.rs.InternalServerErrorException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.folio.security.integration.keycloak.configuration.properties.KeycloakClientProperties;
 import org.folio.test.types.UnitTest;
 import org.folio.tm.integration.keycloak.ClientSecretService;
 import org.folio.tm.integration.keycloak.configuration.KeycloakRealmSetupProperties;
@@ -91,7 +91,7 @@ class LoginClientServiceTest {
   void setupClient_positive() {
     var clientResponse = new ServerResponse(null, 201, responseHeaders());
 
-    when(keycloakRealmSetupProperties.getLoginClient()).thenReturn(loginClientProperties());
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(CLIENT_ID);
     when(clientSecretService.getOrCreateClientSecret(TENANT_NAME, CLIENT_ID)).thenReturn(CLIENT_SECRET);
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(realmResource.clients().create(clientCaptor.capture())).thenReturn(clientResponse);
@@ -111,7 +111,7 @@ class LoginClientServiceTest {
   void setupClient_negative_failedToCreateClient() {
     var internalServerError = new ServerResponse(null, 500, new Headers<>());
 
-    when(keycloakRealmSetupProperties.getLoginClient()).thenReturn(loginClientProperties());
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(CLIENT_ID);
     when(clientSecretService.getOrCreateClientSecret(TENANT_NAME, CLIENT_ID)).thenReturn(CLIENT_SECRET);
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(realmResource.clients().create(clientCaptor.capture())).thenReturn(internalServerError);
@@ -129,7 +129,7 @@ class LoginClientServiceTest {
 
   @Test
   void setupClient_negative_failedToCreateClientWithException() {
-    when(keycloakRealmSetupProperties.getLoginClient()).thenReturn(loginClientProperties());
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(CLIENT_ID);
     when(clientSecretService.getOrCreateClientSecret(TENANT_NAME, CLIENT_ID)).thenReturn(CLIENT_SECRET);
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(realmResource.clients().create(clientCaptor.capture())).thenThrow(InternalServerErrorException.class);
@@ -144,12 +144,6 @@ class LoginClientServiceTest {
 
     verify(realmResource, atLeastOnce()).clients();
     verify(jsonHelper, times(4)).asJsonString(any());
-  }
-
-  private static KeycloakClientProperties loginClientProperties() {
-    var keycloakClientProperties = new KeycloakClientProperties();
-    keycloakClientProperties.setClientId("-test-app");
-    return keycloakClientProperties;
   }
 
   private static Headers<Object> responseHeaders() {
@@ -172,7 +166,7 @@ class LoginClientServiceTest {
     keycloakClient.setClientAuthenticatorType("client-secret");
     keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, true, null, null).asMap());
     keycloakClient.setProtocolMappers(List.of(usernameProtocolMapper(), userIdProtocolMapper(),
-      subjectProtocolMapper()));
+      subjectProtocolMapper(), audienceProtocolMapper(CLIENT_ID)));
     keycloakClient.setServiceAccountsEnabled(true);
     keycloakClient.setDirectAccessGrantsEnabled(true);
     keycloakClient.setRedirectUris(List.of("/*"));

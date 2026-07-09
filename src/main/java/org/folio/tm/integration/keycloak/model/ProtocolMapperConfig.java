@@ -20,6 +20,8 @@ public class ProtocolMapperConfig {
   public static final String ACCESS_TOKEN_CLAIM = "access.token.claim";
   public static final String USERINFO_TOKEN_CLAIM = "userinfo.token.claim";
   public static final String LIGHTWEIGHT_CLAIM = "lightweight.claim";
+  public static final String INTROSPECTION_TOKEN_CLAIM = "introspection.token.claim";
+  public static final String INCLUDED_CLIENT_AUDIENCE = "included.client.audience";
   public static final String USER_ATTRIBUTE = "user.attribute";
   public static final String CLAIM_NAME = "claim.name";
   public static final String JSON_TYPE_LABEL = "jsonType.label";

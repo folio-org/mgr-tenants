@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.folio.tm.support.TestConstants.AUTH_TOKEN;
 import static org.folio.tm.support.TestConstants.TENANT_NAME;
+import static org.folio.tm.support.TestConstants.audienceProtocolMapper;
 import static org.folio.tm.support.TestConstants.subjectProtocolMapper;
 import static org.folio.tm.support.TestConstants.userIdProtocolMapper;
 import static org.folio.tm.support.TestConstants.usernameProtocolMapper;
@@ -57,6 +58,7 @@ class ImpersonationClientServiceTest {
 
   private static final String IMPERSONATE_PERMISSION_ID = UUID.randomUUID().toString();
   private static final String CLIENT_ID = UUID.randomUUID().toString();
+  private static final String LOGIN_CLIENT_ID = TENANT_NAME + "-login-application";
   private static final String REALM_MGMT_CLIENT_ID = UUID.randomUUID().toString();
   private static final String CLIENT_SECRET = UUID.randomUUID().toString();
 
@@ -93,6 +95,7 @@ class ImpersonationClientServiceTest {
 
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(keycloakRealmSetupProperties.getImpersonationClient()).thenReturn("impersonation-client");
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(LOGIN_CLIENT_ID);
     when(clientSecretService.getOrCreateClientSecret(TENANT_NAME, "impersonation-client")).thenReturn(CLIENT_SECRET);
     when(keycloak.tokenManager().getAccessTokenString()).thenReturn(AUTH_TOKEN);
     when(realmResource.clients().create(clientCaptor.capture())).thenReturn(clientResponse);
@@ -142,6 +145,7 @@ class ImpersonationClientServiceTest {
     var internalServerErrorResponse = new ServerResponse(null, 500, new Headers<>());
 
     when(keycloakRealmSetupProperties.getImpersonationClient()).thenReturn("impersonation-client");
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(LOGIN_CLIENT_ID);
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(keycloak.tokenManager().getAccessTokenString()).thenReturn(AUTH_TOKEN);
     when(realmResource.clients().create(clientCaptor.capture())).thenReturn(internalServerErrorResponse);
@@ -167,6 +171,7 @@ class ImpersonationClientServiceTest {
     var userMgmtPermission = new UserManagementPermission(true);
 
     when(keycloakRealmSetupProperties.getImpersonationClient()).thenReturn("impersonation-client");
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(LOGIN_CLIENT_ID);
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(keycloak.tokenManager().getAccessTokenString()).thenReturn(AUTH_TOKEN);
     when(realmResource.clients().create(clientCaptor.capture())).thenThrow(InternalServerErrorException.class);
@@ -194,6 +199,7 @@ class ImpersonationClientServiceTest {
 
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(keycloakRealmSetupProperties.getImpersonationClient()).thenReturn("impersonation-client");
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(LOGIN_CLIENT_ID);
     when(clientSecretService.getOrCreateClientSecret(TENANT_NAME, "impersonation-client")).thenReturn(CLIENT_SECRET);
     when(keycloak.tokenManager().getAccessTokenString()).thenReturn(AUTH_TOKEN);
     when(realmResource.clients().create(clientCaptor.capture())).thenReturn(clientResponse);
@@ -221,6 +227,7 @@ class ImpersonationClientServiceTest {
     var internalServerErrorResponse = new ServerResponse(null, 500, new Headers<>());
 
     when(keycloakRealmSetupProperties.getImpersonationClient()).thenReturn("impersonation-client");
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(LOGIN_CLIENT_ID);
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(clientSecretService.getOrCreateClientSecret(TENANT_NAME, "impersonation-client")).thenReturn(CLIENT_SECRET);
     when(keycloak.tokenManager().getAccessTokenString()).thenReturn(AUTH_TOKEN);
@@ -251,6 +258,7 @@ class ImpersonationClientServiceTest {
     var clientResponse = new ServerResponse(null, 201, responseHeaders());
 
     when(keycloakRealmSetupProperties.getImpersonationClient()).thenReturn("impersonation-client");
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(LOGIN_CLIENT_ID);
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(clientSecretService.getOrCreateClientSecret(TENANT_NAME, "impersonation-client")).thenReturn(CLIENT_SECRET);
     when(keycloak.tokenManager().getAccessTokenString()).thenReturn(AUTH_TOKEN);
@@ -282,6 +290,7 @@ class ImpersonationClientServiceTest {
 
     when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
     when(keycloakRealmSetupProperties.getImpersonationClient()).thenReturn("impersonation-client");
+    when(keycloakRealmSetupProperties.getLoginClientId(TENANT_NAME)).thenReturn(LOGIN_CLIENT_ID);
     when(clientSecretService.getOrCreateClientSecret(TENANT_NAME, "impersonation-client")).thenReturn(CLIENT_SECRET);
     when(keycloak.tokenManager().getAccessTokenString()).thenReturn(AUTH_TOKEN);
     when(realmResource.clients().create(clientCaptor.capture())).thenReturn(clientResponse);
@@ -342,7 +351,7 @@ class ImpersonationClientServiceTest {
     keycloakClient.setClientAuthenticatorType("client-secret");
     keycloakClient.setAttributes(new ClientAttributes(false, false, 0L, true, false, true, null, null).asMap());
     keycloakClient.setProtocolMappers(List.of(usernameProtocolMapper(), userIdProtocolMapper(),
-      subjectProtocolMapper()));
+      subjectProtocolMapper(), audienceProtocolMapper(LOGIN_CLIENT_ID)));
     keycloakClient.setServiceAccountsEnabled(true);
     keycloakClient.setDirectAccessGrantsEnabled(true);
     keycloakClient.setRedirectUris(List.of("/*"));

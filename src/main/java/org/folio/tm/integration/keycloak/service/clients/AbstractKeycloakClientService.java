@@ -154,10 +154,13 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
 
   /**
    * Defines a list with Keycloak client protocol mappers.
+   *
+   * @param realm - Keycloak realm name
+   * @param clientId - client identifier
    */
   @Nullable
   @SuppressWarnings("java:S1168")
-  protected List<ProtocolMapperRepresentation> getProtocolMappers() {
+  protected List<ProtocolMapperRepresentation> getProtocolMappers(String realm, String clientId) {
     return null;
   }
 
@@ -197,7 +200,7 @@ public abstract class AbstractKeycloakClientService implements KeycloakClientSer
     applyIfNotNull(getWebOrigins(), clientRepresentation::setWebOrigins);
     applyIfNotNull(getRedirectUris(), clientRepresentation::setRedirectUris);
     applyIfNotNull(getAttributes(), clientRepresentation::setAttributes);
-    applyIfNotNull(getProtocolMappers(), clientRepresentation::setProtocolMappers);
+    applyIfNotNull(getProtocolMappers(realm, clientId), clientRepresentation::setProtocolMappers);
     applyIfNotNull(getAuthorizationSettings(), clientRepresentation::setAuthorizationSettings);
 
     return clientRepresentation;

@@ -27,4 +27,14 @@ public class KeycloakRealmSetupProperties {
   private KeycloakSessionProperties ssoSession = new KeycloakSessionProperties();
   @NestedConfigurationProperty
   private KeycloakSessionProperties clientSession = new KeycloakSessionProperties();
+
+  /**
+   * Builds the login client id for the given realm from the configured login client suffix.
+   *
+   * @param realm - Keycloak realm name
+   * @return login client id, e.g. {@code {realm}-login-application}
+   */
+  public String getLoginClientId(String realm) {
+    return realm + loginClient.getClientId();
+  }
 }
