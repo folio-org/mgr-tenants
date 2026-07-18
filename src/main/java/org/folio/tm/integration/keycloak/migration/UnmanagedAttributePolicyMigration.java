@@ -10,19 +10,16 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 
 /**
- * Startup migration enforcing the Keycloak user-profile {@code unmanagedAttributePolicy=ADMIN_EDIT}
- * on all existing tenant realms (MGRTENANT-95, SECURITY-1029 remediation).
- *
- * <p>Idempotent: realms already having ADMIN_EDIT are not updated. A failure for one realm is
+ * Idempotent: realms already having ADMIN_EDIT are not updated. A failure for one realm is
  * logged with the {@link #LOG_MARKER} and does not stop the migration for remaining realms.
  * Only realms of tenants managed by this module are touched, so the {@code master} realm and
- * any non-tenant realms are never affected.</p>
+ * any non-tenant realms are never affected.
  */
 @Log4j2
 @RequiredArgsConstructor
 public class UnmanagedAttributePolicyMigration implements ApplicationRunner {
 
-  static final String LOG_MARKER = "MGRTENANT-95";
+  static final String LOG_MARKER = "REALM SETTINGS MIGRATION";
   private static final String MASTER_REALM = "master";
 
   private final TenantRepository tenantRepository;

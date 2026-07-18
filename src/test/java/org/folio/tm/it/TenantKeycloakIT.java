@@ -129,7 +129,6 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     checkImpersonationClient(tenantName);
     checkLoginClient(tenantName);
 
-    // MGRTENANT-95: new realms must be provisioned with unmanagedAttributePolicy=ADMIN_EDIT
     assertThat(keycloakTestClient.getUserProfileConfig(tenantName).getUnmanagedAttributePolicy())
       .isEqualTo(UnmanagedAttributePolicy.ADMIN_EDIT);
   }

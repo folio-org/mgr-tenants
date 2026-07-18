@@ -123,7 +123,7 @@ public class KeycloakRealmService {
   }
 
   /**
-   * Ensures the realm's user-profile unmanagedAttributePolicy is ADMIN_EDIT (MGRTENANT-95).
+   * Ensures the realm's user-profile unmanagedAttributePolicy is ADMIN_EDIT.
    *
    * <p>Fetches the full user-profile configuration and updates only the policy field, preserving
    * attribute and group definitions. {@link NotFoundException} propagates so callers can
