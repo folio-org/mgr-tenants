@@ -13,6 +13,7 @@ import org.folio.tm.integration.keycloak.KeycloakClient;
 import org.folio.tm.integration.keycloak.KeycloakRealmService;
 import org.folio.tm.integration.keycloak.KeycloakServerInfoService;
 import org.folio.tm.integration.keycloak.KeycloakTenantListener;
+import org.folio.tm.integration.keycloak.migration.UnmanagedAttributePolicyMigration;
 import org.folio.tm.integration.keycloak.service.clients.ImpersonationClientService;
 import org.folio.tm.integration.keycloak.service.clients.KeycloakClientService;
 import org.folio.tm.integration.keycloak.service.clients.LoginClientService;
@@ -21,6 +22,7 @@ import org.folio.tm.integration.keycloak.service.clients.PasswordResetClientServ
 import org.folio.tm.integration.keycloak.service.roles.KeycloakRealmRoleService;
 import org.folio.tm.integration.keycloak.service.roles.PasswordResetRoleService;
 import org.folio.tm.integration.keycloak.service.roles.SystemRoleService;
+import org.folio.tm.repository.TenantRepository;
 import org.folio.tm.utils.JsonHelper;
 import org.folio.tools.store.SecureStore;
 import org.folio.tools.store.exception.SecretNotFoundException;
@@ -75,6 +77,12 @@ public class KeycloakConfiguration {
   @Bean
   public KeycloakTenantListener keycloakTenantListener(KeycloakRealmService keycloakRealmService) {
     return new KeycloakTenantListener(keycloakRealmService);
+  }
+
+  @Bean
+  public UnmanagedAttributePolicyMigration unmanagedAttributePolicyMigration(
+    TenantRepository tenantRepository, KeycloakRealmService keycloakRealmService) {
+    return new UnmanagedAttributePolicyMigration(tenantRepository, keycloakRealmService);
   }
 
   @Bean
