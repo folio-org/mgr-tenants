@@ -68,5 +68,5 @@
       "displayDescription": "Attributes, which refer to user metadata"
     }
   ],
-  "unmanagedAttributePolicy": "ENABLED"
+  "unmanagedAttributePolicy": "ADMIN_EDIT"
 }
