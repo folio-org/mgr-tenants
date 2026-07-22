@@ -27,6 +27,7 @@ import org.folio.security.integration.keycloak.configuration.properties.Keycloak
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
+import org.keycloak.representations.userprofile.config.UPConfig;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
@@ -60,6 +61,14 @@ public class KeycloakTestClientConfiguration {
       } catch (NotFoundException exception) {
         throw new AssertionError("Failed to find realm: " + realm, exception);
       }
+    }
+
+    public UPConfig getUserProfileConfig(String realm) {
+      return keycloak.realm(realm).users().userProfile().getConfiguration();
+    }
+
+    public void updateUserProfileConfig(String realm, UPConfig config) {
+      keycloak.realm(realm).users().userProfile().update(config);
     }
 
     public String loginAsFolioAdmin() {

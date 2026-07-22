@@ -48,6 +48,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
+import org.keycloak.representations.userprofile.config.UPConfig.UnmanagedAttributePolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
@@ -127,6 +128,9 @@ class TenantKeycloakIT extends BaseIntegrationTest {
 
     checkImpersonationClient(tenantName);
     checkLoginClient(tenantName);
+
+    assertThat(keycloakTestClient.getUserProfileConfig(tenantName).getUnmanagedAttributePolicy())
+      .isEqualTo(UnmanagedAttributePolicy.ADMIN_EDIT);
   }
 
   @Test

@@ -25,6 +25,7 @@ import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.representations.idm.ComponentExportRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
+import org.keycloak.representations.userprofile.config.UPConfig.UnmanagedAttributePolicy;
 import org.springframework.util.Assert;
 import tools.jackson.core.type.TypeReference;
 
@@ -119,6 +120,28 @@ public class KeycloakRealmService {
     } catch (WebApplicationException exception) {
       throw new KeycloakException("Failed to find Keycloak realm by name: " + name, exception);
     }
+  }
+
+  /**
+   * Ensures the realm's user-profile unmanagedAttributePolicy is ADMIN_EDIT.
+   *
+   * <p>Fetches the full user-profile configuration and updates only the policy field, preserving
+   * attribute and group definitions. {@link NotFoundException} propagates so callers can
+   * distinguish a missing realm from an update failure.</p>
+   *
+   * @param realmName - Keycloak realm name
+   * @return true if the policy was updated, false if it was already ADMIN_EDIT
+   */
+  public boolean ensureUnmanagedAttributePolicy(String realmName) {
+    var userProfileResource = keycloak.realm(realmName).users().userProfile();
+    var config = userProfileResource.getConfiguration();
+    if (config.getUnmanagedAttributePolicy() == UnmanagedAttributePolicy.ADMIN_EDIT) {
+      return false;
+    }
+
+    config.setUnmanagedAttributePolicy(UnmanagedAttributePolicy.ADMIN_EDIT);
+    userProfileResource.update(config);
+    return true;
   }
 
   @SuppressWarnings("checkstyle:MethodLength")
