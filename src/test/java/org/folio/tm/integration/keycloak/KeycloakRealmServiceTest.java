@@ -7,6 +7,7 @@ import static org.folio.tm.support.TestConstants.TENANT_NAME;
 import static org.folio.tm.support.TestUtils.OBJECT_MAPPER;
 import static org.folio.tm.support.TestUtils.readString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -40,12 +41,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RealmsResource;
+import org.keycloak.admin.client.resource.UserProfileResource;
+import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.admin.client.token.TokenManager;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.ComponentExportRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.RequiredActionProviderRepresentation;
+import org.keycloak.representations.userprofile.config.UPAttribute;
+import org.keycloak.representations.userprofile.config.UPConfig;
+import org.keycloak.representations.userprofile.config.UPConfig.UnmanagedAttributePolicy;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -73,6 +79,8 @@ class KeycloakRealmServiceTest {
   @Mock private RealmResource realmResource;
   @Mock private RealmsResource realmsResource;
   @Mock private AccessTokenResponse accessTokenResponse;
+  @Mock private UsersResource usersResource;
+  @Mock private UserProfileResource userProfileResource;
 
   @BeforeEach
   void setUp() {
@@ -423,6 +431,75 @@ class KeycloakRealmServiceTest {
         .isInstanceOf(KeycloakException.class)
         .hasMessage("Failed to find Keycloak realm by name: " + TENANT_NAME)
         .hasCauseInstanceOf(InternalServerErrorException.class);
+    }
+  }
+
+  @Nested
+  @DisplayName("ensureUnmanagedAttributePolicy")
+  class EnsureUnmanagedAttributePolicy {
+
+    @Test
+    void positive() {
+      var config = userProfileConfig(UnmanagedAttributePolicy.ENABLED);
+      mockUserProfileResource();
+      when(userProfileResource.getConfiguration()).thenReturn(config);
+
+      var result = keycloakRealmService.ensureUnmanagedAttributePolicy(TENANT_NAME);
+
+      assertThat(result).isTrue();
+      assertThat(config.getUnmanagedAttributePolicy()).isEqualTo(UnmanagedAttributePolicy.ADMIN_EDIT);
+      assertThat(config.getAttributes()).extracting(UPAttribute::getName).containsExactly("username");
+      verify(userProfileResource).update(same(config));
+    }
+
+    @Test
+    void positive_nullPolicy() {
+      var config = userProfileConfig(null);
+      mockUserProfileResource();
+      when(userProfileResource.getConfiguration()).thenReturn(config);
+
+      var result = keycloakRealmService.ensureUnmanagedAttributePolicy(TENANT_NAME);
+
+      assertThat(result).isTrue();
+      assertThat(config.getUnmanagedAttributePolicy()).isEqualTo(UnmanagedAttributePolicy.ADMIN_EDIT);
+      verify(userProfileResource).update(same(config));
+    }
+
+    @Test
+    void positive_alreadyAdminEdit() {
+      var config = userProfileConfig(UnmanagedAttributePolicy.ADMIN_EDIT);
+      mockUserProfileResource();
+      when(userProfileResource.getConfiguration()).thenReturn(config);
+
+      var result = keycloakRealmService.ensureUnmanagedAttributePolicy(TENANT_NAME);
+
+      assertThat(result).isFalse();
+      assertThat(config.getUnmanagedAttributePolicy()).isEqualTo(UnmanagedAttributePolicy.ADMIN_EDIT);
+      verify(userProfileResource, never()).update(any());
+    }
+
+    @Test
+    void negative_realmNotFound() {
+      mockUserProfileResource();
+      when(userProfileResource.getConfiguration()).thenThrow(NotFoundException.class);
+
+      assertThatThrownBy(() -> keycloakRealmService.ensureUnmanagedAttributePolicy(TENANT_NAME))
+        .isInstanceOf(NotFoundException.class);
+
+      verify(userProfileResource, never()).update(any());
+    }
+
+    private void mockUserProfileResource() {
+      when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
+      when(realmResource.users()).thenReturn(usersResource);
+      when(usersResource.userProfile()).thenReturn(userProfileResource);
+    }
+
+    private static UPConfig userProfileConfig(UnmanagedAttributePolicy policy) {
+      var config = new UPConfig();
+      config.setAttributes(List.of(new UPAttribute("username")));
+      config.setUnmanagedAttributePolicy(policy);
+      return config;
     }
   }
 }
