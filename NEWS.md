@@ -1,3 +1,7 @@
+## Version `v4.0.1` (28.07.2026)
+* Add audience protocol mapper to the tenant login and impersonation clients so issued access tokens contain the login client in `aud` (MGRTENANT-94)
+* Enforce Keycloak user-profile `unmanagedAttributePolicy=ADMIN_EDIT` on tenant realms during provisioning and via idempotent startup migration (MGRTENANT-95)
+
 ## Version `v4.0.0` (15.04.2026)
 * Setup default keycloak realm session timeouts (MGRTENANT-55)
 * Introduce configuration for FSSP (APPPOCTOOL-59)
