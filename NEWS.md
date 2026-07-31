@@ -1,3 +1,7 @@
+## Version `v3.0.8` (31.07.2026)
+* Enforce Keycloak user-profile `unmanagedAttributePolicy=ADMIN_EDIT` on tenant realms during provisioning and via idempotent startup migration (MGRTENANT-95)
+* Migrate CI from Jenkins to GitHub Actions Maven central workflow (MGRTENANT-83)
+
 ## Version `v3.0.7` (03.06.2026)
 * Automatically fix invalid realm session timeouts to comply with Keycloak 26.5+ validation rules (KEYCLOAK-95 / MGRTENANT-92)
 
