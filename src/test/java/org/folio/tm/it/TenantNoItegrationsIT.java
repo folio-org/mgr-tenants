@@ -22,7 +22,6 @@ import org.folio.test.types.IntegrationTest;
 import org.folio.tm.base.BaseIntegrationTest;
 import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.domain.dto.TenantType;
-import org.folio.tm.integration.okapi.OkapiService;
 import org.folio.tm.repository.TenantRepository;
 import org.folio.tm.service.listeners.TenantServiceListener;
 import org.folio.tm.support.TestConstants;
@@ -36,7 +35,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 @IntegrationTest
-@TestPropertySource(properties = {"application.okapi.enabled=false", "application.keycloak.enabled=false"})
+@TestPropertySource(properties = "application.keycloak.enabled=false")
 @Sql(scripts = "classpath:/sql/populate_tenants.sql", executionPhase = BEFORE_TEST_METHOD)
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class TenantNoItegrationsIT extends BaseIntegrationTest {
@@ -60,9 +59,6 @@ class TenantNoItegrationsIT extends BaseIntegrationTest {
   @Qualifier("keycloakTenantListener")
   private TenantServiceListener keycloakTenantListener;
 
-  @Autowired(required = false)
-  private OkapiService okapiService;
-
   @Test
   void createTenant_positive() throws Exception {
     var tenant = TENANT4;
@@ -79,7 +75,6 @@ class TenantNoItegrationsIT extends BaseIntegrationTest {
       .andExpect(jsonPath("$.metadata", is(notNullValue())));
 
     assertNull(keycloakTenantListener);
-    assertNull(okapiService);
   }
 
   @Test
@@ -99,7 +94,6 @@ class TenantNoItegrationsIT extends BaseIntegrationTest {
     assertThat(saved.getType().name()).isEqualTo(tenant.getType().name());
 
     assertNull(keycloakTenantListener);
-    assertNull(okapiService);
   }
 
   @Test
@@ -116,7 +110,6 @@ class TenantNoItegrationsIT extends BaseIntegrationTest {
       .ifPresent(tenantEntity -> Assertions.fail("Tenant is not deleted: " + TestConstants.TENANT_ID));
 
     assertNull(keycloakTenantListener);
-    assertNull(okapiService);
   }
 
   private static Tenant copyFrom() {

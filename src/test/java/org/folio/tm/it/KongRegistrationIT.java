@@ -16,7 +16,6 @@ import org.springframework.test.context.TestPropertySource;
 @EnableKeycloakSecurity
 @TestPropertySource(properties = {
   "application.keycloak.enabled=false",
-  "application.okapi.enabled=false",
   "application.kong.enabled=true",
   "application.kong.module-self-url=https://test-mgr-tenants:443",
   "application.kong.register-module=true"

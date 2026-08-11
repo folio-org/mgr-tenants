@@ -15,8 +15,6 @@ application:
   kong:
     enabled: false
     register-module: false
-  okapi:
-    enabled: true
   keycloak:
     enabled: false
     admin:

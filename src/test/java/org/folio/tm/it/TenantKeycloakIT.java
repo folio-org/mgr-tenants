@@ -52,7 +52,6 @@ import org.keycloak.representations.userprofile.config.UPConfig.UnmanagedAttribu
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlMergeMode;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -63,7 +62,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @EnableKeycloakSecurity
 @EnableKeycloakDataImport
 @Import(KeycloakTestClientConfiguration.class)
-@TestPropertySource(properties = "application.okapi.enabled=false")
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class TenantKeycloakIT extends BaseIntegrationTest {
 
@@ -85,7 +83,6 @@ class TenantKeycloakIT extends BaseIntegrationTest {
 
   @BeforeAll
   static void beforeAll(@Autowired ApplicationContext applicationContext) {
-    assertThat(applicationContext.containsBean("okapiService")).isFalse();
   }
 
   @AfterEach

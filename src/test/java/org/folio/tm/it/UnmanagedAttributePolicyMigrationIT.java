@@ -22,7 +22,6 @@ import org.keycloak.representations.userprofile.config.UPAttribute;
 import org.keycloak.representations.userprofile.config.UPConfig.UnmanagedAttributePolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlMergeMode;
 
@@ -32,7 +31,6 @@ import org.springframework.test.context.jdbc.SqlMergeMode;
 @EnableKeycloakSecurity
 @EnableKeycloakDataImport
 @Import(KeycloakTestClientConfiguration.class)
-@TestPropertySource(properties = "application.okapi.enabled=false")
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class UnmanagedAttributePolicyMigrationIT extends BaseIntegrationTest {
 

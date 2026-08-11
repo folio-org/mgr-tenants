@@ -22,7 +22,6 @@ import org.folio.tm.domain.dto.Tenant;
 import org.folio.tm.domain.dto.TenantAttribute;
 import org.folio.tm.domain.dto.TenantAttributes;
 import org.folio.tm.integration.keycloak.model.ProtocolMapperConfig;
-import org.folio.tm.integration.okapi.model.TenantDescriptor;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -48,14 +47,6 @@ public class TestConstants {
 
   public static TenantAttributes tenantAttributes(TenantAttribute ... tenantAttributes) {
     return new TenantAttributes().tenantAttributes(List.of(tenantAttributes));
-  }
-
-  public static TenantDescriptor tenantDescriptor() {
-    return tenantDescriptor(TENANT_NAME);
-  }
-
-  public static TenantDescriptor tenantDescriptor(String id) {
-    return new TenantDescriptor(id, TENANT_NAME, TENANT_DESCRIPTION);
   }
 
   public static ProtocolMapperRepresentation usernameProtocolMapper() {

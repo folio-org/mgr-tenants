@@ -126,7 +126,7 @@ class TenantServiceTest {
   }
 
   @Test
-  void create_negative_okapiError() {
+  void create_negative_tenantEventsPublisherError() {
     var expectedTenant = tenant();
     var entity = tenantEntity();
 

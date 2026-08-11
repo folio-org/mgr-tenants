@@ -32,7 +32,6 @@ import org.folio.cql2pgjson.exception.CQLFeatureUnsupportedException;
 import org.folio.spring.cql.CqlQueryValidationException;
 import org.folio.tm.exception.RequestValidationException;
 import org.folio.tm.integration.keycloak.exception.KeycloakException;
-import org.folio.tm.integration.okapi.exception.OkapiRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.ResponseEntity;
@@ -211,12 +210,12 @@ public class ApiExceptionHandler {
   }
 
   /**
-   * Catches and handles all exceptions for type {@link OkapiRequestException}.
+   * Catches and handles all exceptions for type {@link KeycloakException}.
    *
-   * @param exception {@link OkapiRequestException} to process
+   * @param exception {@link KeycloakException} to process
    * @return {@link ResponseEntity} with {@link ErrorResponse} body
    */
-  @ExceptionHandler({OkapiRequestException.class, KeycloakException.class})
+  @ExceptionHandler(KeycloakException.class)
   public ResponseEntity<ErrorResponse> handleOutgoingRequestException(Exception exception) {
     logException(WARN, exception);
     var errorParameters = singletonList(new Parameter().key("cause").value(exception.getCause().getMessage()));

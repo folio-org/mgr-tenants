@@ -52,7 +52,6 @@ import org.keycloak.representations.idm.authorization.ScopePermissionRepresentat
 import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlMergeMode;
 import tools.jackson.databind.JsonNode;
@@ -63,9 +62,6 @@ import tools.jackson.databind.JsonNode;
 @EnableKeycloakSecurity
 @EnableKeycloakDataImport
 @Import(KeycloakTestClientConfiguration.class)
-@TestPropertySource(properties = {
-  "application.okapi.enabled=false"
-})
 @Sql(scripts = "classpath:/sql/clear_tenants.sql", executionPhase = AFTER_TEST_METHOD)
 class KeycloakInteractionsIT extends BaseIntegrationTest {
 
