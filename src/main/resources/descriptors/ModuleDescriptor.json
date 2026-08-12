@@ -120,28 +120,17 @@
     {
       "description": "Create a new tenant",
       "displayName": "Manager Tenants - create a new tenant",
-      "permissionName": "mgr-tenants.tenants.item.post",
-      "subPermissions": [
-        "okapi.proxy.tenants.get",
-        "okapi.proxy.tenants.post"
-      ]
+      "permissionName": "mgr-tenants.tenants.item.post"
     },
     {
       "description": "Remove a tenant",
       "displayName": "Manager Tenants - delete a tenant",
-      "permissionName": "mgr-tenants.tenants.item.delete",
-      "subPermissions": [
-        "okapi.proxy.tenants.get",
-        "okapi.proxy.tenants.delete"
-      ]
+      "permissionName": "mgr-tenants.tenants.item.delete"
     },
     {
       "description": "Update a tenant",
       "displayName": "Manager Tenants - update a tenant",
-      "permissionName": "mgr-tenants.tenants.item.put",
-      "subPermissions": [
-        "okapi.proxy.tenants.put"
-      ]
+      "permissionName": "mgr-tenants.tenants.item.put"
     },
     {
       "description": "Retrieve tenants",

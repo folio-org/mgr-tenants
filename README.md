@@ -20,7 +20,7 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
 ## Introduction
 
-For now, `mgr-tenants` proxies requests to OKAPI's tenant API
+`mgr-tenants` owns the tenant lifecycle.
 When any operation will happen on tenant, it will take place on realm in keycloak,
 also it will send a request to keycloak to retrieve a token and persist in cache for 60s for doing all the stuff related
 to realm
@@ -34,8 +34,6 @@ to realm
 | DB_USERNAME                  | postgres                             |  false   | Postgres username                                                                                                                                                                                         |
 | DB_PASSWORD                  | postgres                             |  false   | Postgres username password                                                                                                                                                                                |
 | DB_DATABASE                  | tenant_manager                       |  false   | Postgres database name                                                                                                                                                                                    |
-| OKAPI_INTEGRATION_ENABLED    | false                                |  false   | Defines if Okapi integration is enabled or disabled                                                                                                                                                       |
-| okapi.url                    | -                                    |  false   | Okapi URL used to perform HTTP requests by `OkapiClient`.                                                                                                                                                 |
 | MTE_URL                      | http://mgr-tenant-entitlements:8081  |  false   | Base URL for mgr-tenant-entitlements service. Used to check for active entitlements before tenant deletion.                                                                                               |
 | MTE_TLS_ENABLED              | false                                |  false   | Enable TLS for communication with mgr-tenant-entitlements.                                                                                                                                                |
 | MTE_TLS_TRUSTSTORE_PATH      | -                                    |  false   | Path to truststore for TLS communication with mgr-tenant-entitlements.                                                                                                                                    |
@@ -50,7 +48,6 @@ to realm
 | CACHE_EXPIRATION_TTL         | 60s                                  |  false   | ttl value for token to persist in cache                                                                                                                                                                   |
 | SECURITY_ENABLED             | true                                 |  false   | Allows to enable/disable security. <br/>If true and KC_INTEGRATION_ENABLED is also true - the Keycloak will be used as a security provider.                                                               |
 | KC_IMPERSONATION_CLIENT      | impersonation-client                 |  false   | Defined client in Keycloak, that has permissions to impersonate users.                                                                                                                                    |
-| MOD_AUTHTOKEN_URL            | -                                    |   true   | Mod-authtoken URL. Required if OKAPI_INTEGRATION_ENABLED is true and SECURITY_ENABLED is true and KC_INTEGRATION_ENABLED is false.                                                                        |
 | SECURE\_STORE\_ENV           | folio                                |  false   | First segment of the secure store key, for example `prod` or `test`. Defaults to `folio`. In Ramsons and Sunflower defaults to ENV with fall-back `folio`.                                                |
 | SECRET_STORE_TYPE            | -                                    |   true   | Secure storage type. Supported values: `EPHEMERAL`, `AWS_SSM`, `VAULT`, `FSSP`                                                                                                                            |
 | MAX_HTTP_REQUEST_HEADER_SIZE | 200KB                                |   true   | Maximum size of the HTTP request header.                                                                                                                                                                  |

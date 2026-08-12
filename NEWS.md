@@ -3,6 +3,10 @@
 * Switch Kong integration test container to folioci/folio-kong image (APPPOCTOOL-37)
 * Add audience protocol mapper to the tenant login and impersonation clients so issued access tokens contain the login client in `aud` (MGRTENANT-94)
 * Enforce Keycloak user-profile `unmanagedAttributePolicy=ADMIN_EDIT` on tenant realms during provisioning and via idempotent startup migration (MGRTENANT-95)
+* **Breaking:** Remove "Okapi integration" mode. `OKAPI_INTEGRATION_ENABLED`, `OKAPI_URL` and
+  `MOD_AUTHTOKEN_URL` are no longer supported, tenant descriptors are no longer synced to an Okapi
+  gateway, and mod-authtoken security mode is no longer reachable. The `okapi.proxy.*`
+  subPermissions were dropped from the module descriptor (MGRTENANT-52)
 
 ---
 

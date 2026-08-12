@@ -2,7 +2,7 @@
 
 Central Tenant Management Service for FOLIO — tenant registry and lifecycle manager in a multi-tenant environment. Java 21, Spring Boot 3.5.7, PostgreSQL/Liquibase.
 
-Responsibilities: tenant CRUD (unique names, immutable fields), key-value tenant attributes, multi-system sync (Keycloak/Okapi/Kafka via event listeners), pre-deletion validation (blocks deletion when active entitlements exist).
+Responsibilities: tenant CRUD (unique names, immutable fields), key-value tenant attributes, multi-system sync (Keycloak/Kafka via event listeners), pre-deletion validation (blocks deletion when active entitlements exist).
 
 ## Build & Test
 
@@ -26,7 +26,6 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 | Integration | Purpose | Toggle (default) |
 |---|---|---|
 | Keycloak (`integration/keycloak/`) | realm + OAuth2 clients (login, impersonation, password-reset, M2M) per tenant | `KC_INTEGRATION_ENABLED` (true) |
-| Okapi (`integration/okapi/`) | sync tenant descriptors with legacy gateway | `OKAPI_INTEGRATION_ENABLED` (false) |
 | Kong | gateway routing | `KONG_INTEGRATION_ENABLED` (true) |
 | Kafka (`integration/kafka/`) | purge `{env}.{tenant}.*` topics on deletion | — |
 | Entitlements (`integration/entitlements/`) | validate no active entitlements before deletion | — |
@@ -34,7 +33,7 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 **Patterns**:
 - Event-driven listeners: `TenantService` (CRUD) → `TenantEventsPublisher` broadcasts to all `TenantServiceListener`s; listeners react independently.
 - Conditional beans via `@ConditionalOnProperty`.
-- Feign clients (`KeycloakClient`, `OkapiClient`, `TenantEntitlementsClient`).
+- Feign clients (`KeycloakClient`, `TenantEntitlementsClient`).
 - **Fail-close security**: if `mgr-tenant-entitlements` is unreachable or errors → BLOCK deletion; only allow when it explicitly confirms no entitlements.
 
 ## Conventions
@@ -44,7 +43,7 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 - **Naming**: `*Entity` entities, `*Repository`, `*Service`, `*Controller`, `*Mapper`, `*Test` (unit), `*IT` (integration), `*Exception`. Test methods: `methodName_outcome_condition` (e.g. `createTenant_negative_nameExists`).
 - **Lombok**: `@Data`, `@RequiredArgsConstructor`, `@Log4j2`; `@ToString.Exclude`/`@EqualsAndHashCode.Exclude` on entity collections.
 - **MapStruct**: `@Mapper(componentModel="spring", injectionStrategy=CONSTRUCTOR, uses=MappingMethods.class)`.
-- **Exceptions** (handled centrally in `ApiExceptionHandler`): `RequestValidationException` (400), `EntityNotFoundException` (404), `KeycloakException`, `OkapiRequestException`.
+- **Exceptions** (handled centrally in `ApiExceptionHandler`): `RequestValidationException` (400), `EntityNotFoundException` (404), `KeycloakException`.
 - **Tests**: unit = Mockito (`@InjectMocks`/`@Mock`, `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`); integration = MockMvc + WireMock, extend `BaseIntegrationTest`, `@Sql` setup, `@WireMockStub` mocks.
 
 ## Layout

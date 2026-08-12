@@ -82,10 +82,6 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/create-tenant.json",
-    "/wiremock/stubs/okapi/get-tenant-not-found.json"
-  })
   void createTenant_positive() throws Exception {
     mockMvc.perform(post("/tenants")
         .contentType(APPLICATION_JSON)
@@ -100,10 +96,6 @@ class TenantIT extends BaseIntegrationTest {
   }
 
   @Test
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/create-tenant.json",
-    "/wiremock/stubs/okapi/get-tenant-not-found.json"
-  })
   void createTenant_positive_withAttributes() throws Exception {
     var tenantToCreate = copyFrom(TENANT4)
       .addAttributesItem(tenantAttribute("attribute key", "attribute value"));
@@ -153,9 +145,6 @@ class TenantIT extends BaseIntegrationTest {
 
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/update-tenant.json"
-  })
   void updateTenant_positive() throws Exception {
     var tenant = copyFrom(TENANT1).description("modified").type(VIRTUAL);
 
@@ -174,9 +163,6 @@ class TenantIT extends BaseIntegrationTest {
 
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/update-tenant.json"
-  })
   void updateTenant_positive_addAttributes() throws Exception {
     var tenant = copyFrom(TENANT1).description("modified").type(VIRTUAL)
       .attributes(List.of(tenantAttribute("attr1", "1"), tenantAttribute("attr2", "2")));
@@ -200,9 +186,6 @@ class TenantIT extends BaseIntegrationTest {
 
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/update-tenant.json"
-  })
   void updateTenant_negative_notFound() throws Exception {
     var tenant = TENANT4;
 
@@ -239,11 +222,7 @@ class TenantIT extends BaseIntegrationTest {
 
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/delete-tenant.json",
-    "/wiremock/stubs/okapi/get-tenant-exist.json",
-    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json"
-  })
+  @WireMockStub(scripts = "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json")
   void deleteTenant_positive() throws Exception {
     var tenantId = TENANT_ID.toString();
     doGet("/tenants/{id}", tenantId).andExpect(jsonPath("$.id", is(tenantId)));
@@ -258,11 +237,7 @@ class TenantIT extends BaseIntegrationTest {
 
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/get-tenant5-exist.json",
-    "/wiremock/stubs/okapi/delete-tenant.json",
-    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json"
-  })
+  @WireMockStub(scripts = "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-no-apps.json")
   void deleteTenantWithAttributes_positive() throws Exception {
     var tenantId = "42e36904-d009-4884-8338-3df14a18dfef";
     doGet("/tenants/{id}", tenantId)
@@ -290,10 +265,7 @@ class TenantIT extends BaseIntegrationTest {
 
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/get-tenant-exist.json",
-    "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-with-apps.json"
-  })
+  @WireMockStub(scripts = "/wiremock/stubs/mgr-tenant-entitlements/get-entitlements-with-apps.json")
   void deleteTenant_negative_hasActiveEntitlements() throws Exception {
     var tenantId = TENANT_ID.toString();
     doGet("/tenants/{id}", tenantId).andExpect(jsonPath("$.id", is(tenantId)));
@@ -327,10 +299,6 @@ class TenantIT extends BaseIntegrationTest {
 
   @Test
   @Sql("classpath:/sql/populate_tenants.sql")
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/create-tenant.json",
-    "/wiremock/stubs/okapi/get-tenant-not-found.json"
-  })
   void createTenant_positive_secureTenant() throws Exception {
     var tenant = TENANT4.secure(true);
 
@@ -349,9 +317,6 @@ class TenantIT extends BaseIntegrationTest {
 
   @Test
   @Sql(scripts = "classpath:/sql/populate_tenants.sql")
-  @WireMockStub(scripts = {
-    "/wiremock/stubs/okapi/update-tenant.json"
-  })
   void updateTenant_positive_secureTenant() throws Exception {
     var tenant = copyFrom(TENANT1).secure(true);
 
