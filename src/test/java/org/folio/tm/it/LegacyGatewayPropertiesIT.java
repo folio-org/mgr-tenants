@@ -52,6 +52,13 @@ class LegacyGatewayPropertiesIT {
   }
 
   @Test
+  void legacyKongEnabledFalse_doesNotBindApiGatewayBean() {
+    try (var context = bootContext(null, "--application.kong.enabled=false")) {
+      assertThat(context.containsBean("folioKongAdminClient")).isFalse();
+    }
+  }
+
+  @Test
   void newEnvVarOverridesLegacyEnvVar_bindsApiGatewayBeans() {
     try (var context = bootContext(null,
       "--KONG_INTEGRATION_ENABLED=false",
