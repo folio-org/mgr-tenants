@@ -9,6 +9,7 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
 * [Introduction](#introduction)
 * [Environment Variables](#environment-variables)
+  * [Deprecated environment variables](#deprecated-environment-variables)
   * [SSL Configuration environment variables](#ssl-configuration-environment-variables)
   * [Secure storage environment variables](#secure-storage-environment-variables)
     * [AWS-SSM](#aws-ssm)
@@ -39,12 +40,18 @@ to realm
 | MTE_TLS_TRUSTSTORE_PATH      | -                                    |  false   | Path to truststore for TLS communication with mgr-tenant-entitlements.                                                                                                                                    |
 | MTE_TLS_TRUSTSTORE_PASSWORD  | -                                    |  false   | Password for the TLS truststore.                                                                                                                                                                          |
 | MTE_TLS_TRUSTSTORE_TYPE      | -                                    |  false   | Type of the TLS truststore (e.g., JKS, PKCS12).                                                                                                                                                           |
-| KONG_ADMIN_URL               | -                                    |  false   | Alias for `kong.url`.                                                                                                                                                                                     |
-| KONG_INTEGRATION_ENABLED     | true                                 |  false   | Defines if kong integration is enabled or disabled.<br/>If it set to `false` - it will exclude all kong-related beans from spring context.                                                                |
-| KONG_CONNECT_TIMEOUT         | -                                    |  false   | Defines the timeout in milliseconds for establishing a connection from Kong to upstream service. If the value is not provided then Kong defaults are applied.                                             |
-| KONG_READ_TIMEOUT            | -                                    |  false   | Defines the timeout in milliseconds between two successive read operations for transmitting a request from Kong to the upstream service. If the value is not provided then Kong defaults are applied.     |
-| KONG_WRITE_TIMEOUT           | -                                    |  false   | Defines the timeout in milliseconds between two successive write operations for transmitting a request from Kong to the upstream service. If the value is not provided then Kong defaults are applied.    |
-| KONG_RETRIES                 | -                                    |  false   | Defines the number of retries to execute upon failure to proxy. If the value is not provided then Kong defaults are applied.                                                                              |
+| APIGW_ENABLED                | true                                 |  false   | Defines if API gateway integration is enabled or disabled.<br/>If it set to `false` - it will exclude all gateway-related beans from spring context.                                                      |
+| APIGW_URL                    | -                                    |  false   | API gateway admin URL. Falls back to the `kong.url` system property (set by integration tests) when unset.                                                                                                |
+| MODULE_URL                   | http://mgr-tenants:8081              |  false   | Module URL used for self-registration with the API gateway.                                                                                                                                               |
+| APIGW_REGISTER_MODULE        | true                                 |  false   | Defines if this module must self-register with the API gateway.                                                                                                                                           |
+| APIGW_CONNECT_TIMEOUT        | -                                    |  false   | Defines the timeout in milliseconds for establishing a connection from the API gateway to this module. If the value is not provided then gateway defaults are applied.                                    |
+| APIGW_READ_TIMEOUT           | -                                    |  false   | Defines the timeout in milliseconds between two successive read operations for transmitting a request from the API gateway to this module. If the value is not provided then gateway defaults are applied.|
+| APIGW_WRITE_TIMEOUT          | -                                    |  false   | Defines the timeout in milliseconds between two successive write operations for transmitting a request from the API gateway to this module. If the value is not provided then gateway defaults are applied.|
+| APIGW_RETRIES                | -                                    |  false   | Defines the number of retries to execute upon failure to proxy. If the value is not provided then gateway defaults are applied.                                                                           |
+| APIGW_TLS_ENABLED            | false                                |  false   | Enables TLS for communication with the API gateway admin API.                                                                                                                                             |
+| APIGW_TLS_TRUSTSTORE_PATH    | -                                    |  false   | Path to the truststore for TLS communication with the API gateway.                                                                                                                                        |
+| APIGW_TLS_TRUSTSTORE_PASSWORD| -                                    |  false   | Password for the TLS truststore.                                                                                                                                                                          |
+| APIGW_TLS_TRUSTSTORE_TYPE    | -                                    |  false   | Type of the TLS truststore (e.g., JKS, PKCS12).                                                                                                                                                           |
 | CACHE_EXPIRATION_TTL         | 60s                                  |  false   | ttl value for token to persist in cache                                                                                                                                                                   |
 | SECURITY_ENABLED             | true                                 |  false   | Allows to enable/disable security. <br/>If true and KC_INTEGRATION_ENABLED is also true - the Keycloak will be used as a security provider.                                                               |
 | KC_IMPERSONATION_CLIENT      | impersonation-client                 |  false   | Defined client in Keycloak, that has permissions to impersonate users.                                                                                                                                    |
@@ -52,6 +59,27 @@ to realm
 | SECRET_STORE_TYPE            | -                                    |   true   | Secure storage type. Supported values: `EPHEMERAL`, `AWS_SSM`, `VAULT`, `FSSP`                                                                                                                            |
 | MAX_HTTP_REQUEST_HEADER_SIZE | 200KB                                |   true   | Maximum size of the HTTP request header.                                                                                                                                                                  |
 | ROUTER_PATH_PREFIX           |                                      |  false   | Defines routes prefix to be added to the generated endpoints by OpenAPI generator (`/foo/entites` -> `{{prefix}}/foo/entities`). Required if load balancing group has format like `{{host}}/{{moduleId}}` |
+
+### Deprecated environment variables
+
+The following legacy Kong-specific variables, and the equivalent `application.kong.*` configuration property
+keys, are still functional but log a deprecation warning at startup. They are planned for removal in the
+Vetch release - migrate to the `APIGW_*` variables (`application.apigw.*` properties) listed above.
+
+| Deprecated                           | Replacement                     |
+|:--------------------------------------|:---------------------------------|
+| KONG_INTEGRATION_ENABLED              | APIGW_ENABLED                    |
+| KONG_ADMIN_URL                        | APIGW_URL                        |
+| REGISTER_MODULE_IN_KONG               | APIGW_REGISTER_MODULE            |
+| KONG_CONNECT_TIMEOUT                  | APIGW_CONNECT_TIMEOUT            |
+| KONG_READ_TIMEOUT                     | APIGW_READ_TIMEOUT               |
+| KONG_WRITE_TIMEOUT                    | APIGW_WRITE_TIMEOUT              |
+| KONG_RETRIES                          | APIGW_RETRIES                    |
+| KONG_TLS_ENABLED                      | APIGW_TLS_ENABLED                |
+| KONG_TLS_TRUSTSTORE_PATH              | APIGW_TLS_TRUSTSTORE_PATH        |
+| KONG_TLS_TRUSTSTORE_PASSWORD          | APIGW_TLS_TRUSTSTORE_PASSWORD    |
+| KONG_TLS_TRUSTSTORE_TYPE              | APIGW_TLS_TRUSTSTORE_TYPE        |
+| `application.kong.*` property keys    | `application.apigw.*`            |
 
 ### SSL Configuration environment variables
 

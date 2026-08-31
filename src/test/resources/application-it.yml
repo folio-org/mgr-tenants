@@ -12,7 +12,7 @@ application:
   environment: it
   security:
     enabled: false
-  kong:
+  apigw:
     enabled: false
     register-module: false
   keycloak:

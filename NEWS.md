@@ -1,4 +1,7 @@
 ## Version `v4.1.0` (In Progress)
+* Migrate Kong integration config to gateway-agnostic `application.apigw.*` / `APIGW_*` properties provided
+  by `folio-integration-kong`; legacy `application.kong.*` / `KONG_*` names still work but log a deprecation
+  warning and are planned for removal in the Vetch release (EUREKA-887)
 * Upgrade dependencies for Kafka 4.2 compatibility in mgr-tenants (MGRTENANT-91)
 * Switch Kong integration test container to folioci/folio-kong image (APPPOCTOOL-37)
 * Add audience protocol mapper to the tenant login and impersonation clients so issued access tokens contain the login client in `aud` (MGRTENANT-94)

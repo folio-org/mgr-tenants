@@ -22,11 +22,11 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 
 **Domain** (`org.folio.tm`): `Tenant` (id, immutable name, description, type DEFAULT/VIRTUAL, secure flag), `TenantAttribute` (key-value metadata). Entities extend `Auditable`; use `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` for PG enums.
 
-**Integrations** (all implement `TenantServiceListener`, react to create/update/delete):
+**Integrations** (Keycloak/Kafka/Entitlements implement `TenantServiceListener`, react to create/update/delete):
 | Integration | Purpose | Toggle (default) |
 |---|---|---|
 | Keycloak (`integration/keycloak/`) | realm + OAuth2 clients (login, impersonation, password-reset, M2M) per tenant | `KC_INTEGRATION_ENABLED` (true) |
-| Kong | gateway routing | `KONG_INTEGRATION_ENABLED` (true) |
+| Kong / API Gateway | module self-registration via `folio-integration-kong` library auto-configuration (not a `TenantServiceListener` — no module code here) | `APIGW_ENABLED` (true, deprecated: `KONG_INTEGRATION_ENABLED`) |
 | Kafka (`integration/kafka/`) | purge `{env}.{tenant}.*` topics on deletion | — |
 | Entitlements (`integration/entitlements/`) | validate no active entitlements before deletion | — |
 
