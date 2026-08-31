@@ -1,3 +1,8 @@
+## Version `v4.0.3` (In Progress)
+* Migrate Kong integration config to gateway-agnostic `application.apigw.*` / `APIGW_*` properties provided
+  by `folio-integration-kong`; legacy `application.kong.*` / `KONG_*` names still work but log a deprecation
+  warning and are planned for removal in the Vetch release (EUREKA-887)
+
 ## Version `v4.0.2` (15.10.2026)
 * Add DeployConfig.json to mgr-tenants (ADR-0013 Configuration Management) ([MGRTENANT-101](https://folio-org.atlassian.net/browse/MGRTENANT-101))
 

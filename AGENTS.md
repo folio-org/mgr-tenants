@@ -248,7 +248,7 @@ Integration components use `@ConditionalOnProperty` for feature toggles:
 Key feature toggles:
 - `KC_INTEGRATION_ENABLED` (default: true) - Keycloak integration
 - `OKAPI_INTEGRATION_ENABLED` (default: false) - Legacy Okapi integration
-- `KONG_INTEGRATION_ENABLED` (default: true) - Kong gateway integration
+- `APIGW_ENABLED` (default: true, deprecated: `KONG_INTEGRATION_ENABLED`) - Kong / API Gateway module self-registration via `folio-integration-kong` library auto-configuration (not a `TenantServiceListener`)
 
 ### Feign Client Pattern
 
