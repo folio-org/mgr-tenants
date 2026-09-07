@@ -41,7 +41,9 @@ to realm
 | MTE_TLS_TRUSTSTORE_PASSWORD  | -                                    |  false   | Password for the TLS truststore.                                                                                                                                                                          |
 | MTE_TLS_TRUSTSTORE_TYPE      | -                                    |  false   | Type of the TLS truststore (e.g., JKS, PKCS12).                                                                                                                                                           |
 | APIGW_ENABLED                | true                                 |  false   | Defines if API gateway integration is enabled or disabled.<br/>If it set to `false` - it will exclude all gateway-related beans from spring context.                                                      |
-| APIGW_URL                    | -                                    |  false   | API gateway admin URL. Falls back to the `kong.url` system property (set by integration tests) when unset.                                                                                                |
+| APIGW_URL                    | -                                    |  false   | API gateway admin URL. For `APIGW_TYPE=apisix`: Admin API origin (e.g. `http://apisix:9180`), no `/apisix/admin` path. Falls back to the `kong.url` system property (set by integration tests) when unset.|
+| APIGW_TYPE                   | kong                                 |  false   | Active API gateway implementation: `kong` or `apisix`. Selects which integration library performs self-registration; `APIGW_URL` and `APIGW_TLS_*` apply to the selected gateway.                         |
+| APIGW_API_KEY                | -                                    |  false   | APISIX Admin API key (sent as `X-API-KEY`). Required when `APIGW_TYPE=apisix`; ignored for Kong.                                                                                                          |
 | MODULE_URL                   | http://mgr-tenants:8081              |  false   | Module URL used for self-registration with the API gateway.                                                                                                                                               |
 | APIGW_REGISTER_MODULE        | true                                 |  false   | Defines if this module must self-register with the API gateway.                                                                                                                                           |
 | APIGW_CONNECT_TIMEOUT        | -                                    |  false   | Defines the timeout in milliseconds for establishing a connection from the API gateway to this module. If the value is not provided then gateway defaults are applied.                                    |
@@ -237,7 +239,8 @@ curl -XDELETE \
 ```
 ## Integration Testing
 
-Integration tests use Testcontainers for PostgreSQL and Kong. The following environment variables
+Integration tests use Testcontainers for PostgreSQL and Kong; APISIX integration tests
+(`@EnableApisixGateway`) additionally start etcd and Apache APISIX. The following environment variables
 let you redirect containers to a private registry or adjust startup behaviour without changing
 source code.
 
@@ -246,6 +249,9 @@ source code.
 | `TESTCONTAINERS_POSTGRES_IMAGE`          | `postgres:16-alpine`            | PostgreSQL container image           |
 | `TESTCONTAINERS_KONG_IMAGE`              | `folioci/folio-kong:latest`     | Kong container image                 |
 | `TESTCONTAINERS_KONG_READINESS_TIMEOUT`  | `120`                           | Seconds to wait for Kong startup     |
+| `TESTCONTAINERS_APISIX_IMAGE`            | `folioci/folio-apisix:latest`   | APISIX container image (APISIX ITs)  |
+| `TESTCONTAINERS_ETCD_IMAGE`              | `quay.io/coreos/etcd:v3.5.21`   | etcd container image (APISIX ITs)    |
+| `TESTCONTAINERS_APISIX_READINESS_TIMEOUT` | `120`                          | Seconds to wait for APISIX startup   |
 
 ## AI Documentation
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/folio-org/mgr-tenants)

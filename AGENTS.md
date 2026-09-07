@@ -26,7 +26,7 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 | Integration | Purpose | Toggle (default) |
 |---|---|---|
 | Keycloak (`integration/keycloak/`) | realm + OAuth2 clients (login, impersonation, password-reset, M2M) per tenant | `KC_INTEGRATION_ENABLED` (true) |
-| Kong / API Gateway | module self-registration via `folio-integration-kong` library auto-configuration (not a `TenantServiceListener` — no module code here) | `APIGW_ENABLED` (true, deprecated: `KONG_INTEGRATION_ENABLED`) |
+| API Gateway (Kong / APISIX) | module self-registration via `folio-integration-kong` or `folio-integration-apisix` library auto-configuration, selected by `APIGW_TYPE` (`kong` default, `apisix` — requires `APIGW_API_KEY`); not a `TenantServiceListener` — no module code here | `APIGW_ENABLED` (true, deprecated: `KONG_INTEGRATION_ENABLED`) |
 | Kafka (`integration/kafka/`) | purge `{env}.{tenant}.*` topics on deletion | — |
 | Entitlements (`integration/entitlements/`) | validate no active entitlements before deletion | — |
 
@@ -44,7 +44,7 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 - **Lombok**: `@Data`, `@RequiredArgsConstructor`, `@Log4j2`; `@ToString.Exclude`/`@EqualsAndHashCode.Exclude` on entity collections.
 - **MapStruct**: `@Mapper(componentModel="spring", injectionStrategy=CONSTRUCTOR, uses=MappingMethods.class)`.
 - **Exceptions** (handled centrally in `ApiExceptionHandler`): `RequestValidationException` (400), `EntityNotFoundException` (404), `KeycloakException`.
-- **Tests**: unit = Mockito (`@InjectMocks`/`@Mock`, `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`); integration = MockMvc + WireMock, extend `BaseIntegrationTest`, `@Sql` setup, `@WireMockStub` mocks.
+- **Tests**: unit = Mockito (`@InjectMocks`/`@Mock`, `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`); integration = MockMvc + WireMock, extend `BaseIntegrationTest`, `@Sql` setup, `@WireMockStub` mocks. Gateway ITs opt in per class: `@EnableKongGateway` (`KongRegistrationIT`) or `@EnableApisixGateway` (`ApisixRegistrationIT`; etcd + `folioci/folio-apisix:latest`, amd64-only — on arm64 rely on emulation or set `TESTCONTAINERS_APISIX_IMAGE`).
 
 ## Layout
 
