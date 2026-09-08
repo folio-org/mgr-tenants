@@ -181,7 +181,7 @@ public interface TenantMapper {
 - Use `@InjectMocks` for the class under test, `@Mock` for dependencies
 - Always call `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`
 
-**Integration tests** - Use MockMvc + WireMock with `@IntegrationTest`:
+**Integration tests** - Use MockMvc + WireMock with `@IntegrationTest`; gateway ITs opt in per class via `@EnableKongGateway` or `@EnableApisixGateway` (etcd + `folioci/folio-apisix:latest`, amd64-only; arm64 uses emulation or `TESTCONTAINERS_APISIX_IMAGE`):
 - Extend `BaseIntegrationTest`
 - Use `@Sql` for test data setup, `@WireMockStub` for external service mocks
 
@@ -248,7 +248,7 @@ Integration components use `@ConditionalOnProperty` for feature toggles:
 Key feature toggles:
 - `KC_INTEGRATION_ENABLED` (default: true) - Keycloak integration
 - `OKAPI_INTEGRATION_ENABLED` (default: false) - Legacy Okapi integration
-- `APIGW_ENABLED` (default: true, deprecated: `KONG_INTEGRATION_ENABLED`) - Kong / API Gateway module self-registration via `folio-integration-kong` library auto-configuration (not a `TenantServiceListener`)
+- `APIGW_ENABLED` (default: true, deprecated: `KONG_INTEGRATION_ENABLED`) - API Gateway module self-registration via `folio-integration-kong` or `folio-integration-apisix`, selected by `APIGW_TYPE` (`kong` default, `apisix` requires `APIGW_API_KEY`); not a `TenantServiceListener`
 
 ### Feign Client Pattern
 

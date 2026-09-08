@@ -2,6 +2,7 @@
 * Migrate Kong integration config to gateway-agnostic `application.apigw.*` / `APIGW_*` properties provided
   by `folio-integration-kong`; legacy `application.kong.*` / `KONG_*` names still work but log a deprecation
   warning and are planned for removal in the Vetch release (EUREKA-887)
+* Add Apache APISIX support for gateway self-registration (MGRENTITLE-173)
 
 ## Version `v4.0.3` (20.10.2026)
 * Trillium CSP#1 - Upgrade to SpringBoot 4.1 ([MGRTENANT-106](https://folio-org.atlassian.net/browse/MGRTENANT-106))
