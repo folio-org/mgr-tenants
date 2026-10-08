@@ -1,0 +1,369 @@
+{
+  "_disclaimer": "Default values are calibrated against a reference bugfest environment. See ADR-0013 (Module configuration management) for the governance model behind this file. Resource values and JVM limits must be adjusted to the target host capacity.",
+  "description": "mgr-tenants configuration template",
+  "moduleDefaults": {
+    "resources": [
+      {
+        "name": "cpu",
+        "value": "64",
+        "description": "CPU request/limit for the mgr-tenants container"
+      },
+      {
+        "name": "memory",
+        "value": "1024",
+        "description": "Memory hard limit for the mgr-tenants container in MiB"
+      },
+      {
+        "name": "memoryReservation",
+        "value": "896",
+        "description": "Memory reservation (soft limit) for the mgr-tenants container in MiB"
+      }
+    ],
+    "java": [
+      {
+        "name": "xmx",
+        "value": "512m",
+        "description": "Maximum Java heap size"
+      },
+      {
+        "name": "MaxMetaspaceSize",
+        "value": "256m",
+        "description": "Maximum Java metaspace size"
+      },
+      {
+        "name": "MetaspaceSize",
+        "value": "88m",
+        "description": "Initial Java metaspace size"
+      }
+    ],
+    "deployment": {
+      "isHaSupported": true,
+      "replicasRecommendedCount": 2,
+      "description": "mgr-tenants keeps no local state: tenant data lives in PostgreSQL and realm data in Keycloak, and Liquibase migrations are guarded by the database changelog lock. Multiple replicas can run behind a load balancer; two are recommended for availability, as tenant provisioning is low-volume."
+    },
+    "EnvVars": [
+      {
+        "name": "DB_HOST",
+        "value": null,
+        "description": "PostgreSQL database host",
+        "type": "DB",
+        "essential": true
+      },
+      {
+        "name": "DB_PORT",
+        "value": "5432",
+        "description": "PostgreSQL database port",
+        "type": "DB",
+        "essential": true
+      },
+      {
+        "name": "DB_USERNAME",
+        "value": null,
+        "description": "PostgreSQL database username (sourced from secret store)",
+        "type": "DB",
+        "essential": true
+      },
+      {
+        "name": "DB_PASSWORD",
+        "value": null,
+        "description": "PostgreSQL database password (sourced from secret store)",
+        "type": "DB",
+        "essential": true
+      },
+      {
+        "name": "DB_DATABASE",
+        "value": null,
+        "description": "PostgreSQL database name holding the mgr-tenants schema",
+        "type": "DB",
+        "essential": true
+      },
+      {
+        "name": "KAFKA_HOST",
+        "value": null,
+        "description": "Kafka broker host. Used by the Kafka admin client to delete tenant topics when a tenant is deleted with purgeKafkaTopics=true",
+        "type": "KAFKA",
+        "essential": true
+      },
+      {
+        "name": "KAFKA_PORT",
+        "value": "9092",
+        "description": "Kafka broker port",
+        "type": "KAFKA",
+        "essential": true
+      },
+      {
+        "name": "KAFKA_SECURITY_PROTOCOL",
+        "value": "PLAINTEXT",
+        "description": "Security protocol used to communicate with Kafka brokers (PLAINTEXT or SSL)",
+        "type": "KAFKA",
+        "essential": false
+      },
+      {
+        "name": "ENV",
+        "value": null,
+        "description": "Logical deployment name, used as the Kafka topic prefix when tenant topics are deleted; must match the value used by the other modules sharing the Kafka cluster. Falls back to 'folio' when unset",
+        "type": "KAFKA",
+        "essential": false
+      },
+      {
+        "name": "SERVER_PORT",
+        "value": "8081",
+        "description": "HTTP port the module listens on",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "MAX_HTTP_REQUEST_HEADER_SIZE",
+        "value": "200KB",
+        "description": "Maximum size of the HTTP request header; raised above the server default to accommodate large JWTs",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "ROUTER_PATH_PREFIX",
+        "value": null,
+        "description": "Prefix added to every endpoint path exposed by the module (/tenants becomes {prefix}/tenants). Set it when the load-balancer group has the form {host}/{moduleId}",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "JAVA_OPTS",
+        "value": null,
+        "description": "Additional JVM options for the mgr-tenants process (heap sizing, GC, agent flags, etc.)",
+        "type": "CONFIG",
+        "essential": true
+      },
+      {
+        "name": "SECURITY_ENABLED",
+        "value": "true",
+        "description": "Enables request authentication and authorization. With KC_INTEGRATION_ENABLED=true, Keycloak acts as the security provider",
+        "type": "FUNCTIONAL",
+        "essential": false
+      },
+      {
+        "name": "MTE_URL",
+        "value": "http://mgr-tenant-entitlements:8081",
+        "description": "Base URL of mgr-tenant-entitlements. Queried before tenant deletion; deletion is blocked when the service is unreachable or reports active entitlements",
+        "type": "CONFIG",
+        "essential": true
+      },
+      {
+        "name": "CACHE_EXPIRATION_TTL",
+        "value": "60s",
+        "description": "Time-to-live of the cached Keycloak access token used for realm operations",
+        "type": "CACHE",
+        "essential": false
+      },
+      {
+        "name": "APIGW_ENABLED",
+        "value": "true",
+        "description": "Enables API gateway integration. When false, all gateway-related beans are excluded and the module does not self-register",
+        "type": "FUNCTIONAL",
+        "essential": false
+      },
+      {
+        "name": "APIGW_TYPE",
+        "value": "kong",
+        "description": "API gateway implementation used for self-registration: kong or apisix",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "APIGW_URL",
+        "value": null,
+        "description": "Admin URL of the API gateway. For apisix, the Admin API origin without the /apisix/admin path",
+        "type": "CONFIG",
+        "essential": true
+      },
+      {
+        "name": "APIGW_API_KEY",
+        "value": null,
+        "description": "APISIX Admin API key sent as X-API-KEY. Required when APIGW_TYPE=apisix, ignored for kong",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "APIGW_REGISTER_MODULE",
+        "value": "true",
+        "description": "Defines whether the module self-registers its routes in the API gateway at startup",
+        "type": "FUNCTIONAL",
+        "essential": false
+      },
+      {
+        "name": "MODULE_URL",
+        "value": "http://mgr-tenants:8081",
+        "description": "URL at which the API gateway reaches this module; used as the upstream when the module self-registers",
+        "type": "CONFIG",
+        "essential": true
+      },
+      {
+        "name": "SECRET_STORE_TYPE",
+        "value": null,
+        "description": "Secure store backend holding the Keycloak admin client secret and the per-tenant client secrets. Supported values: EPHEMERAL, AWS_SSM, VAULT, FSSP",
+        "type": "CONFIG",
+        "essential": true
+      },
+      {
+        "name": "SECURE_STORE_ENV",
+        "value": null,
+        "description": "First segment of the secure store key, for example prod or test. Defaults to the value of ENV, with fallback to 'folio'",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "SECRET_STORE_AWS_SSM_REGION",
+        "value": null,
+        "description": "AWS region of the SSM client. Applies when SECRET_STORE_TYPE=AWS_SSM; when unset the AWS default region provider chain is used",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "SECRET_STORE_AWS_SSM_USE_IAM",
+        "value": "true",
+        "description": "Use the IAM role of the running task for SSM authorization instead of explicit credentials. Applies when SECRET_STORE_TYPE=AWS_SSM",
+        "type": "CONFIG",
+        "essential": false
+      },
+      {
+        "name": "KC_INTEGRATION_ENABLED",
+        "value": "true",
+        "description": "Enables Keycloak integration: realm and client management for tenants and Keycloak-based security. When false, all Keycloak-related beans are excluded",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_URL",
+        "value": "http://keycloak:8080",
+        "description": "Base URL of Keycloak, used for realm administration and token requests",
+        "type": "KC",
+        "essential": true
+      },
+      {
+        "name": "KC_JWKS_BASE_URL",
+        "value": null,
+        "description": "Override base URL for JWKS retrieval. When empty, the issuer URL from the token iss claim is used. Set it to reach Keycloak through an internal address instead of the public one",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_IMPORT_ENABLED",
+        "value": "true",
+        "description": "At startup, creates or updates the module's own records in Keycloak (resource server, client, resources, permissions, roles, policies) from its internal module descriptor",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_ADMIN_CLIENT_ID",
+        "value": "folio-backend-admin-client",
+        "description": "Keycloak admin client used for realm and client management. Its secret is read from the secure store, not from an environment variable",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_ADMIN_GRANT_TYPE",
+        "value": "client_credentials",
+        "description": "OAuth2 grant type used to obtain the Keycloak admin token",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_ADMIN_CONNECT_TIMEOUT",
+        "value": "10s",
+        "description": "Connect timeout of the Keycloak admin client (Spring Duration syntax, e.g. 10s, 500ms)",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_ADMIN_READ_TIMEOUT",
+        "value": "60s",
+        "description": "Read timeout of the Keycloak admin client (Spring Duration syntax, e.g. 60s, 2m)",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_CLIENT_ID",
+        "value": "mgr-tenants",
+        "description": "Client ID under which the module registers itself in Keycloak when KC_IMPORT_ENABLED=true",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_SERVICE_CLIENT_ID",
+        "value": "sidecar-module-access-client",
+        "description": "Client ID created in every tenant realm for module-to-module requests",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_LOGIN_CLIENT_SUFFIX",
+        "value": "-application",
+        "description": "Suffix appended to the tenant name to derive the login client ID created in each tenant realm (e.g. diku-application). Must match the value used by the module sidecars",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_IMPERSONATION_CLIENT",
+        "value": "impersonation-client",
+        "description": "Client ID created in every tenant realm with permission to impersonate users",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_PASSWORD_RESET_CLIENT_ID",
+        "value": "password-reset-client",
+        "description": "Client ID created in every tenant realm for password reset operations",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_PASSWORD_RESET_TOKEN_TTL",
+        "value": "86400",
+        "description": "Lifespan of the password reset token in seconds (1 day by default, 4 weeks maximum)",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_CLIENT_SECRET_LENGTH",
+        "value": "32",
+        "description": "Length of the client secrets generated for the clients created in tenant realms",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_ACCESS_CODE_TTL",
+        "value": "600",
+        "description": "Lifespan in seconds of the authorization access code configured on tenant realms",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_PAR_REQUEST_URI_TTL",
+        "value": "600",
+        "description": "Lifespan in seconds of the pushed authorization request (PAR) URI configured on tenant realms",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_AUTH_TOKEN_VALIDATE_URI",
+        "value": "false",
+        "description": "When true, validates that the Keycloak URL matches the issuer of the incoming JWT",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_JWKS_REFRESH_INTERVAL",
+        "value": "60",
+        "description": "Interval in seconds between scheduled JWKS cache refreshes for the realm JWT parser",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_FORCED_JWKS_REFRESH_INTERVAL",
+        "value": "60",
+        "description": "Interval in seconds for forced JWKS refreshes of the realm JWT parser; applies to signing key rotation",
+        "type": "KC",
+        "essential": false
+      }
+    ]
+  }
+}
