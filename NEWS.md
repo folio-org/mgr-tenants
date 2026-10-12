@@ -1,3 +1,6 @@
+## Version `v4.0.2` (15.10.2026)
+* Add DeployConfig.json to mgr-tenants (ADR-0013 Configuration Management) ([MGRTENANT-101](https://folio-org.atlassian.net/browse/MGRTENANT-101))
+
 ## Version `v4.0.1` (28.07.2026)
 * Add audience protocol mapper to the tenant login and impersonation clients so issued access tokens contain the login client in `aud` (MGRTENANT-94)
 * Enforce Keycloak user-profile `unmanagedAttributePolicy=ADMIN_EDIT` on tenant realms during provisioning and via idempotent startup migration (MGRTENANT-95)
