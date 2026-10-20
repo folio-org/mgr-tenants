@@ -1,3 +1,6 @@
+## Version `v4.0.3` (20.10.2026)
+* Trillium CSP#1 - Upgrade to SpringBoot 4.1 ([MGRTENANT-106](https://folio-org.atlassian.net/browse/MGRTENANT-106))
+
 ## Version `v4.0.2` (15.10.2026)
 * Add DeployConfig.json to mgr-tenants (ADR-0013 Configuration Management) ([MGRTENANT-101](https://folio-org.atlassian.net/browse/MGRTENANT-101))
 
