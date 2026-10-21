@@ -9,6 +9,9 @@
 * Add audience protocol mapper to the tenant login and impersonation clients so issued access tokens contain the login client in `aud` (MGRTENANT-94)
 * Enforce Keycloak user-profile `unmanagedAttributePolicy=ADMIN_EDIT` on tenant realms during provisioning and via idempotent startup migration (MGRTENANT-95)
 * Add DeployConfig.json to mgr-tenants (ADR-0013 Configuration Management) ([MGRTENANT-101](https://folio-org.atlassian.net/browse/MGRTENANT-101))
+* Confirm mgr-tenants declares no Kafka events (Kafka is used only through the admin client, to delete tenant topics)
+  and validate the module descriptor for `app-mgr-services` bundling
+  ([MGRTENANT-107](https://folio-org.atlassian.net/browse/MGRTENANT-107))
 * **Breaking:** Remove "Okapi integration" mode. `OKAPI_INTEGRATION_ENABLED`, `OKAPI_URL` and
   `MOD_AUTHTOKEN_URL` are no longer supported, tenant descriptors are no longer synced to an Okapi
   gateway, and mod-authtoken security mode is no longer reachable. The `okapi.proxy.*`
