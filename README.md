@@ -137,6 +137,11 @@ Required when `SECRET_STORE_TYPE=FSSP`
 
 #### Kafka
 
+`mgr-tenants` uses Kafka only through the admin client, to delete the `{ENV}.{tenant}.*` topics when a tenant is
+deleted with `purgeKafkaTopics=true`. It publishes and consumes no Kafka events, so its module descriptor declares
+neither `producesEvents` nor `consumesEvents`. Tenant lifecycle notifications are in-process, delivered to
+`TenantServiceListener` implementations rather than to a broker.
+
 | Name                                         | Default value | Required | Description                                                                                                                                                                            |
 |:---------------------------------------------|:--------------|:--------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | ENV                                          | folio         |  false   | The logical name of the deployment (kafka topic prefix), must be unique across all environments using the same shared Kafka clusters, a-z (any case), 0-9, -, _ symbols only allowed   |

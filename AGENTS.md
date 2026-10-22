@@ -27,7 +27,7 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 |---|---|---|
 | Keycloak (`integration/keycloak/`) | realm + OAuth2 clients (login, impersonation, password-reset, M2M) per tenant | `KC_INTEGRATION_ENABLED` (true) |
 | API Gateway (Kong / APISIX) | module self-registration via `folio-integration-kong` or `folio-integration-apisix` library auto-configuration, selected by `APIGW_TYPE` (`kong` default, `apisix` — requires `APIGW_API_KEY`); not a `TenantServiceListener` — no module code here | `APIGW_ENABLED` (true, deprecated: `KONG_INTEGRATION_ENABLED`) |
-| Kafka (`integration/kafka/`) | purge `{env}.{tenant}.*` topics on deletion | — |
+| Kafka (`integration/kafka/`) | purge `{env}.{tenant}.*` topics on deletion; admin client only — no events produced or consumed, so the module descriptor declares none (`ModuleDescriptorTest` guards this) | — |
 | Entitlements (`integration/entitlements/`) | validate no active entitlements before deletion | — |
 
 **Patterns**:
