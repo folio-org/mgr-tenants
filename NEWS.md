@@ -1,4 +1,4 @@
-## Version `v4.0.3` (In Progress)
+## Version `v4.0.4` (In Progress)
 * Migrate Kong integration config to gateway-agnostic `application.apigw.*` / `APIGW_*` properties provided
   by `folio-integration-kong`; legacy `application.kong.*` / `KONG_*` names still work but log a deprecation
   warning and are planned for removal in the Vetch release (EUREKA-887)
