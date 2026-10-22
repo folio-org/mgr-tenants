@@ -5,14 +5,14 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.5</version>
+    <version>4.1.1</version>
     <relativePath />
   </parent>
 
   <name>mgr-tenants</name>
   <groupId>org.folio</groupId>
   <artifactId>mgr-tenants</artifactId>
-  <version>4.0.3-SNAPSHOT</version>
+  <version>4.0.4-SNAPSHOT</version>
   <description>Manager responsible for the tenants</description>
   <packaging>jar</packaging>
 
@@ -35,10 +35,12 @@
     <apache-commons-collections4.version>4.5.0</apache-commons-collections4.version>
     <cql2pgjson.version>36.0.0</cql2pgjson.version>
     <openapi-tools.jackson-databind-nullable.version>0.2.10</openapi-tools.jackson-databind-nullable.version>
-    <folio-spring-cql.version>10.0.0</folio-spring-cql.version>
+    <folio-spring-cql.version>10.0.1</folio-spring-cql.version>
     <applications-poc-tools.version>4.0.6</applications-poc-tools.version>
     <folio-java-checkstyle.version>1.2.0</folio-java-checkstyle.version>
     <argLine />
+
+    <liquibase.version>4.33.0</liquibase.version>
 
     <mgr-tenants.yaml-file>${project.basedir}/src/main/resources/swagger.api/mgr-tenants.yaml</mgr-tenants.yaml-file>
 
