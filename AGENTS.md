@@ -1,8 +1,8 @@
 # mgr-tenants
 
-Central Tenant Management Service for FOLIO — tenant registry and lifecycle manager in a multi-tenant environment. Java 21, Spring Boot 3.5.7, PostgreSQL/Liquibase.
+Central Tenant Management Service for FOLIO: tenant registry and lifecycle manager in a multi-tenant environment. Java 21, Spring Boot, PostgreSQL/Liquibase.
 
-Responsibilities: tenant CRUD (unique names, immutable fields), key-value tenant attributes, multi-system sync (Keycloak/Kafka via event listeners), pre-deletion validation (blocks deletion when active entitlements exist).
+Responsibilities: tenant CRUD (unique names, immutable fields), key-value tenant attributes, Keycloak realm sync via event listeners, optional Kafka topic purge on deletion, pre-deletion validation (blocks deletion when active entitlements exist).
 
 ## Build & Test
 
@@ -12,45 +12,22 @@ mvn clean package -DskipTests  # skip tests
 mvn test                       # unit tests (@UnitTest, *Test.java)
 mvn verify                     # integration tests (@IntegrationTest, *IT.java)
 mvn test -Dtest=TenantServiceTest#getById_positive    # single unit test
-mvn verify -Dit.test=TenantIT#getById_positive        # single IT
-mvn checkstyle:check           # auto-runs at process-classes; max method length 21 lines
+mvn verify -Dit.test=TenantIT#getById_positive -Dtest=SkipSurefire -Dsurefire.failIfNoSpecifiedTests=false  # single IT, skips unit tests
+mvn checkstyle:check           # auto-runs at process-classes
 ```
 
-## Architecture
+## Style
 
-Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories → Entities; integrations react via listeners.
+Match the repository's existing style: use maintained implementations and tests as templates for new code, and keep the structure, naming, and conventions of neighboring files. The checkstyle configuration in `checkstyle/` (`checkstyle-checker.properties`, suppressions) is the authority for style limits.
 
-**Domain** (`org.folio.tm`): `Tenant` (id, immutable name, description, type DEFAULT/VIRTUAL, secure flag), `TenantAttribute` (key-value metadata). Entities extend `Auditable`; use `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` for PG enums.
+## Pitfalls
 
-**Integrations** (Keycloak/Kafka/Entitlements implement `TenantServiceListener`, react to create/update/delete):
-| Integration | Purpose | Toggle (default) |
-|---|---|---|
-| Keycloak (`integration/keycloak/`) | realm + OAuth2 clients (login, impersonation, password-reset, M2M) per tenant | `KC_INTEGRATION_ENABLED` (true) |
-| API Gateway (Kong / APISIX) | module self-registration via `folio-integration-kong` or `folio-integration-apisix` library auto-configuration, selected by `APIGW_TYPE` (`kong` default, `apisix` — requires `APIGW_API_KEY`); not a `TenantServiceListener` — no module code here | `APIGW_ENABLED` (true, deprecated: `KONG_INTEGRATION_ENABLED`) |
-| Kafka (`integration/kafka/`) | purge `{env}.{tenant}.*` topics on deletion; admin client only — no events produced or consumed, so the module descriptor declares none (`ModuleDescriptorTest` guards this) | — |
-| Entitlements (`integration/entitlements/`) | validate no active entitlements before deletion | — |
+- Only `KeycloakTenantListener` implements `TenantServiceListener`. The entitlements check and the Kafka purge are direct calls in `TenantService`. **Ordering constraint:** the entitlements check runs *before* the delete, listeners run *after* it; do not move the check into a listener. Listeners run sequentially inside the transaction; a failing listener rolls back the change.
+- A 404 from `mgr-tenant-entitlements` counts as "no entitlements" and lets the deletion proceed; any other failure blocks the deletion with a 400 (`TenantEntitlementsService`, pinned by `checkTenantCanBeDeleted_positive_notFound`).
+- Kafka topics are purged on deletion only when `purgeKafkaTopics=true` (no purge by default). Kafka is admin-client only: no events are produced or consumed, and `ModuleDescriptorTest` guards that the module descriptor declares none.
+- The API Gateway integration comes from libraries (`folio-integration-kong` / `folio-integration-apisix`, selected by `APIGW_TYPE`); there is no gateway module code in this repository.
+- HTTP clients are `@HttpExchange` interfaces built with `HttpClientTlsUtils.buildHttpServiceClient`; no Feign in this module.
+- Generated code: the spec `src/main/resources/swagger.api/mgr-tenants.yaml` (field schemas in `schemas/`) generates `org.folio.tm.rest.resource` and `.domain.dto`: do not edit generated sources; change the spec and regenerate.
+- Gateway ITs opt in per class: `@EnableKongGateway` or `@EnableApisixGateway` (the APISIX image is amd64-only; on arm64 rely on emulation or set `TESTCONTAINERS_APISIX_IMAGE`).
 
-**Patterns**:
-- Event-driven listeners: `TenantService` (CRUD) → `TenantEventsPublisher` broadcasts to all `TenantServiceListener`s; listeners react independently.
-- Conditional beans via `@ConditionalOnProperty`.
-- Feign clients (`KeycloakClient`, `TenantEntitlementsClient`).
-- **Fail-close security**: if `mgr-tenant-entitlements` is unreachable or errors → BLOCK deletion; only allow when it explicitly confirms no entitlements.
-
-## Conventions
-
-- **Codegen**: spec `src/main/resources/swagger.api/mgr-tenants.yaml` → `org.folio.tm.rest.resource` + `.domain.dto` (do not edit). Add field: edit spec → `mvn clean compile` → update entity/Liquibase/mapper.
-- **DB**: Liquibase under `src/main/resources/changelog/`.
-- **Naming**: `*Entity` entities, `*Repository`, `*Service`, `*Controller`, `*Mapper`, `*Test` (unit), `*IT` (integration), `*Exception`. Test methods: `methodName_outcome_condition` (e.g. `createTenant_negative_nameExists`).
-- **Lombok**: `@Data`, `@RequiredArgsConstructor`, `@Log4j2`; `@ToString.Exclude`/`@EqualsAndHashCode.Exclude` on entity collections.
-- **MapStruct**: `@Mapper(componentModel="spring", injectionStrategy=CONSTRUCTOR, uses=MappingMethods.class)`.
-- **Exceptions** (handled centrally in `ApiExceptionHandler`): `RequestValidationException` (400), `EntityNotFoundException` (404), `KeycloakException`.
-- **Tests**: unit = Mockito (`@InjectMocks`/`@Mock`, `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`); integration = MockMvc + WireMock, extend `BaseIntegrationTest`, `@Sql` setup, `@WireMockStub` mocks. Gateway ITs opt in per class: `@EnableKongGateway` (`KongRegistrationIT`) or `@EnableApisixGateway` (`ApisixRegistrationIT`; etcd + `folioci/folio-apisix:latest`, amd64-only — on arm64 rely on emulation or set `TESTCONTAINERS_APISIX_IMAGE`).
-
-## Layout
-
-```
-src/main/java/org/folio/tm/{controller,service,repository,domain/entity,domain/dto,mapper,integration,exception}
-src/test/java/org/folio/tm/{it,service,support}
-src/test/resources/{sql,wiremock,json}
-```
 Env vars: see `README.md`.
