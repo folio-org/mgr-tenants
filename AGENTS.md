@@ -16,9 +16,9 @@ mvn verify -Dit.test=TenantIT#getById_positive -Dtest=SkipSurefire -Dsurefire.fa
 mvn checkstyle:check           # auto-runs at process-classes; max method length 21 lines
 ```
 
-## Architecture
+Env vars: see `README.md`.
 
-Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories → Entities; Keycloak reacts via a listener.
+## Architecture
 
 **Domain** (`org.folio.tm`): `Tenant` (id, immutable name, description, type DEFAULT/VIRTUAL, secure flag), `TenantAttribute` (key-value metadata). Entities extend `Auditable`; use `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` for PG enums.
 
@@ -32,8 +32,7 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 
 **Patterns**:
 - Event-driven listeners: `TenantService` (CRUD) → `TenantEventsPublisher` broadcasts to all `TenantServiceListener`s; listeners react independently.
-- Conditional beans via `@ConditionalOnProperty`.
-- HTTP clients are `@HttpExchange` interfaces (`KeycloakClient`, `TenantEntitlementsClient`).
+- HTTP clients are `@HttpExchange` interfaces.
 
 ## Conventions
 
@@ -44,12 +43,3 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 - **MapStruct**: `@Mapper(componentModel="spring", injectionStrategy=CONSTRUCTOR, uses=MappingMethods.class)`.
 - **Exceptions** (handled centrally in `ApiExceptionHandler`): `RequestValidationException` (400), `EntityNotFoundException` (404), `KeycloakException`.
 - **Tests**: unit = Mockito (`@InjectMocks`/`@Mock`, `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`); integration = MockMvc + WireMock, extend `BaseIntegrationTest`, `@Sql` setup, `@WireMockStub` mocks. Gateway ITs opt in per class: `@EnableKongGateway` (`KongRegistrationIT`) or `@EnableApisixGateway` (`ApisixRegistrationIT`; etcd + `folioci/folio-apisix:latest`, amd64-only — on arm64 rely on emulation or set `TESTCONTAINERS_APISIX_IMAGE`).
-
-## Layout
-
-```
-src/main/java/org/folio/tm/{controller,service,repository,domain/entity,domain/dto,mapper,integration,exception}
-src/test/java/org/folio/tm/{it,service,support}
-src/test/resources/{sql,wiremock,json}
-```
-Env vars: see `README.md`.
