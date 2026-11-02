@@ -1,30 +1,41 @@
 # mgr-tenants
 
-Tenant registry and lifecycle manager for FOLIO Eureka: tenant CRUD and attributes, one Keycloak realm per tenant, and a pre-deletion check against mgr-tenant-entitlements.
+Central Tenant Management Service for FOLIO — tenant registry and lifecycle manager in a multi-tenant environment.
 
-## Commands
+## Build & Test
 
 ```bash
-mvn clean package -DskipTests  # build
+mvn clean package              # build fat jar
+mvn clean package -DskipTests  # skip tests
 mvn test                       # unit tests (@UnitTest, *Test.java)
 mvn verify                     # unit and integration tests (@IntegrationTest, *IT.java); needs Docker
-mvn test -Dtest=TenantServiceTest#getById_positive  # one unit test
-mvn verify -Dit.test=TenantIT#getById_positive -Dtest=SkipSurefire -Dsurefire.failIfNoSpecifiedTests=false  # one IT, unit tests skipped
-mvn checkstyle:check           # style only
+mvn test -Dtest=TenantServiceTest#getById_positive    # single unit test
+mvn verify -Dit.test=TenantIT#getById_positive -Dtest=SkipSurefire -Dsurefire.failIfNoSpecifiedTests=false  # single IT
+mvn checkstyle:check           # auto-runs at process-classes; max method length 21 lines
 ```
 
-Checkstyle also runs at `process-classes`, so every build above fails on a violation, test sources included. The base rules come from `folio-java-checkstyle`; this repository limits methods to 21 lines (`checkstyle/checkstyle-checker.properties`).
+## Architecture
+
+**Domain**: entities extend `Auditable`; use `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` for PG enums.
+
+**Integrations** (only Keycloak implements `TenantServiceListener`; `TenantService` calls the entitlements check and the Kafka purge directly):
+| Integration | Purpose | Toggle (default) |
+|---|---|---|
+| Keycloak (`integration/keycloak/`) | realm + OAuth2 clients (login, impersonation, password-reset, M2M) per tenant | `KC_INTEGRATION_ENABLED` (true) |
+| API Gateway (Kong / APISIX) | module self-registration via `folio-integration-kong` or `folio-integration-apisix` library auto-configuration, selected by `APIGW_TYPE` (`kong` default, `apisix` — requires `APIGW_API_KEY`); not a `TenantServiceListener` — no module code here | `APIGW_ENABLED` (true, deprecated: `KONG_INTEGRATION_ENABLED`) |
+| Kafka (`integration/kafka/`) | purge `{env}.{tenant}.*` topics on deletion; admin client only — no events produced or consumed, so the module descriptor declares none (`ModuleDescriptorTest` guards this) | — |
+| Entitlements (`integration/entitlements/`) | validate no active entitlements before deletion | — |
+
+**Patterns**:
+- Event-driven listeners: `TenantService` (CRUD) → `TenantEventsPublisher` broadcasts to all `TenantServiceListener`s; listeners react independently.
+- **Fail-close security**: if `mgr-tenant-entitlements` is unreachable or errors → block deletion; only allow when it explicitly confirms no entitlements.
 
 ## Conventions
 
-- The OpenAPI spec `src/main/resources/swagger.api/mgr-tenants.yaml` generates `org.folio.tm.rest.resource` and `org.folio.tm.domain.dto`. Change the spec, not the generated sources. A new field also needs the entity and a Liquibase changeset under `src/main/resources/changelog/`.
-- The module descriptor declares no Kafka events, because the module uses Kafka only through an admin client to purge topics. `ModuleDescriptorTest` fails if the descriptor declares `producesEvents` or `consumesEvents`.
-- API gateway self-registration comes from the `folio-integration-kong` and `folio-integration-apisix` libraries in applications-poc-tools, selected by `APIGW_TYPE`. Change registration behavior there.
-
-## Gotchas
-
-- Tenant deletion in `TenantService` runs in this order: entitlements check, `repository.delete`, Keycloak listener (only when `application.keycloak.enabled`), Kafka purge. Keep the check out of `TenantServiceListener` implementations, because listeners run after the delete.
-- A failure rolls back only the database. Keycloak realm and Kafka topic changes are not compensated, and the SQL `DELETE` executes at commit, after the realm and topics are already removed.
-- The `TenantEntitlementsService` javadoc says "fail-close", but a 404 from mgr-tenant-entitlements counts as "no entitlements" and the deletion proceeds (`checkTenantCanBeDeleted_positive_notFound`). Any other error blocks the deletion with a 400.
-- Kafka topics are purged only when the request sets `purgeKafkaTopics=true`. Purge errors are logged and do not fail the deletion.
-- Gateway integration tests opt in per class with `@EnableKongGateway` or `@EnableApisixGateway`. The APISIX image is amd64-only: on arm64, rely on emulation or set `TESTCONTAINERS_APISIX_IMAGE`.
+- **Codegen**: spec `src/main/resources/swagger.api/mgr-tenants.yaml` → `org.folio.tm.rest.resource` + `.domain.dto` (do not edit). Add field: edit spec → `mvn clean compile` → update entity/Liquibase/mapper.
+- **DB**: Liquibase under `src/main/resources/changelog/`.
+- **Naming**: `*Entity` entities, `*Repository`, `*Service`, `*Controller`, `*Mapper`, `*Test` (unit), `*IT` (integration), `*Exception`. Test methods: `methodName_outcome_condition` (e.g. `createTenant_negative_nameExists`).
+- **Lombok**: `@Data`, `@RequiredArgsConstructor`, `@Log4j2`; `@ToString.Exclude`/`@EqualsAndHashCode.Exclude` on entity collections.
+- **MapStruct**: `@Mapper(componentModel="spring", injectionStrategy=CONSTRUCTOR, uses=MappingMethods.class)`.
+- **Exceptions** (handled centrally in `ApiExceptionHandler`): `RequestValidationException` (400), `EntityNotFoundException` (404), `KeycloakException`.
+- **Tests**: unit = Mockito (`@InjectMocks`/`@Mock`, `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`); integration = MockMvc + WireMock, extend `BaseIntegrationTest`, `@Sql` setup, `@WireMockStub` mocks. Gateway ITs opt in per class: `@EnableKongGateway` (`KongRegistrationIT`) or `@EnableApisixGateway` (`ApisixRegistrationIT`; etcd + `folioci/folio-apisix:latest`, amd64-only — on arm64 rely on emulation or set `TESTCONTAINERS_APISIX_IMAGE`).
