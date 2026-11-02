@@ -1,6 +1,6 @@
 # mgr-tenants
 
-Central Tenant Management Service for FOLIO — tenant registry and lifecycle manager in a multi-tenant environment.
+Central Tenant Management Service for FOLIO — tenant registry and lifecycle manager in a multi-tenant environment. Java, Spring Boot, PostgreSQL/Liquibase, Keycloak, Kafka (admin client for topic purge), Kong or APISIX.
 
 ## Build & Test
 
