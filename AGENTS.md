@@ -1,8 +1,8 @@
 # mgr-tenants
 
-Central Tenant Management Service for FOLIO — tenant registry and lifecycle manager in a multi-tenant environment. Java 21, Spring Boot 3.5.7, PostgreSQL/Liquibase.
+Central Tenant Management Service for FOLIO — tenant registry and lifecycle manager in a multi-tenant environment. Java, Spring Boot, PostgreSQL/Liquibase, Keycloak, Kafka (admin client for topic purge), Kong or APISIX.
 
-Responsibilities: tenant CRUD (unique names, immutable fields), key-value tenant attributes, multi-system sync (Keycloak/Kafka via event listeners), pre-deletion validation (blocks deletion when active entitlements exist).
+Responsibilities: tenant CRUD (unique names, immutable name and `secure` flag), key-value tenant attributes, one Keycloak realm per tenant (via a listener), Kafka topic purge on deletion, pre-deletion check against mgr-tenant-entitlements.
 
 ## Build & Test
 
@@ -10,19 +10,19 @@ Responsibilities: tenant CRUD (unique names, immutable fields), key-value tenant
 mvn clean package              # build fat jar
 mvn clean package -DskipTests  # skip tests
 mvn test                       # unit tests (@UnitTest, *Test.java)
-mvn verify                     # integration tests (@IntegrationTest, *IT.java)
+mvn verify                     # unit and integration tests (@IntegrationTest, *IT.java); needs Docker
 mvn test -Dtest=TenantServiceTest#getById_positive    # single unit test
-mvn verify -Dit.test=TenantIT#getById_positive        # single IT
+mvn verify -Dit.test=TenantIT#getById_positive -Dtest=SkipSurefire -Dsurefire.failIfNoSpecifiedTests=false  # single IT
 mvn checkstyle:check           # auto-runs at process-classes; max method length 21 lines
 ```
 
-## Architecture
+Env vars: see `README.md`.
 
-Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories → Entities; integrations react via listeners.
+## Architecture
 
 **Domain** (`org.folio.tm`): `Tenant` (id, immutable name, description, type DEFAULT/VIRTUAL, secure flag), `TenantAttribute` (key-value metadata). Entities extend `Auditable`; use `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` for PG enums.
 
-**Integrations** (Keycloak/Kafka/Entitlements implement `TenantServiceListener`, react to create/update/delete):
+**Integrations** (only Keycloak implements `TenantServiceListener`; `TenantService` calls the entitlements check and the Kafka purge directly):
 | Integration | Purpose | Toggle (default) |
 |---|---|---|
 | Keycloak (`integration/keycloak/`) | realm + OAuth2 clients (login, impersonation, password-reset, M2M) per tenant | `KC_INTEGRATION_ENABLED` (true) |
@@ -32,9 +32,7 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 
 **Patterns**:
 - Event-driven listeners: `TenantService` (CRUD) → `TenantEventsPublisher` broadcasts to all `TenantServiceListener`s; listeners react independently.
-- Conditional beans via `@ConditionalOnProperty`.
-- Feign clients (`KeycloakClient`, `TenantEntitlementsClient`).
-- **Fail-close security**: if `mgr-tenant-entitlements` is unreachable or errors → BLOCK deletion; only allow when it explicitly confirms no entitlements.
+- HTTP clients are `@HttpExchange` interfaces.
 
 ## Conventions
 
@@ -45,12 +43,3 @@ Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories
 - **MapStruct**: `@Mapper(componentModel="spring", injectionStrategy=CONSTRUCTOR, uses=MappingMethods.class)`.
 - **Exceptions** (handled centrally in `ApiExceptionHandler`): `RequestValidationException` (400), `EntityNotFoundException` (404), `KeycloakException`.
 - **Tests**: unit = Mockito (`@InjectMocks`/`@Mock`, `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`); integration = MockMvc + WireMock, extend `BaseIntegrationTest`, `@Sql` setup, `@WireMockStub` mocks. Gateway ITs opt in per class: `@EnableKongGateway` (`KongRegistrationIT`) or `@EnableApisixGateway` (`ApisixRegistrationIT`; etcd + `folioci/folio-apisix:latest`, amd64-only — on arm64 rely on emulation or set `TESTCONTAINERS_APISIX_IMAGE`).
-
-## Layout
-
-```
-src/main/java/org/folio/tm/{controller,service,repository,domain/entity,domain/dto,mapper,integration,exception}
-src/test/java/org/folio/tm/{it,service,support}
-src/test/resources/{sql,wiremock,json}
-```
-Env vars: see `README.md`.
