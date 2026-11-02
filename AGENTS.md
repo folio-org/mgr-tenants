@@ -28,7 +28,6 @@ mvn checkstyle:check           # auto-runs at process-classes; max method length
 
 **Patterns**:
 - Event-driven listeners: `TenantService` (CRUD) → `TenantEventsPublisher` broadcasts to all `TenantServiceListener`s; listeners react independently.
-- Deletion check (`TenantEntitlementsService`): if `mgr-tenant-entitlements` is unreachable or returns an error, deletion is blocked with 400. A 404 counts as "no entitlements" and the deletion proceeds, although the javadoc says "fail-close".
 
 ## Conventions
 
