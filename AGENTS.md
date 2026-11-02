@@ -2,6 +2,8 @@
 
 Central Tenant Management Service for FOLIO — tenant registry and lifecycle manager in a multi-tenant environment. Java, Spring Boot, PostgreSQL/Liquibase, Keycloak, Kafka (admin client for topic purge), Kong or APISIX.
 
+Responsibilities: tenant CRUD (unique names, immutable name and `secure` flag), key-value tenant attributes, one Keycloak realm per tenant (via a listener), Kafka topic purge on deletion, pre-deletion check against mgr-tenant-entitlements.
+
 ## Build & Test
 
 ```bash
@@ -16,7 +18,9 @@ mvn checkstyle:check           # auto-runs at process-classes; max method length
 
 ## Architecture
 
-**Domain**: entities extend `Auditable`; use `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` for PG enums.
+Layers: Controllers (implement OpenAPI interfaces) → Services → Repositories → Entities; Keycloak reacts via a listener.
+
+**Domain** (`org.folio.tm`): `Tenant` (id, immutable name, description, type DEFAULT/VIRTUAL, secure flag), `TenantAttribute` (key-value metadata). Entities extend `Auditable`; use `@JdbcTypeCode(SqlTypes.NAMED_ENUM)` for PG enums.
 
 **Integrations** (only Keycloak implements `TenantServiceListener`; `TenantService` calls the entitlements check and the Kafka purge directly):
 | Integration | Purpose | Toggle (default) |
@@ -28,6 +32,8 @@ mvn checkstyle:check           # auto-runs at process-classes; max method length
 
 **Patterns**:
 - Event-driven listeners: `TenantService` (CRUD) → `TenantEventsPublisher` broadcasts to all `TenantServiceListener`s; listeners react independently.
+- Conditional beans via `@ConditionalOnProperty`.
+- HTTP clients are `@HttpExchange` interfaces (`KeycloakClient`, `TenantEntitlementsClient`).
 
 ## Conventions
 
@@ -38,3 +44,12 @@ mvn checkstyle:check           # auto-runs at process-classes; max method length
 - **MapStruct**: `@Mapper(componentModel="spring", injectionStrategy=CONSTRUCTOR, uses=MappingMethods.class)`.
 - **Exceptions** (handled centrally in `ApiExceptionHandler`): `RequestValidationException` (400), `EntityNotFoundException` (404), `KeycloakException`.
 - **Tests**: unit = Mockito (`@InjectMocks`/`@Mock`, `TestUtils.verifyNoMoreInteractions(this)` in `@AfterEach`); integration = MockMvc + WireMock, extend `BaseIntegrationTest`, `@Sql` setup, `@WireMockStub` mocks. Gateway ITs opt in per class: `@EnableKongGateway` (`KongRegistrationIT`) or `@EnableApisixGateway` (`ApisixRegistrationIT`; etcd + `folioci/folio-apisix:latest`, amd64-only — on arm64 rely on emulation or set `TESTCONTAINERS_APISIX_IMAGE`).
+
+## Layout
+
+```
+src/main/java/org/folio/tm/{controller,service,repository,domain/entity,domain/dto,mapper,integration,exception}
+src/test/java/org/folio/tm/{it,service,support}
+src/test/resources/{sql,wiremock,json}
+```
+Env vars: see `README.md`.
