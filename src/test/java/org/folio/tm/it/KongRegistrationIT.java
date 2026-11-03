@@ -1,6 +1,7 @@
 package org.folio.tm.it;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.folio.tm.support.TestUtils.moduleDescriptorId;
 
 import org.folio.test.extensions.EnableKeycloakSecurity;
 import org.folio.test.types.IntegrationTest;
@@ -26,7 +27,7 @@ class KongRegistrationIT extends BaseIntegrationTest {
 
   @Test
   void verifyModuleRegistration() {
-    var moduleName = "mgr-tenants-1.0.0";
+    var moduleName = moduleDescriptorId();
     var service = kongAdminClient.getService(moduleName);
     assertThat(service).satisfies(s -> {
       assertThat(s.getProtocol()).isEqualTo("https");
