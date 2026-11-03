@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.cache.CacheManager;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.DeserializationFeature;
@@ -44,6 +45,16 @@ public class TestUtils {
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
     .build();
+
+  /**
+   * Returns the module id from the (build-time filtered) module descriptor on the classpath.
+   */
+  @SneakyThrows
+  public static String moduleDescriptorId() {
+    try (var in = new ClassPathResource("descriptors/ModuleDescriptor.json").getInputStream()) {
+      return OBJECT_MAPPER.readTree(in).get("id").asText();
+    }
+  }
 
   @SneakyThrows
   public static String asJsonString(Object value) {

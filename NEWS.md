@@ -16,6 +16,7 @@
   `MOD_AUTHTOKEN_URL` are no longer supported, tenant descriptors are no longer synced to an Okapi
   gateway, and mod-authtoken security mode is no longer reachable. The `okapi.proxy.*`
   subPermissions were dropped from the module descriptor (MGRTENANT-52)
+* Publish module descriptor to Module Descriptor Registry (MGRTENANT-112)
 
 ---
 
