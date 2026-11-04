@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.IntConsumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -207,7 +206,7 @@ public class KeycloakRealmService {
     realm.setSupportedLocales(configuredSupportedLocales());
   }
 
-  private Set<String> configuredSupportedLocales() {
+  private LinkedHashSet<String> configuredSupportedLocales() {
     var localization = keycloakRealmSetupProperties.getLocalization();
     var locales = new LinkedHashSet<>(localization.getSupportedLocales());
     locales.add(localization.getDefaultLocale());
@@ -233,7 +232,9 @@ public class KeycloakRealmService {
 
     var supportedLocales = realm.getSupportedLocales();
     if (isEmpty(supportedLocales)) {
-      realm.setSupportedLocales(configuredSupportedLocales());
+      var locales = configuredSupportedLocales();
+      locales.add(realm.getDefaultLocale());
+      realm.setSupportedLocales(locales);
       return true;
     }
 

@@ -118,4 +118,66 @@ class RealmInternationalizationMigrationIT extends BaseIntegrationTest {
     // Keycloak materializes server-side default attributes (e.g. scimApiEnabled) on any realm update
     assertThat(realmAfter.getAttributes()).containsAllEntriesOf(realmBefore.getAttributes());
   }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  void migrate_positive_enabledWithoutLocalesFilled() {
+    keycloakTestClient.updateRealm(TENANT1, realm -> realm.setInternationalizationEnabled(true));
+
+    var result = migration.migrate();
+
+    assertThat(result).isEqualTo(new Summary(4, 1, 0, 3, 0));
+    var realm = keycloakTestClient.getRealm(TENANT1);
+    assertThat(realm.isInternationalizationEnabled()).isTrue();
+    assertThat(realm.getDefaultLocale()).isEqualTo("en");
+    assertThat(realm.getSupportedLocales()).containsExactly("en");
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  void migrate_positive_customDefaultLocaleKeptAndAddedToSupportedLocales() {
+    keycloakTestClient.updateRealm(TENANT1, realm -> realm.setDefaultLocale("de"));
+
+    var result = migration.migrate();
+
+    assertThat(result).isEqualTo(new Summary(4, 1, 0, 3, 0));
+    var realm = keycloakTestClient.getRealm(TENANT1);
+    assertThat(realm.isInternationalizationEnabled()).isTrue();
+    assertThat(realm.getDefaultLocale()).isEqualTo("de");
+    assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder("en", "de");
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  void migrate_positive_defaultLocaleAddedToExistingSupportedLocales() {
+    keycloakTestClient.updateRealm(TENANT1, realm -> realm.setSupportedLocales(Set.of("fr")));
+
+    var result = migration.migrate();
+
+    assertThat(result).isEqualTo(new Summary(4, 1, 0, 3, 0));
+    var realm = keycloakTestClient.getRealm(TENANT1);
+    assertThat(realm.isInternationalizationEnabled()).isTrue();
+    assertThat(realm.getDefaultLocale()).isEqualTo("en");
+    assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder("fr", "en");
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  void migrate_positive_compliantRealmWithCustomLocalesUntouched() {
+    keycloakTestClient.updateRealm(TENANT1, realm -> {
+      realm.setInternationalizationEnabled(true);
+      realm.setDefaultLocale("de");
+      realm.setSupportedLocales(Set.of("de", "fr"));
+    });
+    var realmBefore = keycloakTestClient.getRealm(TENANT1);
+
+    var result = migration.migrate();
+
+    assertThat(result).isEqualTo(new Summary(4, 0, 1, 3, 0));
+    assertThat(keycloakTestClient.getRealm(TENANT1)).usingRecursiveComparison().isEqualTo(realmBefore);
+  }
 }

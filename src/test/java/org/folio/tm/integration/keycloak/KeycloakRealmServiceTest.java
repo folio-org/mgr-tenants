@@ -603,7 +603,7 @@ class KeycloakRealmServiceTest {
 
       assertThat(result).isTrue();
       assertThat(realm.getDefaultLocale()).isEqualTo("de");
-      assertThat(realm.getSupportedLocales()).containsExactly(DEFAULT_LOCALE);
+      assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder(DEFAULT_LOCALE, "de");
       verify(realmResource).update(same(realm));
     }
 
