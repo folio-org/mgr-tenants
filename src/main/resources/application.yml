@@ -84,6 +84,10 @@ application:
       client-session:
         idle-timeout: 86400
         max-lifespan: 86400
+      localization:
+        default-locale: ${KC_REALM_DEFAULT_LOCALE:en}
+        supported-locales: ${KC_REALM_SUPPORTED_LOCALES:en}
+        migration-enabled: ${KC_REALM_LOCALIZATION_MIGRATION_ENABLED:true}
     tls:
       enabled: ${KC_CLIENT_TLS_ENABLED:false}
       trust-store-path: ${KC_CLIENT_TLS_TRUSTSTORE_PATH}

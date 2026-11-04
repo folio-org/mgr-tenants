@@ -202,10 +202,32 @@ The feature is controlled by two env variables `SECURITY_ENABLED` and `KC_INTEGR
 | KC_CLIENT_TLS_TRUSTSTORE_PASSWORD | -                            |    false    | Truststore password for keycloak clients.                                                                                                               |
 | KC_CLIENT_TLS_TRUSTSTORE_TYPE     | -                            |    false    | Truststore file type for keycloak clients.                                                                                                              |
 | KC_JWKS_BASE_URL                  |                              |    false    | Custom base URL for JWKS endpoint. If specified, will be used instead of issuer URL from token's iss claim (e.g., http://keycloak:8080).                |
+| KC_REALM_DEFAULT_LOCALE           | en                           |    false    | Default locale set on tenant realms when Internationalization is enabled (`application.keycloak.realm-setup.localization.default-locale`).             |
+| KC_REALM_SUPPORTED_LOCALES        | en                           |    false    | Comma-separated supported locales set on tenant realms. The default locale is always included (`...localization.supported-locales`).                    |
+| KC_REALM_LOCALIZATION_MIGRATION_ENABLED | true                   |    false    | Enables the startup migration that turns on Internationalization for existing tenant realms (`...localization.migration-enabled`).                      |
 
 When an admin client call exceeds `KC_ADMIN_CONNECT_TIMEOUT` or `KC_ADMIN_READ_TIMEOUT`, it fails with a
 `jakarta.ws.rs.ProcessingException` (wrapping a `ConnectTimeoutException` / `SocketTimeoutException`),
 releasing the caller thread so existing retry logic can observe it.
+
+### Realm localization
+
+Keycloak renders the `lang` attribute on its login pages only when the realm has Internationalization enabled
+(Admin UI: Realm settings -> Localization). To keep the login page accessible (WCAG 3.1.1), `mgr-tenants`:
+
+- creates every new tenant realm with Internationalization enabled, `defaultLocale` set to `KC_REALM_DEFAULT_LOCALE`
+  and `supportedLocales` set to `KC_REALM_SUPPORTED_LOCALES` (the default locale is always included);
+- runs an idempotent migration on startup for the realms of all tenants managed by the module (never `master` or
+  other non-tenant realms). It enables Internationalization and fills `defaultLocale` / `supportedLocales` only when
+  they are missing, so locales already configured on a realm are preserved and realms that are already compliant are
+  not updated. A missing realm or a failed update is logged and does not stop the migration or the startup.
+
+Migration progress is logged with the `REALM I18N MIGRATION` marker and finishes with a summary line:
+`migration finished [scanned: N, updated: N, alreadyCompliant: N, missing: N, failed: N]`.
+
+The default supported locale list is English only: with more than one supported locale Keycloak shows a language
+selector on the login page. The migration is enabled by default; to disable it set
+`KC_REALM_LOCALIZATION_MIGRATION_ENABLED=false`.
 
 
 ### Interaction with Keycloak

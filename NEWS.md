@@ -8,6 +8,10 @@
 * Switch Kong integration test container to folioci/folio-kong image (APPPOCTOOL-37)
 * Add audience protocol mapper to the tenant login and impersonation clients so issued access tokens contain the login client in `aud` (MGRTENANT-94)
 * Enforce Keycloak user-profile `unmanagedAttributePolicy=ADMIN_EDIT` on tenant realms during provisioning and via idempotent startup migration (MGRTENANT-95)
+* Enable Keycloak realm Internationalization on tenant realms during provisioning and via idempotent startup migration,
+  so the login page exposes the `lang` attribute; configurable through `application.keycloak.realm-setup.localization.*`,
+  migration can be disabled with `KC_REALM_LOCALIZATION_MIGRATION_ENABLED=false`
+  ([MGRTENANT-110](https://folio-org.atlassian.net/browse/MGRTENANT-110))
 * Add DeployConfig.json to mgr-tenants (ADR-0013 Configuration Management) ([MGRTENANT-101](https://folio-org.atlassian.net/browse/MGRTENANT-101))
 * Confirm mgr-tenants declares no Kafka events (Kafka is used only through the admin client, to delete tenant topics)
   and validate the module descriptor for `app-mgr-services` bundling

@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import org.folio.common.utils.CollectionUtils;
 import org.folio.test.extensions.EnableKeycloakDataImport;
@@ -122,6 +123,9 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     assertThat(realm.getSsoSessionMaxLifespan()).isEqualTo(keycloakRealmProps.getSsoSession().getMaxLifespan());
     assertThat(realm.getClientSessionIdleTimeout()).isEqualTo(keycloakRealmProps.getClientSession().getIdleTimeout());
     assertThat(realm.getClientSessionMaxLifespan()).isEqualTo(keycloakRealmProps.getClientSession().getMaxLifespan());
+    assertThat(realm.isInternationalizationEnabled()).isTrue();
+    assertThat(realm.getDefaultLocale()).isEqualTo(keycloakRealmProps.getLocalization().getDefaultLocale());
+    assertThat(realm.getSupportedLocales()).contains(keycloakRealmProps.getLocalization().getDefaultLocale());
 
     checkImpersonationClient(tenantName);
     checkLoginClient(tenantName);
@@ -199,6 +203,29 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     assertThat(realm.getSsoSessionMaxLifespan()).isEqualTo(1263);
     assertThat(realm.getClientSessionIdleTimeout()).isEqualTo(1262);
     assertThat(realm.getClientSessionMaxLifespan()).isEqualTo(1263);
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  void updateTenant_positive_internationalizationPreserved() throws Exception {
+    var tenant = copyFrom().description("modified");
+    keycloakTestClient.updateRealm(tenant.getName(), realm -> {
+      realm.setInternationalizationEnabled(true);
+      realm.setDefaultLocale("de");
+      realm.setSupportedLocales(Set.of("de", "fr"));
+    });
+
+    mockMvc.perform(put("/tenants/{id}", tenant.getId())
+        .contentType(APPLICATION_JSON)
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin())
+        .content(TestUtils.asJsonString(tenant)))
+      .andExpect(status().isOk());
+
+    var realm = keycloakTestClient.getRealm(tenant.getName());
+    assertThat(realm.isInternationalizationEnabled()).isTrue();
+    assertThat(realm.getDefaultLocale()).isEqualTo("de");
+    assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder("de", "fr");
   }
 
   @Test

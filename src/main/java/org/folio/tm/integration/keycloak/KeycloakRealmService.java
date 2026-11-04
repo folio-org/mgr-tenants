@@ -4,11 +4,13 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Optional.ofNullable;
 import static org.springframework.util.CollectionUtils.isEmpty;
+import static org.springframework.util.StringUtils.hasText;
 
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.IntConsumer;
@@ -144,6 +146,26 @@ public class KeycloakRealmService {
     return true;
   }
 
+  /**
+   * Ensures Internationalization is enabled on the realm, filling default and supported locales only when missing.
+   *
+   * <p>Locale values already configured on the realm are preserved. {@link NotFoundException} propagates so
+   * callers can distinguish a missing realm from an update failure.</p>
+   *
+   * @param realmName - Keycloak realm name
+   * @return true if the realm was updated, false if it was already compliant
+   */
+  public boolean ensureInternationalization(String realmName) {
+    var realmResource = keycloak.realm(realmName);
+    var realm = realmResource.toRepresentation();
+    if (!fillMissingInternationalization(realm)) {
+      return false;
+    }
+
+    realmResource.update(realm);
+    return true;
+  }
+
   @SuppressWarnings("checkstyle:MethodLength")
   private RealmRepresentation newRealmRepresentation(Tenant tenant) {
     var realm = updateRealmRepresentation(new RealmRepresentation(), tenant);
@@ -171,7 +193,57 @@ public class KeycloakRealmService {
     realm.setClientSessionIdleTimeout(keycloakRealmSetupProperties.getClientSession().getIdleTimeout());
     realm.setClientSessionMaxLifespan(keycloakRealmSetupProperties.getClientSession().getMaxLifespan());
 
+    applyConfiguredLocales(realm);
+
     return realm;
+  }
+
+  private void applyConfiguredLocales(RealmRepresentation realm) {
+    var localization = keycloakRealmSetupProperties.getLocalization();
+
+    realm.setInternationalizationEnabled(TRUE);
+    realm.setDefaultLocale(localization.getDefaultLocale());
+    realm.setSupportedLocales(configuredSupportedLocales());
+  }
+
+  private LinkedHashSet<String> configuredSupportedLocales() {
+    var localization = keycloakRealmSetupProperties.getLocalization();
+    var locales = new LinkedHashSet<>(localization.getSupportedLocales());
+    locales.add(localization.getDefaultLocale());
+    return locales;
+  }
+
+  private boolean fillMissingInternationalization(RealmRepresentation realm) {
+    var switchEnabled = false;
+    if (!TRUE.equals(realm.isInternationalizationEnabled())) {
+      realm.setInternationalizationEnabled(TRUE);
+      switchEnabled = true;
+    }
+
+    var localesFilled = fillMissingLocales(realm);
+    return switchEnabled || localesFilled;
+  }
+
+  private boolean fillMissingLocales(RealmRepresentation realm) {
+    var defaultLocaleMissing = !hasText(realm.getDefaultLocale());
+    if (defaultLocaleMissing) {
+      realm.setDefaultLocale(keycloakRealmSetupProperties.getLocalization().getDefaultLocale());
+    }
+
+    var supportedLocales = realm.getSupportedLocales();
+    if (isEmpty(supportedLocales)) {
+      var locales = configuredSupportedLocales();
+      locales.add(realm.getDefaultLocale());
+      realm.setSupportedLocales(locales);
+      return true;
+    }
+
+    if (defaultLocaleMissing && !supportedLocales.contains(realm.getDefaultLocale())) {
+      var merged = new LinkedHashSet<>(supportedLocales);
+      merged.add(realm.getDefaultLocale());
+      realm.setSupportedLocales(merged);
+    }
+    return defaultLocaleMissing;
   }
 
   private RealmRepresentation updateRealmRepresentation(RealmRepresentation realm, Tenant tenant) {

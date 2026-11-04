@@ -20,6 +20,7 @@ import jakarta.ws.rs.WebApplicationException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.SerializationException;
 import org.folio.test.types.UnitTest;
@@ -67,8 +68,10 @@ class KeycloakRealmServiceTest {
   private static final int SESSION_IDLE_TIMEOUT = 1800;
   private static final int SESSION_MAX_LIFESPAN = 36000;
   private static final int ACCESS_TOKEN_LIFESPAN = 600;
+  private static final String DEFAULT_LOCALE = "en";
 
   private KeycloakRealmService keycloakRealmService;
+  private KeycloakRealmSetupProperties props;
 
   @Mock private Keycloak keycloak;
   @Mock private KeycloakClientService keycloakClientService;
@@ -84,7 +87,7 @@ class KeycloakRealmServiceTest {
 
   @BeforeEach
   void setUp() {
-    var props = new KeycloakRealmSetupProperties();
+    props = new KeycloakRealmSetupProperties();
     props.setAccessCodeLifespan(ACCESS_CODE_LIFESPAN_VALUE);
     props.setParRequestUriLifespan(PAR_REQUEST_LIFESPAN_VALUE);
 
@@ -134,6 +137,9 @@ class KeycloakRealmServiceTest {
     rm.setSsoSessionMaxLifespan(SESSION_MAX_LIFESPAN);
     rm.setClientSessionIdleTimeout(SESSION_IDLE_TIMEOUT);
     rm.setClientSessionMaxLifespan(SESSION_MAX_LIFESPAN);
+    rm.setInternationalizationEnabled(true);
+    rm.setDefaultLocale(DEFAULT_LOCALE);
+    rm.setSupportedLocales(Set.of(DEFAULT_LOCALE));
 
     return rm;
   }
@@ -188,6 +194,31 @@ class KeycloakRealmServiceTest {
         .isEqualTo(keycloakRealm);
 
       verify(realmsResource).create(any(RealmRepresentation.class));
+      verify(keycloakClientService).setupClient(TENANT_NAME);
+      verify(keycloakRealmRoleService).setupRole(TENANT_NAME);
+
+      //noinspection unchecked
+      verify(jsonHelper).parse(any(InputStream.class), any(TypeReference.class));
+      verify(jsonHelper).parse(any(InputStream.class));
+    }
+
+    @Test
+    void positive_customLocalesFromProperties() {
+      props.getLocalization().setDefaultLocale("de");
+      props.getLocalization().setSupportedLocales(Set.of("fr"));
+
+      when(keycloak.realm(TENANT_NAME)).thenThrow(NotFoundException.class);
+      when(keycloak.realms()).thenReturn(realmsResource);
+      when(keycloak.tokenManager()).thenReturn(tokenManager);
+      when(tokenManager.grantToken()).thenReturn(accessTokenResponse);
+
+      var result = keycloakRealmService.createRealm(tenant());
+
+      assertThat(result.isInternationalizationEnabled()).isTrue();
+      assertThat(result.getDefaultLocale()).isEqualTo("de");
+      assertThat(result.getSupportedLocales()).containsExactlyInAnyOrder("fr", "de");
+
+      verify(realmsResource).create(result);
       verify(keycloakClientService).setupClient(TENANT_NAME);
       verify(keycloakRealmRoleService).setupRole(TENANT_NAME);
 
@@ -337,6 +368,9 @@ class KeycloakRealmServiceTest {
         .usingRecursiveComparison()
         .ignoringFields("id")
         .isEqualTo(keycloakRealm);
+      assertThat(result.isInternationalizationEnabled()).isTrue();
+      assertThat(result.getDefaultLocale()).isEqualTo(DEFAULT_LOCALE);
+      assertThat(result.getSupportedLocales()).containsExactly(DEFAULT_LOCALE);
 
       verify(realmResource).update(any(RealmRepresentation.class));
     }
@@ -500,6 +534,150 @@ class KeycloakRealmServiceTest {
       config.setAttributes(List.of(new UPAttribute("username")));
       config.setUnmanagedAttributePolicy(policy);
       return config;
+    }
+  }
+
+  @Nested
+  @DisplayName("ensureInternationalization")
+  class EnsureInternationalization {
+
+    @Test
+    void positive_disabledAndEmptyLocales() {
+      var realm = realm(false, null, null);
+      mockRealmResource(realm);
+
+      var result = keycloakRealmService.ensureInternationalization(TENANT_NAME);
+
+      assertThat(result).isTrue();
+      assertThat(realm.isInternationalizationEnabled()).isTrue();
+      assertThat(realm.getDefaultLocale()).isEqualTo(DEFAULT_LOCALE);
+      assertThat(realm.getSupportedLocales()).containsExactly(DEFAULT_LOCALE);
+      verify(realmResource).update(same(realm));
+    }
+
+    @Test
+    void positive_nullSwitch() {
+      var realm = realm(null, null, null);
+      mockRealmResource(realm);
+
+      var result = keycloakRealmService.ensureInternationalization(TENANT_NAME);
+
+      assertThat(result).isTrue();
+      assertThat(realm.isInternationalizationEnabled()).isTrue();
+      verify(realmResource).update(same(realm));
+    }
+
+    @Test
+    void positive_disabledWithCustomLocales() {
+      var realm = realm(false, "de", Set.of("de", "fr"));
+      mockRealmResource(realm);
+
+      var result = keycloakRealmService.ensureInternationalization(TENANT_NAME);
+
+      assertThat(result).isTrue();
+      assertThat(realm.isInternationalizationEnabled()).isTrue();
+      assertThat(realm.getDefaultLocale()).isEqualTo("de");
+      assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder("de", "fr");
+      verify(realmResource).update(same(realm));
+    }
+
+    @Test
+    void positive_enabledButMissingDefaultLocale() {
+      var realm = realm(true, null, Set.of(DEFAULT_LOCALE, "fr"));
+      mockRealmResource(realm);
+
+      var result = keycloakRealmService.ensureInternationalization(TENANT_NAME);
+
+      assertThat(result).isTrue();
+      assertThat(realm.getDefaultLocale()).isEqualTo(DEFAULT_LOCALE);
+      assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder(DEFAULT_LOCALE, "fr");
+      verify(realmResource).update(same(realm));
+    }
+
+    @Test
+    void positive_enabledButMissingSupportedLocales() {
+      var realm = realm(true, "de", null);
+      mockRealmResource(realm);
+
+      var result = keycloakRealmService.ensureInternationalization(TENANT_NAME);
+
+      assertThat(result).isTrue();
+      assertThat(realm.getDefaultLocale()).isEqualTo("de");
+      assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder(DEFAULT_LOCALE, "de");
+      verify(realmResource).update(same(realm));
+    }
+
+    @Test
+    void positive_filledDefaultLocaleAddedToExistingSupportedLocales() {
+      var realm = realm(false, null, Set.of("fr"));
+      mockRealmResource(realm);
+
+      var result = keycloakRealmService.ensureInternationalization(TENANT_NAME);
+
+      assertThat(result).isTrue();
+      assertThat(realm.getDefaultLocale()).isEqualTo(DEFAULT_LOCALE);
+      assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder("fr", DEFAULT_LOCALE);
+      verify(realmResource).update(same(realm));
+    }
+
+    @Test
+    void positive_alreadyCompliant() {
+      var realm = realm(true, DEFAULT_LOCALE, Set.of(DEFAULT_LOCALE));
+      mockRealmResource(realm);
+
+      var result = keycloakRealmService.ensureInternationalization(TENANT_NAME);
+
+      assertThat(result).isFalse();
+      verify(realmResource, never()).update(any());
+    }
+
+    @Test
+    void positive_alreadyCompliantWithCustomLocales() {
+      var realm = realm(true, "de", Set.of("de", "fr"));
+      mockRealmResource(realm);
+
+      var result = keycloakRealmService.ensureInternationalization(TENANT_NAME);
+
+      assertThat(result).isFalse();
+      assertThat(realm.getDefaultLocale()).isEqualTo("de");
+      assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder("de", "fr");
+      verify(realmResource, never()).update(any());
+    }
+
+    @Test
+    void negative_realmNotFound() {
+      when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
+      when(realmResource.toRepresentation()).thenThrow(NotFoundException.class);
+
+      assertThatThrownBy(() -> keycloakRealmService.ensureInternationalization(TENANT_NAME))
+        .isInstanceOf(NotFoundException.class);
+
+      verify(realmResource, never()).update(any());
+    }
+
+    @Test
+    void negative_updateFails() {
+      var realm = realm(false, null, null);
+      mockRealmResource(realm);
+      doThrow(InternalServerErrorException.class).when(realmResource).update(realm);
+
+      assertThatThrownBy(() -> keycloakRealmService.ensureInternationalization(TENANT_NAME))
+        .isInstanceOf(InternalServerErrorException.class);
+    }
+
+    private void mockRealmResource(RealmRepresentation realm) {
+      when(keycloak.realm(TENANT_NAME)).thenReturn(realmResource);
+      when(realmResource.toRepresentation()).thenReturn(realm);
+    }
+
+    private static RealmRepresentation realm(Boolean internationalizationEnabled, String defaultLocale,
+      Set<String> supportedLocales) {
+      var realm = new RealmRepresentation();
+      realm.setRealm(TENANT_NAME);
+      realm.setInternationalizationEnabled(internationalizationEnabled);
+      realm.setDefaultLocale(defaultLocale);
+      realm.setSupportedLocales(supportedLocales);
+      return realm;
     }
   }
 }

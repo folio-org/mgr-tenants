@@ -344,6 +344,27 @@
         "essential": false
       },
       {
+        "name": "KC_REALM_DEFAULT_LOCALE",
+        "value": "en",
+        "description": "Default locale configured on tenant realms when Internationalization is enabled",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_REALM_SUPPORTED_LOCALES",
+        "value": "en",
+        "description": "Comma-separated supported locales configured on tenant realms; more than one locale shows a language selector on the login page",
+        "type": "KC",
+        "essential": false
+      },
+      {
+        "name": "KC_REALM_LOCALIZATION_MIGRATION_ENABLED",
+        "value": "true",
+        "description": "When true, enables Internationalization on existing tenant realms at startup (idempotent migration)",
+        "type": "KC",
+        "essential": false
+      },
+      {
         "name": "KC_AUTH_TOKEN_VALIDATE_URI",
         "value": "false",
         "description": "When true, validates that the Keycloak URL matches the issuer of the incoming JWT",

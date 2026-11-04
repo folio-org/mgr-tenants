@@ -17,6 +17,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,13 @@ public class KeycloakTestClientConfiguration {
       } catch (NotFoundException exception) {
         throw new AssertionError("Failed to find realm: " + realm, exception);
       }
+    }
+
+    public void updateRealm(String realm, Consumer<RealmRepresentation> change) {
+      var realmResource = keycloak.realm(realm);
+      var representation = realmResource.toRepresentation();
+      change.accept(representation);
+      realmResource.update(representation);
     }
 
     public UPConfig getUserProfileConfig(String realm) {
