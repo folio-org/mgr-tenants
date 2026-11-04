@@ -2,6 +2,7 @@ package org.folio.tm.it;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.folio.tm.extension.impl.ApisixGatewayExtension.APISIX_ADMIN_KEY;
+import static org.folio.tm.support.TestUtils.moduleDescriptorId;
 
 import java.util.Map;
 import org.folio.test.extensions.EnableKeycloakSecurity;
@@ -34,7 +35,7 @@ class ApisixRegistrationIT extends BaseIntegrationTest {
 
   @Test
   void verifyModuleRegistration() {
-    var moduleName = "mgr-tenants-1.0.0";
+    var moduleName = moduleDescriptorId();
     var service = apisixAdminClient.getService(moduleName).getValue();
     assertThat(service).isNotNull().satisfies(stored -> {
       assertThat(stored.getUpstream().getScheme()).isEqualTo("http");
