@@ -13,7 +13,7 @@ import java.util.List;
 import org.folio.test.types.UnitTest;
 import org.folio.tm.domain.entity.TenantEntity;
 import org.folio.tm.integration.keycloak.KeycloakRealmService;
-import org.folio.tm.integration.keycloak.migration.UnmanagedAttributePolicyMigration.Summary;
+import org.folio.tm.integration.keycloak.migration.AbstractRealmMigration.Summary;
 import org.folio.tm.repository.TenantRepository;
 import org.folio.tm.support.TestUtils;
 import org.junit.jupiter.api.AfterEach;

@@ -13,6 +13,7 @@ import org.folio.tm.integration.keycloak.KeycloakClient;
 import org.folio.tm.integration.keycloak.KeycloakRealmService;
 import org.folio.tm.integration.keycloak.KeycloakServerInfoService;
 import org.folio.tm.integration.keycloak.KeycloakTenantListener;
+import org.folio.tm.integration.keycloak.migration.RealmInternationalizationMigration;
 import org.folio.tm.integration.keycloak.migration.UnmanagedAttributePolicyMigration;
 import org.folio.tm.integration.keycloak.service.clients.ImpersonationClientService;
 import org.folio.tm.integration.keycloak.service.clients.KeycloakClientService;
@@ -83,6 +84,14 @@ public class KeycloakConfiguration {
   public UnmanagedAttributePolicyMigration unmanagedAttributePolicyMigration(
     TenantRepository tenantRepository, KeycloakRealmService keycloakRealmService) {
     return new UnmanagedAttributePolicyMigration(tenantRepository, keycloakRealmService);
+  }
+
+  @Bean
+  @ConditionalOnProperty(name = "application.keycloak.realm-setup.localization.migration-enabled",
+    havingValue = "true", matchIfMissing = true)
+  public RealmInternationalizationMigration realmInternationalizationMigration(
+    TenantRepository tenantRepository, KeycloakRealmService keycloakRealmService) {
+    return new RealmInternationalizationMigration(tenantRepository, keycloakRealmService);
   }
 
   @Bean
