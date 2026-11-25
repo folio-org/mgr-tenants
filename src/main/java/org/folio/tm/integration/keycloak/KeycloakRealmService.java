@@ -194,8 +194,15 @@ public class KeycloakRealmService {
     realm.setClientSessionMaxLifespan(keycloakRealmSetupProperties.getClientSession().getMaxLifespan());
 
     applyConfiguredLocales(realm);
+    applyConfiguredLoginTheme(realm);
 
     return realm;
+  }
+
+  private void applyConfiguredLoginTheme(RealmRepresentation realm) {
+    ofNullable(keycloakRealmSetupProperties.getLoginTheme())
+      .filter(theme -> hasText(theme))
+      .ifPresent(realm::setLoginTheme);
   }
 
   private void applyConfiguredLocales(RealmRepresentation realm) {

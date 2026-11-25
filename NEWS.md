@@ -21,6 +21,9 @@
   gateway, and mod-authtoken security mode is no longer reachable. The `okapi.proxy.*`
   subPermissions were dropped from the module descriptor (MGRTENANT-52)
 * Publish module descriptor to Module Descriptor Registry (MGRTENANT-112)
+* Set the `custom-theme-sso-first` login theme on new tenant realms by default; configurable with `KC_REALM_LOGIN_THEME`
+  (an empty value keeps the Keycloak default theme), existing realms are not changed
+  ([MGRTENANT-85](https://folio-org.atlassian.net/browse/MGRTENANT-85))
 
 ---
 

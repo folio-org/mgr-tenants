@@ -69,6 +69,7 @@ class KeycloakRealmServiceTest {
   private static final int SESSION_MAX_LIFESPAN = 36000;
   private static final int ACCESS_TOKEN_LIFESPAN = 600;
   private static final String DEFAULT_LOCALE = "en";
+  private static final String DEFAULT_LOGIN_THEME = "custom-theme-sso-first";
 
   private KeycloakRealmService keycloakRealmService;
   private KeycloakRealmSetupProperties props;
@@ -92,6 +93,7 @@ class KeycloakRealmServiceTest {
     props.setParRequestUriLifespan(PAR_REQUEST_LIFESPAN_VALUE);
 
     props.setAccessTokenLifespan(ACCESS_TOKEN_LIFESPAN);
+    props.setLoginTheme(DEFAULT_LOGIN_THEME);
 
     var refreshTokenProps = new KeycloakRefreshTokenProperties();
     refreshTokenProps.setMaxReuse(REFRESH_TOKEN_MAX_REUSE);
@@ -140,6 +142,7 @@ class KeycloakRealmServiceTest {
     rm.setInternationalizationEnabled(true);
     rm.setDefaultLocale(DEFAULT_LOCALE);
     rm.setSupportedLocales(Set.of(DEFAULT_LOCALE));
+    rm.setLoginTheme(DEFAULT_LOGIN_THEME);
 
     return rm;
   }
@@ -217,6 +220,50 @@ class KeycloakRealmServiceTest {
       assertThat(result.isInternationalizationEnabled()).isTrue();
       assertThat(result.getDefaultLocale()).isEqualTo("de");
       assertThat(result.getSupportedLocales()).containsExactlyInAnyOrder("fr", "de");
+
+      verify(realmsResource).create(result);
+      verify(keycloakClientService).setupClient(TENANT_NAME);
+      verify(keycloakRealmRoleService).setupRole(TENANT_NAME);
+
+      //noinspection unchecked
+      verify(jsonHelper).parse(any(InputStream.class), any(TypeReference.class));
+      verify(jsonHelper).parse(any(InputStream.class));
+    }
+
+    @Test
+    void positive_customLoginThemeFromProperties() {
+      props.setLoginTheme("custom-theme");
+
+      when(keycloak.realm(TENANT_NAME)).thenThrow(NotFoundException.class);
+      when(keycloak.realms()).thenReturn(realmsResource);
+      when(keycloak.tokenManager()).thenReturn(tokenManager);
+      when(tokenManager.grantToken()).thenReturn(accessTokenResponse);
+
+      var result = keycloakRealmService.createRealm(tenant());
+
+      assertThat(result.getLoginTheme()).isEqualTo("custom-theme");
+
+      verify(realmsResource).create(result);
+      verify(keycloakClientService).setupClient(TENANT_NAME);
+      verify(keycloakRealmRoleService).setupRole(TENANT_NAME);
+
+      //noinspection unchecked
+      verify(jsonHelper).parse(any(InputStream.class), any(TypeReference.class));
+      verify(jsonHelper).parse(any(InputStream.class));
+    }
+
+    @Test
+    void positive_emptyLoginTheme() {
+      props.setLoginTheme("");
+
+      when(keycloak.realm(TENANT_NAME)).thenThrow(NotFoundException.class);
+      when(keycloak.realms()).thenReturn(realmsResource);
+      when(keycloak.tokenManager()).thenReturn(tokenManager);
+      when(tokenManager.grantToken()).thenReturn(accessTokenResponse);
+
+      var result = keycloakRealmService.createRealm(tenant());
+
+      assertThat(result.getLoginTheme()).isNull();
 
       verify(realmsResource).create(result);
       verify(keycloakClientService).setupClient(TENANT_NAME);
