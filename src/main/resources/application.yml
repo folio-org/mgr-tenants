@@ -78,6 +78,7 @@ application:
         revoke-enabled: true
         max-reuse: 0
       access-token-lifespan: 600
+      login-theme: ${KC_REALM_LOGIN_THEME:custom-theme-sso-first}
       sso-session:
         idle-timeout: 86400
         max-lifespan: 86400

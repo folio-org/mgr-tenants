@@ -205,6 +205,7 @@ The feature is controlled by two env variables `SECURITY_ENABLED` and `KC_INTEGR
 | KC_REALM_DEFAULT_LOCALE           | en                           |    false    | Default locale set on tenant realms when Internationalization is enabled (`application.keycloak.realm-setup.localization.default-locale`).             |
 | KC_REALM_SUPPORTED_LOCALES        | en                           |    false    | Comma-separated supported locales set on tenant realms. The default locale is always included (`...localization.supported-locales`).                    |
 | KC_REALM_LOCALIZATION_MIGRATION_ENABLED | true                   |    false    | Enables the startup migration that turns on Internationalization for existing tenant realms (`...localization.migration-enabled`).                      |
+| KC_REALM_LOGIN_THEME              | custom-theme-sso-first       |    false    | Login theme set on new tenant realms (`application.keycloak.realm-setup.login-theme`). An empty value leaves the Keycloak default theme. Existing realms are not changed. |
 
 When an admin client call exceeds `KC_ADMIN_CONNECT_TIMEOUT` or `KC_ADMIN_READ_TIMEOUT`, it fails with a
 `jakarta.ws.rs.ProcessingException` (wrapping a `ConnectTimeoutException` / `SocketTimeoutException`),
@@ -229,6 +230,18 @@ The default supported locale list is English only: with more than one supported 
 selector on the login page. The migration is enabled by default; to disable it set
 `KC_REALM_LOCALIZATION_MIGRATION_ENABLED=false`.
 
+
+### Realm login theme
+
+Every new tenant realm is created with the login theme `KC_REALM_LOGIN_THEME` (default `custom-theme-sso-first`).
+Keep in mind:
+
+- The theme must exist in the Keycloak image: `custom-theme-sso-first` ships with `folio-keycloak` v26.4.4,
+  v26.5.2 and newer. With an older image the realm is still created, but Keycloak logs
+  `Failed to find LOGIN theme ...` and shows its built-in theme.
+- A `login_theme` attribute on a client has priority over the realm theme. Tools that set it on the login client
+  (for example `eureka-cli` and the FOLIO UI deploy pipeline) keep their own theme until they are changed.
+- Only new realms get the theme. Existing realms and tenant updates never change it.
 
 ### Interaction with Keycloak
 

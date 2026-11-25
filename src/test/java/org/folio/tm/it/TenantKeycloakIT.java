@@ -126,6 +126,7 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     assertThat(realm.isInternationalizationEnabled()).isTrue();
     assertThat(realm.getDefaultLocale()).isEqualTo(keycloakRealmProps.getLocalization().getDefaultLocale());
     assertThat(realm.getSupportedLocales()).contains(keycloakRealmProps.getLocalization().getDefaultLocale());
+    assertThat(realm.getLoginTheme()).isEqualTo("custom-theme-sso-first");
 
     checkImpersonationClient(tenantName);
     checkLoginClient(tenantName);
@@ -226,6 +227,23 @@ class TenantKeycloakIT extends BaseIntegrationTest {
     assertThat(realm.isInternationalizationEnabled()).isTrue();
     assertThat(realm.getDefaultLocale()).isEqualTo("de");
     assertThat(realm.getSupportedLocales()).containsExactlyInAnyOrder("de", "fr");
+  }
+
+  @Test
+  @Sql("classpath:/sql/populate_tenants.sql")
+  @KeycloakRealms(realms = "/json/keycloak/tenant1.json")
+  void updateTenant_positive_loginThemePreserved() throws Exception {
+    var tenant = copyFrom().description("modified");
+    keycloakTestClient.updateRealm(tenant.getName(), realm -> realm.setLoginTheme("custom-theme"));
+
+    mockMvc.perform(put("/tenants/{id}", tenant.getId())
+        .contentType(APPLICATION_JSON)
+        .header(TOKEN, keycloakTestClient.loginAsFolioAdmin())
+        .content(TestUtils.asJsonString(tenant)))
+      .andExpect(status().isOk());
+
+    var realm = keycloakTestClient.getRealm(tenant.getName());
+    assertThat(realm.getLoginTheme()).isEqualTo("custom-theme");
   }
 
   @Test

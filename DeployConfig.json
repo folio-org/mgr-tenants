@@ -365,6 +365,13 @@
         "essential": false
       },
       {
+        "name": "KC_REALM_LOGIN_THEME",
+        "value": "custom-theme-sso-first",
+        "description": "Login theme set on new tenant realms; an empty value leaves the Keycloak default theme. Existing realms are not changed",
+        "type": "KC",
+        "essential": false
+      },
+      {
         "name": "KC_AUTH_TOKEN_VALIDATE_URI",
         "value": "false",
         "description": "When true, validates that the Keycloak URL matches the issuer of the incoming JWT",

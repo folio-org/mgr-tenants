@@ -21,6 +21,7 @@ public class KeycloakRealmSetupProperties {
   private Integer accessCodeLifespan;
   private Integer parRequestUriLifespan;
   private Integer accessTokenLifespan;
+  private String loginTheme;
   @NestedConfigurationProperty
   private KeycloakRefreshTokenProperties refreshToken = new KeycloakRefreshTokenProperties();
   @NestedConfigurationProperty
